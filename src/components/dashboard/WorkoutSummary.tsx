@@ -1,6 +1,6 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Zap, MapPin, Heart, Smile, Utensils } from 'lucide-react';
+import { Clock, Zap, MapPin, Heart, Smile, Utensils, Activity } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 interface IntervalsActivity {
@@ -16,6 +16,8 @@ interface IntervalsActivity {
   feel?: number;
   carbs_used?: number;
   workout_load?: number;
+  normalized_power?: number;
+  average_watts?: number;
 }
 
 const WorkoutSummary = () => {
@@ -28,7 +30,7 @@ const WorkoutSummary = () => {
       const athleteId = localStorage.getItem('intervals_athlete_id');
       
       if (!apiKey || !athleteId) {
-        // Return mock data with RPE, Feeling, CHO and workout_load for demo
+        // Return mock data with RPE, Feeling, CHO, workout_load and power data for demo
         return [
           {
             id: '1',
@@ -41,7 +43,9 @@ const WorkoutSummary = () => {
             icu_rpe: 7,
             feel: 4,
             carbs_used: 45,
-            workout_load: 85
+            workout_load: 85,
+            normalized_power: 245,
+            average_watts: 230
           },
           {
             id: '2',
@@ -85,7 +89,9 @@ const WorkoutSummary = () => {
         icu_rpe: activity.icu_rpe,
         feel: activity.feel,
         carbs_used: activity.carbs_used,
-        workout_load: activity.workout_load
+        workout_load: activity.workout_load,
+        normalized_power: activity.normalized_power,
+        average_watts: activity.average_watts
       })) as IntervalsActivity[];
     },
     enabled: true, // Always enabled to show demo data
@@ -145,6 +151,10 @@ const WorkoutSummary = () => {
     return '😔';
   };
 
+  const isPowerActivity = (type: string) => {
+    return ['Run', 'Ride', 'VirtualRide', 'Bike'].includes(type);
+  };
+
   if (todayWorkouts.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -189,6 +199,24 @@ const WorkoutSummary = () => {
               <div className="flex items-center gap-1">
                 <MapPin className="h-4 w-4 text-gray-500" />
                 <span>{formatDistance(workout.distance)}</span>
+              </div>
+            )}
+            {workout.workout_load && (
+              <div className="flex items-center gap-1">
+                <Activity className="h-4 w-4 text-gray-500" />
+                <span>Load {workout.workout_load}</span>
+              </div>
+            )}
+            {isPowerActivity(workout.type) && workout.normalized_power && (
+              <div className="flex items-center gap-1">
+                <Zap className="h-4 w-4 text-orange-500" />
+                <span>NP {workout.normalized_power}W</span>
+              </div>
+            )}
+            {isPowerActivity(workout.type) && workout.average_watts && (
+              <div className="flex items-center gap-1">
+                <Activity className="h-4 w-4 text-blue-500" />
+                <span>Avg {workout.average_watts}W</span>
               </div>
             )}
             {workout.feel && (
