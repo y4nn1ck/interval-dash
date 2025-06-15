@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { subDays } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -63,13 +64,14 @@ const TrainingStressChart = () => {
 
   const generateMockHydrationData = (): HydrationData[] => {
     const endDate = new Date();
-    const days = 7; // Always 7 days for hydration
     const data: HydrationData[] = [];
     
-    for (let i = days - 1; i >= 0; i--) {
+    // Generate 7 days of hydration data with realistic values
+    const hydrationValues = [3, 4, 2, 5, 4, 3, 4]; // Example realistic hydration levels (1-5 scale)
+    
+    for (let i = 6; i >= 0; i--) {
       const date = subDays(endDate, i);
-      // Generate realistic hydration data (1-5 scale)
-      const hydration = Math.floor(Math.random() * 5) + 1;
+      const hydration = hydrationValues[6 - i]; // Use predefined realistic values
 
       data.push({
         date: date.toISOString().split('T')[0],
@@ -112,7 +114,26 @@ const TrainingStressChart = () => {
   const { data: hydrationData = [] } = useQuery({
     queryKey: ['hydration-chart'],
     queryFn: async () => {
-      // For now, return mock hydration data
+      const apiKey = localStorage.getItem('intervals_api_key');
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      
+      if (!apiKey || !athleteId) {
+        return generateMockHydrationData();
+      }
+
+      try {
+        // Try to fetch real hydration data from weekly stats
+        const weeklyData = await intervalsService.getWeeklyStats();
+        if (weeklyData.length > 0) {
+          return weeklyData.map(stat => ({
+            date: stat.date,
+            hydration: stat.hydration || Math.floor(Math.random() * 5) + 1 // Fallback to random if no data
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching hydration data:', error);
+      }
+      
       return generateMockHydrationData();
     },
   });
