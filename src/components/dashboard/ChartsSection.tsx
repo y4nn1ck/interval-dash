@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CTLATLTSBChart from './CTLATLTSBChart';
 import HydrationChart from './HydrationChart';
 import ChartPeriodSwitch from './ChartPeriodSwitch';
-import { useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
+import { useIntervalsWeeklyStats, useIntervalsMonthlyStats } from '@/hooks/useIntervalsData';
 
 interface ChartsSectionProps {
   ctl: number;
@@ -17,14 +17,14 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
 
   // Fetch real data from Intervals.icu
   const { data: weeklyStats } = useIntervalsWeeklyStats();
+  const { data: monthlyStats } = useIntervalsMonthlyStats();
 
   // Generate CTL/ATL/TSB data from real API data
   const generateCTLATLData = (period: string) => {
-    const days = period === '7days' ? 7 : 30;
+    const statsData = period === '7days' ? weeklyStats : monthlyStats;
     
-    if (weeklyStats && weeklyStats.length > 0) {
-      // Use real data from API when available
-      return weeklyStats.map(stat => ({
+    if (statsData && statsData.length > 0) {
+      return statsData.map(stat => ({
         date: stat.date,
         ctl: Math.round(stat.ctl || 0),
         atl: Math.round(stat.atl || 0),
@@ -33,6 +33,7 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
     }
 
     // Fallback data if API fails
+    const days = period === '7days' ? 7 : 30;
     const data = [];
     for (let i = 0; i < days; i++) {
       const date = new Date();
@@ -41,17 +42,10 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
       let dayCtl, dayAtl, dayTsb;
       
       if (i === days - 1) {
-        // Today: use props values
         dayCtl = ctl;
         dayAtl = atl;
         dayTsb = ctl - atl;
-      } else if (i === days - 2) {
-        // Yesterday: CTL=67, ATL=65, TSB=2
-        dayCtl = 67;
-        dayAtl = 65;
-        dayTsb = 2;
       } else {
-        // Generate realistic historical data with small variations
         const baseCtl = 67;
         const baseAtl = 65;
         const variation = (Math.random() - 0.5) * 4;
@@ -74,48 +68,32 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
 
   // Generate hydration data from real API data
   const generateHydrationData = (period: string) => {
+    const statsData = period === '7days' ? weeklyStats : monthlyStats;
     const days = period === '7days' ? 7 : 30;
     
-    if (weeklyStats && weeklyStats.length > 0) {
-      // Use real data from API when available
-      const data = [];
-      for (let i = 0; i < days; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - (days - 1 - i));
-        const dateStr = date.toISOString().split('T')[0];
-        
-        // Find matching data from API
-        const apiData = weeklyStats.find(stat => stat.date === dateStr);
-        
-        // Only show hydration for last 2 days as accurate
-        let hydration = null;
-        if (i === days - 1 || i === days - 2) {
-          hydration = apiData?.hydration || 1; // Use API data or fallback to 1
-        }
-        
-        data.push({
-          date: dateStr,
-          hydration: hydration,
-        });
-      }
-      return data;
-    }
-
-    // Fallback data if API fails
     const data = [];
     for (let i = 0; i < days; i++) {
       const date = new Date();
       date.setDate(date.getDate() - (days - 1 - i));
+      const dateStr = date.toISOString().split('T')[0];
       
       let hydration = null;
       
-      if (i === days - 1 || i === days - 2) {
-        // Today and yesterday: hydration = 1 (accurate data)
+      // Find matching data from API
+      if (statsData && statsData.length > 0) {
+        const apiData = statsData.find(stat => stat.date === dateStr);
+        if (apiData && apiData.hydration !== null && apiData.hydration !== undefined) {
+          hydration = apiData.hydration;
+        }
+      }
+      
+      // Only show hydration for last 2 days if no API data
+      if (hydration === null && (i === days - 1 || i === days - 2)) {
         hydration = 1;
       }
       
       data.push({
-        date: date.toISOString().split('T')[0],
+        date: dateStr,
         hydration: hydration,
       });
     }
@@ -125,7 +103,7 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
 
   return (
     <div className="space-y-6 mb-8">
-      {/* CTL/ATL/TSB Chart - First Row */}
+      {/* CTL/ATL/TSB Chart */}
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -146,7 +124,7 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
         </CardContent>
       </Card>
 
-      {/* Hydration Chart - Second Row */}
+      {/* Hydration Chart */}
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">

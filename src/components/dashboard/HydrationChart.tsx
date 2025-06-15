@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -35,8 +34,22 @@ const HydrationChart = ({ data, selectedPeriod }: HydrationChartProps) => {
     },
   };
 
-  // Filter out null values for display
-  const validData = data.filter(item => item.hydration !== null);
+  // Filter out null values for display but keep the structure
+  const chartData = data.map(item => ({
+    ...item,
+    hydration: item.hydration || undefined
+  }));
+
+  // Get only items with valid hydration for the chart
+  const validData = chartData.filter(item => item.hydration !== undefined && item.hydration !== null);
+
+  if (validData.length === 0) {
+    return (
+      <div className="h-[300px] w-full flex items-center justify-center text-gray-500">
+        <p>Aucune donnée d'hydratation disponible pour cette période</p>
+      </div>
+    );
+  }
 
   return (
     <ChartContainer config={hydrationConfig} className="h-[300px] w-full">
