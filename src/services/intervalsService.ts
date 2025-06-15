@@ -35,8 +35,9 @@ class IntervalsService {
   }
 
   async saveApiKey(apiKey: string): Promise<void> {
-    // Test the API key first
-    const testResponse = await fetch(`${this.baseUrl}/athlete`, {
+    // Test the API key by making a request to get athlete info
+    const testResponse = await fetch(`${this.baseUrl}/athlete/i`, {
+      method: 'GET',
       headers: {
         'Authorization': `Basic ${btoa(`API_KEY:${apiKey}`)}`
       }
@@ -49,7 +50,7 @@ class IntervalsService {
     const athleteData = await testResponse.json();
     localStorage.setItem('intervals_api_key', apiKey);
     localStorage.setItem('intervals_athlete_id', athleteData.id);
-    localStorage.setItem('intervals_athlete_name', athleteData.name);
+    localStorage.setItem('intervals_athlete_name', athleteData.name || 'Unknown');
   }
 
   private async makeAuthenticatedRequest(endpoint: string) {
