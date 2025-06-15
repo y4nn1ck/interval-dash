@@ -30,7 +30,7 @@ const HydrationChart = ({ data, selectedPeriod }: HydrationChartProps) => {
 
   const hydrationConfig = {
     hydration: {
-      label: 'Hydratation (L)',
+      label: 'Hydratation (1-5)',
       color: '#06b6d4',
     },
   };
@@ -71,7 +71,7 @@ const HydrationChart = ({ data, selectedPeriod }: HydrationChartProps) => {
           <Bar 
             dataKey="hydration" 
             fill="url(#hydrationGradient)"
-            name="Hydratation (L)"
+            name="Hydratation (1-5)"
             radius={[6, 6, 0, 0]}
             stroke="#06b6d4"
             strokeWidth={1}

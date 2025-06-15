@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap, TrendingUp as TrendUp, CalendarDays, CalendarClock } from 'lucide-react';
@@ -47,21 +48,32 @@ const Dashboard = () => {
     return `${hours}.${minutes.toString().padStart(2, '0')}`;
   };
 
-  // Generate sample data for charts based on period
+  // Generate CTL/ATL/TSB data using values from the KPI cards
   const generateCTLATLData = (period: string) => {
     const days = period === '7days' ? 7 : 30;
     return Array.from({ length: days }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (days - 1 - i));
+      
+      // Use actual values from the cards with some variation
+      const baseCtl = ctl;
+      const baseAtl = atl;
+      const variation = (Math.random() - 0.5) * 10; // ±5 variation
+      
+      const dayCtl = Math.max(30, baseCtl + variation + (i - days/2) * 0.5);
+      const dayAtl = Math.max(20, baseAtl + variation + (i - days/2) * 0.3);
+      const dayTsb = dayCtl - dayAtl;
+      
       return {
         date: date.toISOString().split('T')[0],
-        ctl: Math.round(65 + Math.random() * 20 + i * 0.5),
-        atl: Math.round(50 + Math.random() * 15 + i * 0.3),
-        tsb: Math.round((65 + Math.random() * 20) - (50 + Math.random() * 15)),
+        ctl: Math.round(dayCtl),
+        atl: Math.round(dayAtl),
+        tsb: Math.round(dayTsb),
       };
     });
   };
 
+  // Generate hydration data with values between 1-5 (not liters)
   const generateHydrationData = (period: string) => {
     const days = period === '7days' ? 7 : 30;
     return Array.from({ length: days }, (_, i) => {
@@ -69,7 +81,7 @@ const Dashboard = () => {
       date.setDate(date.getDate() - (days - 1 - i));
       return {
         date: date.toISOString().split('T')[0],
-        hydration: Math.round((2 + Math.random() * 2) * 10) / 10,
+        hydration: Math.round((1 + Math.random() * 4) * 10) / 10, // Between 1.0 and 5.0
       };
     });
   };
@@ -132,10 +144,10 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Charts Section */}
+        {/* Charts Section - Single Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold text-gray-800">
                   Évolution CTL, ATL et TSB
@@ -146,7 +158,7 @@ const Dashboard = () => {
                 />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <CTLATLTSBChart 
                 data={generateCTLATLData(ctlatlPeriod)} 
                 selectedPeriod={ctlatlPeriod} 
@@ -155,7 +167,7 @@ const Dashboard = () => {
           </Card>
 
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-semibold text-gray-800">
                   Hydratation quotidienne
@@ -166,7 +178,7 @@ const Dashboard = () => {
                 />
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               <HydrationChart 
                 data={generateHydrationData(hydrationPeriod)} 
                 selectedPeriod={hydrationPeriod} 
