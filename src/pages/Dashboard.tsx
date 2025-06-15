@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap, TrendingUp as TrendUp, CalendarDays, CalendarClock } from 'lucide-react';
 import WorkoutSummary from '@/components/dashboard/WorkoutSummary';
@@ -16,6 +15,10 @@ import { useIntervalsAuth, useIntervalsDailyStats, useIntervalsWeeklyStats } fro
 const Dashboard = () => {
   const { isAuthenticated } = useIntervalsAuth();
   const today = new Date().toISOString().split('T')[0];
+  
+  // Separate states for each chart period
+  const [ctlatlPeriod, setCtlatlPeriod] = useState('7days');
+  const [hydrationPeriod, setHydrationPeriod] = useState('7days');
   
   const { data: todayStats } = useIntervalsDailyStats(today);
   const { data: weeklyStats } = useIntervalsWeeklyStats();
@@ -42,6 +45,33 @@ const Dashboard = () => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${hours}.${minutes.toString().padStart(2, '0')}`;
+  };
+
+  // Generate sample data for charts based on period
+  const generateCTLATLData = (period: string) => {
+    const days = period === '7days' ? 7 : 30;
+    return Array.from({ length: days }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (days - 1 - i));
+      return {
+        date: date.toISOString().split('T')[0],
+        ctl: Math.round(65 + Math.random() * 20 + i * 0.5),
+        atl: Math.round(50 + Math.random() * 15 + i * 0.3),
+        tsb: Math.round((65 + Math.random() * 20) - (50 + Math.random() * 15)),
+      };
+    });
+  };
+
+  const generateHydrationData = (period: string) => {
+    const days = period === '7days' ? 7 : 30;
+    return Array.from({ length: days }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (days - 1 - i));
+      return {
+        date: date.toISOString().split('T')[0],
+        hydration: Math.round((2 + Math.random() * 2) * 10) / 10,
+      };
+    });
   };
 
   return (
@@ -103,8 +133,46 @@ const Dashboard = () => {
         </div>
 
         {/* Charts Section */}
-        <div className="mb-8">
-          <TrainingStressChart />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-gray-800">
+                  Évolution CTL, ATL et TSB
+                </CardTitle>
+                <ChartPeriodSwitch
+                  isMonthView={ctlatlPeriod === '1month'}
+                  onToggle={(isMonthView) => setCtlatlPeriod(isMonthView ? '1month' : '7days')}
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <CTLATLTSBChart 
+                data={generateCTLATLData(ctlatlPeriod)} 
+                selectedPeriod={ctlatlPeriod} 
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-gray-800">
+                  Hydratation quotidienne
+                </CardTitle>
+                <ChartPeriodSwitch
+                  isMonthView={hydrationPeriod === '1month'}
+                  onToggle={(isMonthView) => setHydrationPeriod(isMonthView ? '1month' : '7days')}
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <HydrationChart 
+                data={generateHydrationData(hydrationPeriod)} 
+                selectedPeriod={hydrationPeriod} 
+              />
+            </CardContent>
+          </Card>
         </div>
 
         {/* Planned Workouts and Today's Workouts - First Row */}
