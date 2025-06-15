@@ -19,6 +19,9 @@ export interface IntervalsDailyStats {
   sleep_secs: number;
   steps: number;
   calories: number;
+  ctl?: number;
+  atl?: number;
+  tsb?: number;
 }
 
 class IntervalsService {
@@ -100,12 +103,15 @@ class IntervalsService {
       return {
         date: date,
         training_load: data.ctl || 0,
-        hrv_rmssd: data.hrvRmssd || 0,
+        hrv_rmssd: data.hrvRmssd || data.hrv || 0,
         resting_hr: data.restingHR || 0,
         weight: data.weight || 0,
         sleep_secs: data.sleepSecs || 0,
         steps: data.steps || 0,
-        calories: data.calories || 0
+        calories: data.calories || 0,
+        ctl: data.ctl || 0,
+        atl: data.atl || 0,
+        tsb: data.ctl && data.atl ? data.ctl - data.atl : 0
       };
     } catch (error) {
       console.error('Error fetching daily stats:', error);
@@ -132,12 +138,15 @@ class IntervalsService {
       return data.map((item: any) => ({
         date: item.id,
         training_load: item.ctl || 0,
-        hrv_rmssd: item.hrvRmssd || 0,
+        hrv_rmssd: item.hrvRmssd || item.hrv || 0,
         resting_hr: item.restingHR || 0,
         weight: item.weight || 0,
         sleep_secs: item.sleepSecs || 0,
         steps: item.steps || 0,
-        calories: item.calories || 0
+        calories: item.calories || 0,
+        ctl: item.ctl || 0,
+        atl: item.atl || 0,
+        tsb: item.ctl && item.atl ? item.ctl - item.atl : 0
       }));
     } catch (error) {
       console.error('Error fetching weekly stats:', error);

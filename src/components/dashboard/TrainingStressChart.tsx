@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { format, subDays, subMonths, subYears, parseISO } from 'date-fns';
+import { format, subDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
+import { intervalsService } from '@/services/intervalsService';
 
 interface TrainingStressData {
   date: string;
@@ -28,21 +29,18 @@ const TrainingStressChart = () => {
       case '1month':
         days = 30;
         break;
-      case '1year':
-        days = 365;
-        break;
     }
 
     const data: TrainingStressData[] = [];
     
     for (let i = days - 1; i >= 0; i--) {
       const date = subDays(endDate, i);
-      const baseCtl = 65;
-      const baseAtl = 52;
+      const baseCtl = 67;
+      const baseAtl = 67;
       
       // Add some realistic variation
-      const ctlVariation = Math.sin(i * 0.1) * 10 + Math.random() * 5;
-      const atlVariation = Math.sin(i * 0.15) * 15 + Math.random() * 8;
+      const ctlVariation = Math.sin(i * 0.1) * 8 + Math.random() * 3;
+      const atlVariation = Math.sin(i * 0.15) * 12 + Math.random() * 5;
       
       const ctl = Math.max(30, baseCtl + ctlVariation);
       const atl = Math.max(20, baseAtl + atlVariation);
@@ -61,7 +59,31 @@ const TrainingStressChart = () => {
 
   const { data: chartData = [] } = useQuery({
     queryKey: ['training-stress-chart', selectedPeriod],
-    queryFn: () => generateMockData(selectedPeriod),
+    queryFn: async () => {
+      const apiKey = localStorage.getItem('intervals_api_key');
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      
+      if (!apiKey || !athleteId) {
+        return generateMockData(selectedPeriod);
+      }
+
+      try {
+        // Try to fetch real data from the weekly stats
+        const weeklyData = await intervalsService.getWeeklyStats();
+        if (weeklyData.length > 0) {
+          return weeklyData.map(stat => ({
+            date: stat.date,
+            ctl: Math.round(stat.ctl || 67),
+            atl: Math.round(stat.atl || 67),
+            tsb: Math.round(stat.tsb || 0)
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching real training stress data:', error);
+      }
+      
+      return generateMockData(selectedPeriod);
+    },
   });
 
   const formatXAxisLabel = (dateStr: string) => {
@@ -71,8 +93,6 @@ const TrainingStressChart = () => {
         return format(date, 'EEE', { locale: fr });
       case '1month':
         return format(date, 'dd/MM');
-      case '1year':
-        return format(date, 'MMM', { locale: fr });
       default:
         return format(date, 'dd/MM');
     }
@@ -96,10 +116,9 @@ const TrainingStressChart = () => {
   return (
     <div className="space-y-4">
       <Tabs value={selectedPeriod} onValueChange={setSelectedPeriod}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="7days">7 jours</TabsTrigger>
           <TabsTrigger value="1month">1 mois</TabsTrigger>
-          <TabsTrigger value="1year">1 an</TabsTrigger>
         </TabsList>
         
         <TabsContent value={selectedPeriod} className="mt-6">

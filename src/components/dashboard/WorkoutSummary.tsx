@@ -1,5 +1,4 @@
 
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Zap, MapPin, Heart, Smile, Utensils } from 'lucide-react';
@@ -14,10 +13,9 @@ interface IntervalsActivity {
   moving_time?: number;
   total_elevation_gain?: number;
   calories?: number;
-  // Additional fields for RPE, Feeling, CHO
-  rpe?: number;
-  feeling?: number;
-  carbs?: number;
+  icu_rpe?: number;
+  feel?: number;
+  carbs_used?: number;
 }
 
 const WorkoutSummary = () => {
@@ -40,9 +38,9 @@ const WorkoutSummary = () => {
             distance: 8000,
             moving_time: 2400,
             calories: 420,
-            rpe: 7,
-            feeling: 4,
-            carbs: 45
+            icu_rpe: 7,
+            feel: 4,
+            carbs_used: 45
           },
           {
             id: '2',
@@ -51,9 +49,9 @@ const WorkoutSummary = () => {
             type: 'WeightTraining',
             moving_time: 3600,
             calories: 280,
-            rpe: 8,
-            feeling: 3,
-            carbs: 30
+            icu_rpe: 8,
+            feel: 3,
+            carbs_used: 30
           }
         ] as IntervalsActivity[];
       }
@@ -74,12 +72,17 @@ const WorkoutSummary = () => {
       const activities = await response.json();
       console.log('Activities received:', activities);
       
-      // Add mock RPE, Feeling, CHO data since these might not be in the API response
       return activities.map((activity: any) => ({
-        ...activity,
-        rpe: activity.rpe || Math.floor(Math.random() * 5) + 6, // Random RPE 6-10
-        feeling: activity.feeling || Math.floor(Math.random() * 3) + 3, // Random feeling 3-5
-        carbs: activity.carbs || Math.floor(Math.random() * 40) + 20 // Random carbs 20-60g
+        id: activity.id,
+        start_date_local: activity.start_date_local,
+        name: activity.name,
+        type: activity.type,
+        distance: activity.distance,
+        moving_time: activity.moving_time,
+        calories: activity.calories,
+        icu_rpe: activity.icu_rpe,
+        feel: activity.feel,
+        carbs_used: activity.carbs_used
       })) as IntervalsActivity[];
     },
     enabled: true, // Always enabled to show demo data
@@ -124,6 +127,7 @@ const WorkoutSummary = () => {
     switch (type.toLowerCase()) {
       case 'run':
       case 'ride':
+      case 'virtualride':
         return 'High';
       case 'walk':
         return 'Low';
@@ -156,9 +160,9 @@ const WorkoutSummary = () => {
               <Badge className={getIntensityColor(getIntensityFromType(workout.type))}>
                 {getIntensityFromType(workout.type)}
               </Badge>
-              {workout.rpe && (
-                <Badge className={getRPEColor(workout.rpe)}>
-                  RPE {workout.rpe}
+              {workout.icu_rpe && (
+                <Badge className={getRPEColor(workout.icu_rpe)}>
+                  RPE {workout.icu_rpe}
                 </Badge>
               )}
             </div>
@@ -181,18 +185,18 @@ const WorkoutSummary = () => {
                 <span>{formatDistance(workout.distance)}</span>
               </div>
             )}
-            {workout.feeling && (
+            {workout.feel && (
               <div className="flex items-center gap-1">
                 <Smile className="h-4 w-4 text-gray-500" />
                 <span className="flex items-center gap-1">
-                  Ressenti {getFeelingEmoji(workout.feeling)} {workout.feeling}/5
+                  Ressenti {getFeelingEmoji(workout.feel)} {workout.feel}/5
                 </span>
               </div>
             )}
-            {workout.carbs && (
+            {workout.carbs_used && (
               <div className="flex items-center gap-1">
                 <Utensils className="h-4 w-4 text-gray-500" />
-                <span>CHO {workout.carbs}g</span>
+                <span>CHO {workout.carbs_used}g</span>
               </div>
             )}
           </div>
@@ -203,4 +207,3 @@ const WorkoutSummary = () => {
 };
 
 export default WorkoutSummary;
-

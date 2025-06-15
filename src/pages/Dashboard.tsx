@@ -28,10 +28,17 @@ const Dashboard = () => {
     sleep_secs: 28800
   };
 
-  // Better calculations for CTL, ATL, and TSB
-  const ctl = todayMetrics.training_load ? Math.round(todayMetrics.training_load * 1.1) : 72; // Fitness (CTL)
-  const atl = todayMetrics.training_load ? Math.round(todayMetrics.training_load * 0.9) : 58; // Fatigue (ATL)
-  const tsb = ctl - atl; // Forme (TSB)
+  // Use real CTL, ATL, and TSB from API response or fallback values
+  const ctl = Math.round(todayStats?.ctl || 72);
+  const atl = Math.round(todayStats?.atl || 58);
+  const tsb = Math.round(todayStats?.tsb || (ctl - atl));
+
+  // Format sleep duration properly
+  const formatSleepDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    return `${hours}.${minutes.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
@@ -84,7 +91,7 @@ const Dashboard = () => {
           />
           <MetricCard
             title="Sommeil"
-            value={`${todayMetrics.sleep_secs ? Math.round(todayMetrics.sleep_secs / 3600 * 10) / 10 : 8.0}`}
+            value={formatSleepDuration(todayMetrics.sleep_secs || 28800)}
             unit="h"
             icon={Moon}
             color="bg-purple-500"
