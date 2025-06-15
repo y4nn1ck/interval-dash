@@ -2,7 +2,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Moon, Target, TrendingUp, Calendar } from 'lucide-react';
-import StepsChart from '@/components/dashboard/StepsChart';
 import HeartRateChart from '@/components/dashboard/HeartRateChart';
 import SleepChart from '@/components/dashboard/SleepChart';
 import WorkoutSummary from '@/components/dashboard/WorkoutSummary';
@@ -19,14 +18,11 @@ const Dashboard = () => {
 
   // Fallback to sample data if not authenticated or no data
   const todayMetrics = todayStats || {
-    steps: 8743,
     calories: 2240,
     resting_hr: 58,
     training_load: 65,
     sleep_secs: 28800
   };
-
-  const stepsGoal = 10000;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
@@ -45,15 +41,7 @@ const Dashboard = () => {
         )}
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <MetricCard
-            title="Steps Today"
-            value={todayMetrics.steps?.toLocaleString() || '0'}
-            goal={stepsGoal.toLocaleString()}
-            icon={Activity}
-            color="bg-blue-500"
-            progress={todayMetrics.steps ? (todayMetrics.steps / stepsGoal) * 100 : 0}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <MetricCard
             title="Resting Heart Rate"
             value={`${todayMetrics.resting_hr || 58}`}
@@ -64,7 +52,7 @@ const Dashboard = () => {
           />
           <MetricCard
             title="Training Load"
-            value={`${todayMetrics.training_load || 65}`}
+            value={`${todayMetrics.training_load ? todayMetrics.training_load.toFixed(2) : '65.00'}`}
             icon={Target}
             color="bg-green-500"
             trend="+5"
@@ -84,18 +72,6 @@ const Dashboard = () => {
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-blue-500" />
-                Steps This Week
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <StepsChart data={weeklyStats} />
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
                 <Heart className="h-5 w-5 text-red-500" />
                 Heart Rate Zones
               </CardTitle>
@@ -104,10 +80,8 @@ const Dashboard = () => {
               <HeartRateChart />
             </CardContent>
           </Card>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Moon className="h-5 w-5 text-purple-500" />
@@ -118,7 +92,9 @@ const Dashboard = () => {
               <SleepChart />
             </CardContent>
           </Card>
+        </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
