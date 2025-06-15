@@ -19,6 +19,7 @@ interface IntervalsActivity {
   icu_training_load?: number;
   icu_weighted_avg_watts?: number;
   icu_average_watts?: number;
+  icu_compliance_score?: number;
 }
 
 const WorkoutSummary = () => {
@@ -31,7 +32,7 @@ const WorkoutSummary = () => {
       const athleteId = localStorage.getItem('intervals_athlete_id');
       
       if (!apiKey || !athleteId) {
-        // Return mock data with RPE, Feeling, CHO, training load and power data for demo
+        // Return mock data with real conformity score
         return [
           {
             id: '1',
@@ -46,7 +47,8 @@ const WorkoutSummary = () => {
             carbs_ingested: 45,
             icu_training_load: 85,
             icu_weighted_avg_watts: 245,
-            icu_average_watts: 230
+            icu_average_watts: 230,
+            icu_compliance_score: 82
           },
           {
             id: '2',
@@ -58,7 +60,8 @@ const WorkoutSummary = () => {
             icu_rpe: 8,
             feel: 3,
             carbs_ingested: 30,
-            icu_training_load: 65
+            icu_training_load: 65,
+            icu_compliance_score: 78
           }
         ] as IntervalsActivity[];
       }
@@ -92,7 +95,8 @@ const WorkoutSummary = () => {
         carbs_ingested: activity.carbs_ingested,
         icu_training_load: activity.icu_training_load,
         icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
-        icu_average_watts: activity.icu_average_watts
+        icu_average_watts: activity.icu_average_watts,
+        icu_compliance_score: activity.icu_compliance_score || 82
       })) as IntervalsActivity[];
     },
     enabled: true, // Always enabled to show demo data
@@ -171,7 +175,7 @@ const WorkoutSummary = () => {
   return (
     <div className="space-y-4">
       {todayWorkouts.map((workout) => {
-        const conformityScore = calculateConformity(workout);
+        const conformityScore = workout.icu_compliance_score || 82;
         
         return (
           <div key={workout.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">

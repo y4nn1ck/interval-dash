@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { format, subDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
@@ -13,6 +12,11 @@ interface TrainingStressData {
   ctl: number;
   atl: number;
   tsb: number;
+}
+
+interface HydrationData {
+  date: string;
+  hydration: number;
 }
 
 const TrainingStressChart = () => {
@@ -58,6 +62,35 @@ const TrainingStressChart = () => {
     return data;
   };
 
+  const generateMockHydrationData = (period: string): HydrationData[] => {
+    const endDate = new Date();
+    let days = 7;
+    
+    switch (period) {
+      case '7days':
+        days = 7;
+        break;
+      case '1month':
+        days = 30;
+        break;
+    }
+
+    const data: HydrationData[] = [];
+    
+    for (let i = days - 1; i >= 0; i--) {
+      const date = subDays(endDate, i);
+      // Generate realistic hydration data (2-4 liters per day)
+      const hydration = 2.5 + Math.random() * 1.5;
+
+      data.push({
+        date: date.toISOString().split('T')[0],
+        hydration: Math.round(hydration * 10) / 10
+      });
+    }
+    
+    return data;
+  };
+
   const { data: chartData = [] } = useQuery({
     queryKey: ['training-stress-chart', selectedPeriod],
     queryFn: async () => {
@@ -84,6 +117,14 @@ const TrainingStressChart = () => {
       }
       
       return generateMockData(selectedPeriod);
+    },
+  });
+
+  const { data: hydrationData = [] } = useQuery({
+    queryKey: ['hydration-chart', selectedPeriod],
+    queryFn: async () => {
+      // For now, return mock hydration data
+      return generateMockHydrationData(selectedPeriod);
     },
   });
 
@@ -114,9 +155,17 @@ const TrainingStressChart = () => {
     },
   };
 
+  const hydrationConfig = {
+    hydration: {
+      label: 'Hydratation (L)',
+      color: '#06b6d4',
+    },
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">Évolution CTL, ATL et TSB</h3>
         <div className="flex items-center space-x-3">
           <span className={`text-sm font-medium ${!isMonthView ? 'text-gray-900' : 'text-gray-500'}`}>
             7 jours
@@ -175,6 +224,40 @@ const TrainingStressChart = () => {
           </LineChart>
         </ResponsiveContainer>
       </ChartContainer>
+
+      {/* Hydration Bar Chart */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">Hydratation quotidienne</h3>
+        <ChartContainer config={hydrationConfig} className="h-[200px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={hydrationData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis 
+                dataKey="date" 
+                tickFormatter={formatXAxisLabel}
+                className="text-muted-foreground"
+              />
+              <YAxis 
+                className="text-muted-foreground"
+                domain={[0, 5]}
+              />
+              <ChartTooltip 
+                content={<ChartTooltipContent />}
+                labelFormatter={(value) => {
+                  const date = parseISO(value as string);
+                  return format(date, 'dd MMMM yyyy', { locale: fr });
+                }}
+              />
+              <Bar 
+                dataKey="hydration" 
+                fill="var(--color-hydration)" 
+                name="Hydratation (L)"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </div>
     </div>
   );
 };
