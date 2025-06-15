@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap, TrendingUp as TrendUp } from 'lucide-react';
@@ -22,19 +23,19 @@ const Dashboard = () => {
   };
 
   // Calculate fatigue (typically training load - fitness, but we'll use a simple calculation)
-  const fatigue = todayMetrics.training_load ? (todayMetrics.training_load * 0.8).toFixed(2) : '52.00';
+  const fatigue = todayMetrics.training_load ? Math.round(todayMetrics.training_load * 0.8).toString() : '52';
   
   // Calculate TSB (Training Stress Balance) - typically Fitness - Fatigue
   // For demo purposes, we'll use a simple calculation based on training load
-  const fitness = todayMetrics.training_load ? (todayMetrics.training_load * 1.2).toFixed(2) : '78.00';
-  const tsb = (parseFloat(fitness) - parseFloat(fatigue)).toFixed(2);
+  const fitness = todayMetrics.training_load ? Math.round(todayMetrics.training_load * 1.2).toString() : '78';
+  const tsb = (parseInt(fitness) - parseInt(fatigue)).toString();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Intervals.icu Dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Tableau de Bord Intervals.icu</h1>
           <p className="text-gray-600">Track your training and wellness metrics</p>
         </div>
 
@@ -48,7 +49,7 @@ const Dashboard = () => {
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <MetricCard
-            title="Resting Heart Rate"
+            title="FC Repos"
             value={`${todayMetrics.resting_hr || 58}`}
             unit="bpm"
             icon={Heart}
@@ -56,14 +57,14 @@ const Dashboard = () => {
             trend="+2"
           />
           <MetricCard
-            title="Training Load"
-            value={`${todayMetrics.training_load ? todayMetrics.training_load.toFixed(2) : '65.00'}`}
+            title="Fitness (CTL)"
+            value={`${todayMetrics.training_load ? Math.round(todayMetrics.training_load) : '65'}`}
             icon={Target}
             color="bg-green-500"
             trend="+5"
           />
           <MetricCard
-            title="Fatigue"
+            title="Fatigue ATL"
             value={fatigue}
             icon={Zap}
             color="bg-orange-500"
@@ -77,7 +78,7 @@ const Dashboard = () => {
             trend="+2"
           />
           <MetricCard
-            title="Sleep Duration"
+            title="Sommeil"
             value={`${todayMetrics.sleep_secs ? Math.round(todayMetrics.sleep_secs / 3600 * 10) / 10 : 8.0}`}
             unit="h"
             icon={Moon}
