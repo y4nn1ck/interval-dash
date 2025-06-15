@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Target, MapPin, Calendar } from 'lucide-react';
+import { Clock, Target, MapPin, Calendar, Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 interface PlannedWorkout {
@@ -12,6 +13,7 @@ interface PlannedWorkout {
   distance?: number;
   description?: string;
   intensity?: string;
+  load?: number;
 }
 
 const PlannedWorkoutCard = () => {
@@ -34,7 +36,8 @@ const PlannedWorkoutCard = () => {
             duration: 3600,
             distance: 10000,
             description: '5x1000m @ seuil',
-            intensity: 'High'
+            intensity: 'High',
+            load: 85
           },
           {
             id: '2',
@@ -44,7 +47,8 @@ const PlannedWorkoutCard = () => {
             duration: 2400,
             distance: 5000,
             description: 'Course facile 40min',
-            intensity: 'Low'
+            intensity: 'Low',
+            load: 35
           }
         ] as PlannedWorkout[];
       }
@@ -85,9 +89,9 @@ const PlannedWorkoutCard = () => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     if (hours > 0) {
-      return `${hours}h${minutes > 0 ? ` ${minutes}m` : ''}`;
+      return `${hours}h${minutes > 0 ? `${minutes.toString().padStart(2, '0')}` : '00'}`;
     }
-    return `${minutes}m`;
+    return `${minutes}min`;
   };
 
   const formatDistance = (meters?: number) => {
@@ -134,6 +138,12 @@ const PlannedWorkoutCard = () => {
               <Target className="h-4 w-4 text-purple-500" />
               <span>{workout.type}</span>
             </div>
+            {workout.load && (
+              <div className="flex items-center gap-1">
+                <Zap className="h-4 w-4 text-purple-500" />
+                <span>Load: {workout.load}</span>
+              </div>
+            )}
           </div>
         </div>
       ))}
