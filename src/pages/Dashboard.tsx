@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Activity, Moon, Target, TrendingUp, Calendar } from 'lucide-react';
+import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap } from 'lucide-react';
 import WorkoutSummary from '@/components/dashboard/WorkoutSummary';
 import MetricCard from '@/components/dashboard/MetricCard';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
@@ -22,6 +22,9 @@ const Dashboard = () => {
     sleep_secs: 28800
   };
 
+  // Calculate fatigue (typically training load - fitness, but we'll use a simple calculation)
+  const fatigue = todayMetrics.training_load ? (todayMetrics.training_load * 0.8).toFixed(2) : '52.00';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
@@ -39,7 +42,7 @@ const Dashboard = () => {
         )}
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <MetricCard
             title="Resting Heart Rate"
             value={`${todayMetrics.resting_hr || 58}`}
@@ -54,6 +57,13 @@ const Dashboard = () => {
             icon={Target}
             color="bg-green-500"
             trend="+5"
+          />
+          <MetricCard
+            title="Fatigue"
+            value={fatigue}
+            icon={Zap}
+            color="bg-orange-500"
+            trend="-3"
           />
           <MetricCard
             title="Sleep Duration"
