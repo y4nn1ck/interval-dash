@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { subDays } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
@@ -16,7 +15,7 @@ interface TrainingStressData {
 
 interface HydrationData {
   date: string;
-  hydration: number;
+  hydration: number | null;
 }
 
 const TrainingStressChart = () => {
@@ -62,29 +61,19 @@ const TrainingStressChart = () => {
     return data;
   };
 
-  const generateMockHydrationData = (period: string): HydrationData[] => {
+  const generateMockHydrationData = (): HydrationData[] => {
     const endDate = new Date();
-    let days = 7;
-    
-    switch (period) {
-      case '7days':
-        days = 7;
-        break;
-      case '1month':
-        days = 30;
-        break;
-    }
-
+    const days = 7; // Always 7 days for hydration
     const data: HydrationData[] = [];
     
     for (let i = days - 1; i >= 0; i--) {
       const date = subDays(endDate, i);
-      // Generate realistic hydration data (2-4 liters per day)
-      const hydration = 2.5 + Math.random() * 1.5;
+      // Generate realistic hydration data (1-5 scale)
+      const hydration = Math.floor(Math.random() * 5) + 1;
 
       data.push({
         date: date.toISOString().split('T')[0],
-        hydration: Math.round(hydration * 10) / 10
+        hydration: hydration
       });
     }
     
@@ -121,10 +110,10 @@ const TrainingStressChart = () => {
   });
 
   const { data: hydrationData = [] } = useQuery({
-    queryKey: ['hydration-chart', selectedPeriod],
+    queryKey: ['hydration-chart'],
     queryFn: async () => {
       // For now, return mock hydration data
-      return generateMockHydrationData(selectedPeriod);
+      return generateMockHydrationData();
     },
   });
 
@@ -141,8 +130,7 @@ const TrainingStressChart = () => {
       />
 
       <HydrationChart 
-        data={hydrationData} 
-        selectedPeriod={selectedPeriod} 
+        data={hydrationData}
       />
     </div>
   );
