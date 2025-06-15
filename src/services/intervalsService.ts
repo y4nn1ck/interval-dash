@@ -1,4 +1,3 @@
-
 export interface IntervalsActivity {
   id: string;
   start_date_local: string;
@@ -35,19 +34,32 @@ class IntervalsService {
   }
 
   async saveApiKey(apiKey: string): Promise<void> {
+    console.log('Testing API key with Intervals.icu...');
+    
     // Test the API key by making a request to get athlete info
+    const authHeader = `Basic ${btoa(`${apiKey}:`)}`;
+    console.log('Authorization header created (first 20 chars):', authHeader.substring(0, 20) + '...');
+    
     const testResponse = await fetch(`${this.baseUrl}/athlete/i`, {
       method: 'GET',
       headers: {
-        'Authorization': `Basic ${btoa(`${apiKey}:`)}`
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
       }
     });
 
+    console.log('Response status:', testResponse.status);
+    console.log('Response headers:', Object.fromEntries(testResponse.headers.entries()));
+
     if (!testResponse.ok) {
-      throw new Error('Invalid API key');
+      const errorText = await testResponse.text();
+      console.error('API Error Response:', errorText);
+      throw new Error(`Invalid API key - Status: ${testResponse.status}, Response: ${errorText}`);
     }
 
     const athleteData = await testResponse.json();
+    console.log('Athlete data received:', athleteData);
+    
     localStorage.setItem('intervals_api_key', apiKey);
     localStorage.setItem('intervals_athlete_id', athleteData.id);
     localStorage.setItem('intervals_athlete_name', athleteData.name || 'Unknown');
