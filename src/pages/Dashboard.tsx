@@ -2,8 +2,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Moon, Target, TrendingUp, Calendar } from 'lucide-react';
-import HeartRateChart from '@/components/dashboard/HeartRateChart';
-import SleepChart from '@/components/dashboard/SleepChart';
 import WorkoutSummary from '@/components/dashboard/WorkoutSummary';
 import MetricCard from '@/components/dashboard/MetricCard';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
@@ -67,39 +65,13 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Heart className="h-5 w-5 text-red-500" />
-                Heart Rate Zones
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <HeartRateChart />
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Moon className="h-5 w-5 text-purple-500" />
-                Sleep Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SleepChart />
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Today's Workouts */}
+        <div className="grid grid-cols-1 gap-6">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-green-500" />
-                Recent Workouts
+                Today's Workouts
               </CardTitle>
             </CardHeader>
             <CardContent>
