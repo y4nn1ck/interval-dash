@@ -12,6 +12,7 @@ interface PlannedWorkout {
   distance?: number;
   description?: string;
   load?: number;
+  moving_time?: number;
 }
 
 const TomorrowWorkoutCard = () => {
@@ -33,7 +34,7 @@ const TomorrowWorkoutCard = () => {
             name: 'Sortie Longue',
             type: 'Long Run',
             planned_date: tomorrowStr,
-            duration: 7200,
+            moving_time: 7200,
             distance: 20000,
             description: 'Sortie longue en endurance',
             load: 120
@@ -67,7 +68,7 @@ const TomorrowWorkoutCard = () => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     if (hours > 0) {
-      return `${hours}h${minutes > 0 ? `${minutes.toString().padStart(2, '0')}` : '00'}`;
+      return `${hours}h${minutes.toString().padStart(2, '0')}`;
     }
     return `${minutes}min`;
   };
@@ -101,7 +102,7 @@ const TomorrowWorkoutCard = () => {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4 text-blue-500" />
-              <span>{formatDuration(workout.duration)}</span>
+              <span>{formatDuration(workout.moving_time)}</span>
             </div>
             {workout.distance && (
               <div className="flex items-center gap-1">

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Clock, Target, MapPin, Calendar, Zap } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -11,6 +12,7 @@ interface PlannedWorkout {
   distance?: number;
   description?: string;
   load?: number;
+  moving_time?: number;
 }
 
 const PlannedWorkoutCard = () => {
@@ -30,7 +32,7 @@ const PlannedWorkoutCard = () => {
             name: 'Entraînement Intervalles',
             type: 'Run',
             planned_date: today,
-            duration: 3600,
+            moving_time: 3600,
             distance: 10000,
             description: '5x1000m @ seuil',
             load: 85
@@ -40,7 +42,7 @@ const PlannedWorkoutCard = () => {
             name: 'Récupération Active',
             type: 'Easy Run',
             planned_date: today,
-            duration: 2400,
+            moving_time: 2400,
             distance: 5000,
             description: 'Course facile 40min',
             load: 35
@@ -50,7 +52,6 @@ const PlannedWorkoutCard = () => {
 
       console.log(`Fetching planned workouts for ${today} from Intervals.icu...`);
       
-      // Note: This endpoint might not exist in the actual API, but we'll keep it for structure
       const response = await fetch(`https://intervals.icu/api/v1/athlete/${athleteId}/events?oldest=${today}&newest=${today}`, {
         headers: {
           'Authorization': `Basic ${btoa(`API_KEY:${apiKey}`)}`
@@ -67,7 +68,7 @@ const PlannedWorkoutCard = () => {
       
       return events.filter((event: any) => event.category === 'WORKOUT') as PlannedWorkout[];
     },
-    enabled: true, // Always enabled to show demo data
+    enabled: true,
   });
 
   const formatDuration = (seconds?: number) => {
@@ -75,7 +76,7 @@ const PlannedWorkoutCard = () => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     if (hours > 0) {
-      return `${hours}h${minutes > 0 ? `${minutes.toString().padStart(2, '0')}` : '00'}`;
+      return `${hours}h${minutes.toString().padStart(2, '0')}`;
     }
     return `${minutes}min`;
   };
@@ -109,7 +110,7 @@ const PlannedWorkoutCard = () => {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4 text-purple-500" />
-              <span>{formatDuration(workout.duration)}</span>
+              <span>{formatDuration(workout.moving_time)}</span>
             </div>
             {workout.distance && (
               <div className="flex items-center gap-1">

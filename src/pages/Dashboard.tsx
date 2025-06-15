@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap, TrendingUp as TrendUp, CalendarDays, CalendarClock } from 'lucide-react';
@@ -114,7 +115,7 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Planned Workouts and Today's Workouts */}
+        {/* Planned Workouts and Today's Workouts - Reordered */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
@@ -131,24 +132,24 @@ const Dashboard = () => {
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CalendarClock className="h-5 w-5 text-blue-500" />
-                Demain
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TomorrowWorkoutCard />
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-green-500" />
                 Séance(s) du jour
               </CardTitle>
             </CardHeader>
             <CardContent>
               <WorkoutSummary />
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarClock className="h-5 w-5 text-blue-500" />
+                Demain
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TomorrowWorkoutCard />
             </CardContent>
           </Card>
         </div>
