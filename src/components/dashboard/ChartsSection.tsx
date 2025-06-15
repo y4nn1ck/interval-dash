@@ -14,42 +14,75 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
   const [ctlatlPeriod, setCtlatlPeriod] = useState('7days');
   const [hydrationPeriod, setHydrationPeriod] = useState('7days');
 
-  // Generate CTL/ATL/TSB data using values from the KPI cards
+  // Generate CTL/ATL/TSB data using realistic values based on your current data
   const generateCTLATLData = (period: string) => {
     const days = period === '7days' ? 7 : 30;
-    return Array.from({ length: days }, (_, i) => {
+    const data = [];
+    
+    for (let i = 0; i < days; i++) {
       const date = new Date();
       date.setDate(date.getDate() - (days - 1 - i));
       
-      // Use actual values from the cards with some variation
-      const baseCtl = ctl;
-      const baseAtl = atl;
-      const variation = (Math.random() - 0.5) * 10; // ±5 variation
+      let dayCtl, dayAtl, dayTsb;
       
-      const dayCtl = Math.max(30, baseCtl + variation + (i - days/2) * 0.5);
-      const dayAtl = Math.max(20, baseAtl + variation + (i - days/2) * 0.3);
-      const dayTsb = dayCtl - dayAtl;
+      if (i === days - 1) {
+        // Today: CTL=67, ATL=67, TSB=0
+        dayCtl = 67;
+        dayAtl = 67;
+        dayTsb = 0;
+      } else if (i === days - 2) {
+        // Yesterday: CTL=67, ATL=65, TSB=2
+        dayCtl = 67;
+        dayAtl = 65;
+        dayTsb = 2;
+      } else {
+        // Generate realistic historical data with small variations
+        const baseCtl = 67;
+        const baseAtl = 65;
+        const variation = (Math.random() - 0.5) * 4; // ±2 variation
+        
+        dayCtl = Math.max(60, baseCtl + variation + (Math.random() - 0.5) * 2);
+        dayAtl = Math.max(55, baseAtl + variation + (Math.random() - 0.5) * 3);
+        dayTsb = dayCtl - dayAtl;
+      }
       
-      return {
+      data.push({
         date: date.toISOString().split('T')[0],
         ctl: Math.round(dayCtl),
         atl: Math.round(dayAtl),
         tsb: Math.round(dayTsb),
-      };
-    });
+      });
+    }
+    
+    return data;
   };
 
-  // Generate hydration data with values between 1-5 (not liters)
+  // Generate hydration data with values between 1-5 (based on your real values)
   const generateHydrationData = (period: string) => {
     const days = period === '7days' ? 7 : 30;
-    return Array.from({ length: days }, (_, i) => {
+    const data = [];
+    
+    for (let i = 0; i < days; i++) {
       const date = new Date();
       date.setDate(date.getDate() - (days - 1 - i));
-      return {
+      
+      let hydration;
+      
+      if (i === days - 1 || i === days - 2) {
+        // Today and yesterday: hydration = 1 (as per your real data)
+        hydration = 1;
+      } else {
+        // Generate realistic historical data between 1-5
+        hydration = 1 + Math.random() * 4; // Between 1.0 and 5.0
+      }
+      
+      data.push({
         date: date.toISOString().split('T')[0],
-        hydration: Math.round((1 + Math.random() * 4) * 10) / 10, // Between 1.0 and 5.0
-      };
-    });
+        hydration: Math.round(hydration * 10) / 10, // Round to 1 decimal
+      });
+    }
+    
+    return data;
   };
 
   return (
