@@ -138,6 +138,12 @@ const TomorrowWorkoutCard = () => {
                 <ActivityIcon className={`h-5 w-5 ${colors.icon}`} />
                 <h3 className="font-semibold text-gray-900">{workout.name}</h3>
               </div>
+              {workout.load && (
+                <div className="flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
+                  <Zap className={`h-3 w-3 ${colors.icon}`} />
+                  <span className="text-xs font-medium">{workout.load}</span>
+                </div>
+              )}
             </div>
             
             {workout.description && (
@@ -159,12 +165,6 @@ const TomorrowWorkoutCard = () => {
                 <Target className={`h-4 w-4 ${colors.icon}`} />
                 <span>{workout.type}</span>
               </div>
-              {workout.load && (
-                <div className="flex items-center gap-1">
-                  <Zap className={`h-4 w-4 ${colors.icon}`} />
-                  <span>Load: {workout.load}</span>
-                </div>
-              )}
             </div>
           </div>
         );
