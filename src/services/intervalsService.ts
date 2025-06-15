@@ -39,7 +39,8 @@ class IntervalsService {
     console.log('Testing API key with Intervals.icu...');
     
     // Test the API key by making a request to get specific athlete info
-    const authHeader = `Basic ${btoa(`${credentials.apiKey}:`)}`;
+    // Use "API_KEY" as username and the actual API key as password
+    const authHeader = `Basic ${btoa(`API_KEY:${credentials.apiKey}`)}`;
     console.log('Authorization header created (first 20 chars):', authHeader.substring(0, 20) + '...');
     console.log('Testing with athlete ID:', credentials.athleteId);
     
@@ -76,7 +77,7 @@ class IntervalsService {
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       headers: {
-        'Authorization': `Basic ${btoa(`${apiKey}:`)}`
+        'Authorization': `Basic ${btoa(`API_KEY:${apiKey}`)}`
       }
     });
 
