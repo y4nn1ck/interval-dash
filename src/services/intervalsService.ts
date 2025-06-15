@@ -1,3 +1,4 @@
+
 export interface IntervalsActivity {
   id: string;
   start_date_local: string;
@@ -36,11 +37,11 @@ class IntervalsService {
   async saveApiKey(apiKey: string): Promise<void> {
     console.log('Testing API key with Intervals.icu...');
     
-    // Test the API key by making a request to get athlete info
+    // Test the API key by making a request to get current athlete info
     const authHeader = `Basic ${btoa(`${apiKey}:`)}`;
     console.log('Authorization header created (first 20 chars):', authHeader.substring(0, 20) + '...');
     
-    const testResponse = await fetch(`${this.baseUrl}/athlete/i`, {
+    const testResponse = await fetch(`${this.baseUrl}/athlete`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
