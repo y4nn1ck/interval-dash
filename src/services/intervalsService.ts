@@ -39,7 +39,7 @@ class IntervalsService {
     const testResponse = await fetch(`${this.baseUrl}/athlete/i`, {
       method: 'GET',
       headers: {
-        'Authorization': `Basic ${btoa(`API_KEY:${apiKey}`)}`
+        'Authorization': `Basic ${btoa(`${apiKey}:`)}`
       }
     });
 
@@ -61,7 +61,7 @@ class IntervalsService {
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       headers: {
-        'Authorization': `Basic ${btoa(`API_KEY:${apiKey}`)}`
+        'Authorization': `Basic ${btoa(`${apiKey}:`)}`
       }
     });
 
