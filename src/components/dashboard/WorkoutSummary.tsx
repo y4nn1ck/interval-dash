@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Zap, MapPin, Heart, Smile, Utensils, Activity } from 'lucide-react';
@@ -15,7 +16,7 @@ interface IntervalsActivity {
   calories?: number;
   icu_rpe?: number;
   feel?: number;
-  carbs_used?: number;
+  choing?: number;
   icu_training_load?: number;
   icu_weighted_avg_watts?: number;
   icu_average_watts?: number;
@@ -43,7 +44,7 @@ const WorkoutSummary = () => {
             calories: 420,
             icu_rpe: 7,
             feel: 4,
-            carbs_used: 45,
+            choing: 45,
             icu_training_load: 85,
             icu_weighted_avg_watts: 245,
             icu_average_watts: 230
@@ -57,7 +58,7 @@ const WorkoutSummary = () => {
             calories: 280,
             icu_rpe: 8,
             feel: 3,
-            carbs_used: 30,
+            choing: 30,
             icu_training_load: 65
           }
         ] as IntervalsActivity[];
@@ -89,7 +90,7 @@ const WorkoutSummary = () => {
         calories: activity.calories,
         icu_rpe: activity.icu_rpe,
         feel: activity.feel,
-        carbs_used: activity.carbs_used,
+        choing: activity.choing,
         icu_training_load: activity.icu_training_load,
         icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
         icu_average_watts: activity.icu_average_watts
@@ -171,16 +172,16 @@ const WorkoutSummary = () => {
           <div className="flex justify-between items-start mb-3">
             <h3 className="font-semibold text-gray-900">{workout.name || workout.type}</h3>
             <div className="flex gap-2">
+              {workout.icu_rpe && (
+                <Badge className={getRPEColor(workout.icu_rpe)}>
+                  RPE {workout.icu_rpe}
+                </Badge>
+              )}
               {workout.icu_training_load && (
                 <div className="flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
                   <Zap className="h-3 w-3 text-blue-500" />
                   <span className="text-xs font-medium">{workout.icu_training_load}</span>
                 </div>
-              )}
-              {workout.icu_rpe && (
-                <Badge className={getRPEColor(workout.icu_rpe)}>
-                  RPE {workout.icu_rpe}
-                </Badge>
               )}
             </div>
           </div>
@@ -228,10 +229,10 @@ const WorkoutSummary = () => {
                 </span>
               </div>
             )}
-            {workout.carbs_used && (
+            {workout.choing && (
               <div className="flex items-center gap-1">
                 <Utensils className="h-4 w-4 text-gray-500" />
-                <span>CHO {workout.carbs_used}g</span>
+                <span>CHO {workout.choing}g</span>
               </div>
             )}
           </div>
@@ -242,3 +243,4 @@ const WorkoutSummary = () => {
 };
 
 export default WorkoutSummary;
+
