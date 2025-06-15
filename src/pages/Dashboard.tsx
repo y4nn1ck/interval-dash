@@ -121,7 +121,7 @@ const Dashboard = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CalendarDays className="h-5 w-5 text-purple-500" />
-                Séance(s) planifiée(s)
+                Prévu Aujourd'hui
               </CardTitle>
             </CardHeader>
             <CardContent>
