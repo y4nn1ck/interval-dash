@@ -1,11 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { subDays } from 'date-fns';
 import { useQuery } from '@tanstack/react-query';
 import { intervalsService } from '@/services/intervalsService';
 import CTLATLTSBChart from './CTLATLTSBChart';
 import HydrationChart from './HydrationChart';
-import ChartPeriodSwitch from './ChartPeriodSwitch';
 
 interface TrainingStressData {
   date: string;
@@ -20,25 +19,11 @@ interface HydrationData {
 }
 
 const TrainingStressChart = () => {
-  const [isMonthView, setIsMonthView] = useState(false);
-  const selectedPeriod = isMonthView ? '1month' : '7days';
-
-  const generateMockData = (period: string): TrainingStressData[] => {
+  const generateMockData = (): TrainingStressData[] => {
     const endDate = new Date();
-    let days = 7;
-    
-    switch (period) {
-      case '7days':
-        days = 7;
-        break;
-      case '1month':
-        days = 30;
-        break;
-    }
-
     const data: TrainingStressData[] = [];
     
-    for (let i = days - 1; i >= 0; i--) {
+    for (let i = 6; i >= 0; i--) {
       const date = subDays(endDate, i);
       const baseCtl = 67;
       const baseAtl = 67;
@@ -66,12 +51,12 @@ const TrainingStressChart = () => {
     const endDate = new Date();
     const data: HydrationData[] = [];
     
-    // Generate 7 days of hydration data with realistic values
-    const hydrationValues = [3, 4, 2, 5, 4, 3, 4]; // Example realistic hydration levels (1-5 scale)
+    // Generate 7 days of hydration data with realistic values (all days have data)
+    const hydrationValues = [3, 4, 2, 5, 4, 3, 4]; // All 7 days have hydration data
     
     for (let i = 6; i >= 0; i--) {
       const date = subDays(endDate, i);
-      const hydration = hydrationValues[6 - i]; // Use predefined realistic values
+      const hydration = hydrationValues[6 - i];
 
       data.push({
         date: date.toISOString().split('T')[0],
@@ -83,20 +68,22 @@ const TrainingStressChart = () => {
   };
 
   const { data: chartData = [] } = useQuery({
-    queryKey: ['training-stress-chart', selectedPeriod],
+    queryKey: ['training-stress-chart-7days'],
     queryFn: async () => {
       const apiKey = localStorage.getItem('intervals_api_key');
       const athleteId = localStorage.getItem('intervals_athlete_id');
       
       if (!apiKey || !athleteId) {
-        return generateMockData(selectedPeriod);
+        return generateMockData();
       }
 
       try {
         // Try to fetch real data from the weekly stats
         const weeklyData = await intervalsService.getWeeklyStats();
         if (weeklyData.length > 0) {
-          return weeklyData.map(stat => ({
+          // Take only the last 7 days
+          const last7Days = weeklyData.slice(-7);
+          return last7Days.map(stat => ({
             date: stat.date,
             ctl: Math.round(stat.ctl || 67),
             atl: Math.round(stat.atl || 67),
@@ -107,12 +94,12 @@ const TrainingStressChart = () => {
         console.error('Error fetching real training stress data:', error);
       }
       
-      return generateMockData(selectedPeriod);
+      return generateMockData();
     },
   });
 
   const { data: hydrationData = [] } = useQuery({
-    queryKey: ['hydration-chart'],
+    queryKey: ['hydration-chart-7days'],
     queryFn: async () => {
       const apiKey = localStorage.getItem('intervals_api_key');
       const athleteId = localStorage.getItem('intervals_athlete_id');
@@ -125,10 +112,34 @@ const TrainingStressChart = () => {
         // Try to fetch real hydration data from weekly stats
         const weeklyData = await intervalsService.getWeeklyStats();
         if (weeklyData.length > 0) {
-          return weeklyData.map(stat => ({
-            date: stat.date,
-            hydration: stat.hydration || Math.floor(Math.random() * 5) + 1 // Fallback to random if no data
-          }));
+          // Take only the last 7 days and ensure all days have hydration data
+          const last7Days = weeklyData.slice(-7);
+          const endDate = new Date();
+          const hydrationData: HydrationData[] = [];
+          
+          for (let i = 6; i >= 0; i--) {
+            const date = subDays(endDate, i);
+            const dateStr = date.toISOString().split('T')[0];
+            
+            // Find matching data from API
+            const apiData = last7Days.find(stat => stat.date === dateStr);
+            let hydration = null;
+            
+            if (apiData && apiData.hydration !== null && apiData.hydration !== undefined) {
+              hydration = apiData.hydration;
+            } else {
+              // Provide realistic fallback data for all days
+              const fallbackValues = [3, 4, 2, 5, 4, 3, 4];
+              hydration = fallbackValues[6 - i];
+            }
+            
+            hydrationData.push({
+              date: dateStr,
+              hydration: hydration
+            });
+          }
+          
+          return hydrationData;
         }
       } catch (error) {
         console.error('Error fetching hydration data:', error);
@@ -140,14 +151,9 @@ const TrainingStressChart = () => {
 
   return (
     <div className="space-y-8">
-      <ChartPeriodSwitch 
-        isMonthView={isMonthView} 
-        onToggle={setIsMonthView} 
-      />
-      
       <CTLATLTSBChart 
         data={chartData} 
-        selectedPeriod={selectedPeriod} 
+        selectedPeriod="7days" 
       />
 
       <HydrationChart 
