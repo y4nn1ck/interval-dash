@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap } from 'lucide-react';
+import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap, TrendingUp as TrendUp } from 'lucide-react';
 import WorkoutSummary from '@/components/dashboard/WorkoutSummary';
 import MetricCard from '@/components/dashboard/MetricCard';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
@@ -24,6 +24,11 @@ const Dashboard = () => {
 
   // Calculate fatigue (typically training load - fitness, but we'll use a simple calculation)
   const fatigue = todayMetrics.training_load ? (todayMetrics.training_load * 0.8).toFixed(2) : '52.00';
+  
+  // Calculate TSB (Training Stress Balance) - typically Fitness - Fatigue
+  // For demo purposes, we'll use a simple calculation based on training load
+  const fitness = todayMetrics.training_load ? (todayMetrics.training_load * 1.2).toFixed(2) : '78.00';
+  const tsb = (parseFloat(fitness) - parseFloat(fatigue)).toFixed(2);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
@@ -42,7 +47,7 @@ const Dashboard = () => {
         )}
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <MetricCard
             title="Resting Heart Rate"
             value={`${todayMetrics.resting_hr || 58}`}
@@ -64,6 +69,13 @@ const Dashboard = () => {
             icon={Zap}
             color="bg-orange-500"
             trend="-3"
+          />
+          <MetricCard
+            title="TSB"
+            value={tsb}
+            icon={TrendUp}
+            color="bg-blue-500"
+            trend="+2"
           />
           <MetricCard
             title="Sleep Duration"
