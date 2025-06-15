@@ -1,17 +1,17 @@
 
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { GarminDailyStats } from '@/services/garminService';
+import { IntervalsDailyStats } from '@/services/intervalsService';
 
 interface StepsChartProps {
-  data?: GarminDailyStats[];
+  data?: IntervalsDailyStats[];
 }
 
 const StepsChart = ({ data }: StepsChartProps) => {
   // Fallback to sample data if no real data provided
   const chartData = data ? data.map((item, index) => ({
     day: new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }),
-    steps: item.steps,
+    steps: item.steps || 0,
     goal: 10000
   })) : [
     { day: 'Mon', steps: 8543, goal: 10000 },
