@@ -84,7 +84,10 @@ const PlannedWorkoutCard = () => {
     if (!seconds) return 'N/A';
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    if (hours > 0) {
+      return `${hours}h${minutes > 0 ? ` ${minutes}m` : ''}`;
+    }
+    return `${minutes}m`;
   };
 
   const formatDistance = (meters?: number) => {

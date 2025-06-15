@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap, TrendingUp as TrendUp, CalendarDays } from 'lucide-react';
@@ -76,7 +75,7 @@ const Dashboard = () => {
             trend="+5"
           />
           <MetricCard
-            title="Fatigue ATL"
+            title="Fatigue (ATL)"
             value={`${atl}`}
             icon={Zap}
             color="bg-orange-500"
@@ -114,20 +113,8 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Today's Workouts and Planned Workouts */}
+        {/* Planned Workouts and Today's Workouts - SWITCHED ORDER */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-green-500" />
-                Séance(s) du jour
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <WorkoutSummary />
-            </CardContent>
-          </Card>
-
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -137,6 +124,18 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <PlannedWorkoutCard />
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-green-500" />
+                Séance(s) du jour
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WorkoutSummary />
             </CardContent>
           </Card>
         </div>
