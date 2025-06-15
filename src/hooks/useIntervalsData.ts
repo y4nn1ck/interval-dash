@@ -13,7 +13,7 @@ export const useIntervalsAuth = () => {
   });
 
   const saveApiKeyMutation = useMutation({
-    mutationFn: (apiKey: string) => intervalsService.saveApiKey(apiKey),
+    mutationFn: (credentials: { apiKey: string; athleteId: string }) => intervalsService.saveApiKey(credentials),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['intervals-auth'] });
       toast({

@@ -4,17 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Activity, RefreshCw, CheckCircle, Key } from 'lucide-react';
+import { Activity, RefreshCw, CheckCircle, Key, User } from 'lucide-react';
 import { useIntervalsAuth } from '@/hooks/useIntervalsData';
 
 const IntervalsAuth = () => {
   const [apiKey, setApiKey] = useState('');
+  const [athleteId, setAthleteId] = useState('');
   const { isAuthenticated, isLoading, saveApiKey, syncData, isSaving, isSyncing } = useIntervalsAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (apiKey.trim()) {
-      saveApiKey(apiKey.trim());
+    if (apiKey.trim() && athleteId.trim()) {
+      saveApiKey({ apiKey: apiKey.trim(), athleteId: athleteId.trim() });
     }
   };
 
@@ -46,12 +47,12 @@ const IntervalsAuth = () => {
           </p>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800 mb-2">
-              <strong>How to get your API key:</strong>
+              <strong>How to get your credentials:</strong>
             </p>
             <ol className="text-sm text-blue-700 space-y-1 list-decimal list-inside">
               <li>Go to <a href="https://intervals.icu/settings" target="_blank" rel="noopener noreferrer" className="underline">intervals.icu/settings</a></li>
-              <li>Scroll down to "Developer" section</li>
-              <li>Copy your API key</li>
+              <li>Scroll down to "Developer" section and copy your API key</li>
+              <li>Your Athlete ID is visible in your profile URL (e.g., intervals.icu/athletes/12345)</li>
             </ol>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -66,10 +67,21 @@ const IntervalsAuth = () => {
                 required
               />
             </div>
+            <div>
+              <Label htmlFor="athleteId">Athlete ID</Label>
+              <Input
+                id="athleteId"
+                type="text"
+                placeholder="Enter your Athlete ID (e.g., 12345)"
+                value={athleteId}
+                onChange={(e) => setAthleteId(e.target.value)}
+                required
+              />
+            </div>
             <Button 
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700"
-              disabled={isSaving || !apiKey.trim()}
+              disabled={isSaving || !apiKey.trim() || !athleteId.trim()}
             >
               {isSaving ? (
                 <>
@@ -101,6 +113,10 @@ const IntervalsAuth = () => {
         <p className="text-gray-600">
           Your Intervals.icu account is connected and syncing data.
         </p>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <User className="h-4 w-4" />
+          <span>Athlete ID: {localStorage.getItem('intervals_athlete_id')}</span>
+        </div>
         <Button 
           onClick={() => syncData()}
           variant="outline"

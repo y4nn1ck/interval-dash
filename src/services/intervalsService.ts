@@ -27,21 +27,23 @@ class IntervalsService {
   async checkAuth(): Promise<boolean> {
     try {
       const apiKey = localStorage.getItem('intervals_api_key');
-      return !!apiKey;
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      return !!(apiKey && athleteId);
     } catch (error) {
       console.error('Error checking Intervals.icu auth:', error);
       return false;
     }
   }
 
-  async saveApiKey(apiKey: string): Promise<void> {
+  async saveApiKey(credentials: { apiKey: string; athleteId: string }): Promise<void> {
     console.log('Testing API key with Intervals.icu...');
     
-    // Test the API key by making a request to get current athlete info
-    const authHeader = `Basic ${btoa(`${apiKey}:`)}`;
+    // Test the API key by making a request to get specific athlete info
+    const authHeader = `Basic ${btoa(`${credentials.apiKey}:`)}`;
     console.log('Authorization header created (first 20 chars):', authHeader.substring(0, 20) + '...');
+    console.log('Testing with athlete ID:', credentials.athleteId);
     
-    const testResponse = await fetch(`${this.baseUrl}/athlete`, {
+    const testResponse = await fetch(`${this.baseUrl}/athlete/${credentials.athleteId}`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
@@ -55,14 +57,14 @@ class IntervalsService {
     if (!testResponse.ok) {
       const errorText = await testResponse.text();
       console.error('API Error Response:', errorText);
-      throw new Error(`Invalid API key - Status: ${testResponse.status}, Response: ${errorText}`);
+      throw new Error(`Invalid credentials - Status: ${testResponse.status}, Response: ${errorText}`);
     }
 
     const athleteData = await testResponse.json();
     console.log('Athlete data received:', athleteData);
     
-    localStorage.setItem('intervals_api_key', apiKey);
-    localStorage.setItem('intervals_athlete_id', athleteData.id);
+    localStorage.setItem('intervals_api_key', credentials.apiKey);
+    localStorage.setItem('intervals_athlete_id', credentials.athleteId);
     localStorage.setItem('intervals_athlete_name', athleteData.name || 'Unknown');
   }
 
