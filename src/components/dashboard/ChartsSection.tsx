@@ -57,7 +57,7 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
     return data;
   };
 
-  // Generate hydration data with values between 1-5 (based on your real values)
+  // Generate hydration data - only accurate for last 2 days, others should be null or placeholder
   const generateHydrationData = (period: string) => {
     const days = period === '7days' ? 7 : 30;
     const data = [];
@@ -69,16 +69,16 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
       let hydration;
       
       if (i === days - 1 || i === days - 2) {
-        // Today and yesterday: hydration = 1 (as per your real data)
+        // Today and yesterday: hydration = 1 (accurate data)
         hydration = 1;
       } else {
-        // Generate realistic historical data between 1-5
-        hydration = 1 + Math.random() * 4; // Between 1.0 and 5.0
+        // For older days, use null to indicate no accurate data
+        hydration = null;
       }
       
       data.push({
         date: date.toISOString().split('T')[0],
-        hydration: Math.round(hydration * 10) / 10, // Round to 1 decimal
+        hydration: hydration,
       });
     }
     
@@ -86,7 +86,8 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div className="space-y-6 mb-8">
+      {/* CTL/ATL/TSB Chart - First Row */}
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
@@ -107,6 +108,7 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
         </CardContent>
       </Card>
 
+      {/* Hydration Chart - Second Row */}
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">

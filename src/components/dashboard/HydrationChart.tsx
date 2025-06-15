@@ -7,7 +7,7 @@ import { fr } from 'date-fns/locale';
 
 interface HydrationData {
   date: string;
-  hydration: number;
+  hydration: number | null;
 }
 
 interface HydrationChartProps {
@@ -35,10 +35,13 @@ const HydrationChart = ({ data, selectedPeriod }: HydrationChartProps) => {
     },
   };
 
+  // Filter out null values for display
+  const validData = data.filter(item => item.hydration !== null);
+
   return (
     <ChartContainer config={hydrationConfig} className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+        <BarChart data={validData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
           <defs>
             <linearGradient id="hydrationGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
