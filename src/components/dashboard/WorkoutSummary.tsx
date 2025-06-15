@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Zap, MapPin, Heart, Smile, Utensils, Activity } from 'lucide-react';
@@ -15,9 +16,9 @@ interface IntervalsActivity {
   icu_rpe?: number;
   feel?: number;
   carbs_used?: number;
-  workout_load?: number;
-  normalized_power?: number;
-  average_watts?: number;
+  icu_training_load?: number;
+  icu_weighted_avg_watts?: number;
+  icu_average_watts?: number;
 }
 
 const WorkoutSummary = () => {
@@ -30,7 +31,7 @@ const WorkoutSummary = () => {
       const athleteId = localStorage.getItem('intervals_athlete_id');
       
       if (!apiKey || !athleteId) {
-        // Return mock data with RPE, Feeling, CHO, workout_load and power data for demo
+        // Return mock data with RPE, Feeling, CHO, training load and power data for demo
         return [
           {
             id: '1',
@@ -43,9 +44,9 @@ const WorkoutSummary = () => {
             icu_rpe: 7,
             feel: 4,
             carbs_used: 45,
-            workout_load: 85,
-            normalized_power: 245,
-            average_watts: 230
+            icu_training_load: 85,
+            icu_weighted_avg_watts: 245,
+            icu_average_watts: 230
           },
           {
             id: '2',
@@ -57,7 +58,7 @@ const WorkoutSummary = () => {
             icu_rpe: 8,
             feel: 3,
             carbs_used: 30,
-            workout_load: 65
+            icu_training_load: 65
           }
         ] as IntervalsActivity[];
       }
@@ -89,9 +90,9 @@ const WorkoutSummary = () => {
         icu_rpe: activity.icu_rpe,
         feel: activity.feel,
         carbs_used: activity.carbs_used,
-        workout_load: activity.workout_load,
-        normalized_power: activity.normalized_power,
-        average_watts: activity.average_watts
+        icu_training_load: activity.icu_training_load,
+        icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
+        icu_average_watts: activity.icu_average_watts
       })) as IntervalsActivity[];
     },
     enabled: true, // Always enabled to show demo data
@@ -170,10 +171,10 @@ const WorkoutSummary = () => {
           <div className="flex justify-between items-start mb-3">
             <h3 className="font-semibold text-gray-900">{workout.name || workout.type}</h3>
             <div className="flex gap-2">
-              {workout.workout_load && (
+              {workout.icu_training_load && (
                 <div className="flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
                   <Zap className="h-3 w-3 text-blue-500" />
-                  <span className="text-xs font-medium">{workout.workout_load}</span>
+                  <span className="text-xs font-medium">{workout.icu_training_load}</span>
                 </div>
               )}
               {workout.icu_rpe && (
@@ -201,22 +202,22 @@ const WorkoutSummary = () => {
                 <span>{formatDistance(workout.distance)}</span>
               </div>
             )}
-            {workout.workout_load && (
+            {workout.icu_training_load && (
               <div className="flex items-center gap-1">
                 <Activity className="h-4 w-4 text-gray-500" />
-                <span>Load {workout.workout_load}</span>
+                <span>Load {workout.icu_training_load}</span>
               </div>
             )}
-            {isPowerActivity(workout.type) && workout.normalized_power && (
+            {isPowerActivity(workout.type) && workout.icu_weighted_avg_watts && (
               <div className="flex items-center gap-1">
                 <Zap className="h-4 w-4 text-orange-500" />
-                <span>NP {workout.normalized_power}W</span>
+                <span>NP {workout.icu_weighted_avg_watts}W</span>
               </div>
             )}
-            {isPowerActivity(workout.type) && workout.average_watts && (
+            {isPowerActivity(workout.type) && workout.icu_average_watts && (
               <div className="flex items-center gap-1">
                 <Activity className="h-4 w-4 text-blue-500" />
-                <span>Avg {workout.average_watts}W</span>
+                <span>Avg {workout.icu_average_watts}W</span>
               </div>
             )}
             {workout.feel && (
