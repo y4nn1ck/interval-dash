@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { format, subDays, parseISO } from 'date-fns';
@@ -16,7 +16,8 @@ interface TrainingStressData {
 }
 
 const TrainingStressChart = () => {
-  const [selectedPeriod, setSelectedPeriod] = useState('7days');
+  const [isMonthView, setIsMonthView] = useState(false);
+  const selectedPeriod = isMonthView ? '1month' : '7days';
 
   const generateMockData = (period: string): TrainingStressData[] => {
     const endDate = new Date();
@@ -115,59 +116,65 @@ const TrainingStressChart = () => {
 
   return (
     <div className="space-y-4">
-      <Tabs value={selectedPeriod} onValueChange={setSelectedPeriod}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="7days">7 jours</TabsTrigger>
-          <TabsTrigger value="1month">1 mois</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value={selectedPeriod} className="mt-6">
-          <ChartContainer config={chartConfig} className="h-[400px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                <XAxis 
-                  dataKey="date" 
-                  tickFormatter={formatXAxisLabel}
-                  className="text-muted-foreground"
-                />
-                <YAxis className="text-muted-foreground" />
-                <ChartTooltip 
-                  content={<ChartTooltipContent />}
-                  labelFormatter={(value) => {
-                    const date = parseISO(value as string);
-                    return format(date, 'dd MMMM yyyy', { locale: fr });
-                  }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="ctl" 
-                  stroke="var(--color-ctl)" 
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  name="CTL (Fitness)"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="atl" 
-                  stroke="var(--color-atl)" 
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  name="ATL (Fatigue)"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="tsb" 
-                  stroke="var(--color-tsb)" 
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  name="TSB (Forme)"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartContainer>
-        </TabsContent>
-      </Tabs>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <span className={`text-sm font-medium ${!isMonthView ? 'text-gray-900' : 'text-gray-500'}`}>
+            7 jours
+          </span>
+          <Switch
+            checked={isMonthView}
+            onCheckedChange={setIsMonthView}
+          />
+          <span className={`text-sm font-medium ${isMonthView ? 'text-gray-900' : 'text-gray-500'}`}>
+            1 mois
+          </span>
+        </div>
+      </div>
+      
+      <ChartContainer config={chartConfig} className="h-[400px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+            <XAxis 
+              dataKey="date" 
+              tickFormatter={formatXAxisLabel}
+              className="text-muted-foreground"
+            />
+            <YAxis className="text-muted-foreground" />
+            <ChartTooltip 
+              content={<ChartTooltipContent />}
+              labelFormatter={(value) => {
+                const date = parseISO(value as string);
+                return format(date, 'dd MMMM yyyy', { locale: fr });
+              }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="ctl" 
+              stroke="var(--color-ctl)" 
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              name="CTL (Fitness)"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="atl" 
+              stroke="var(--color-atl)" 
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              name="ATL (Fatigue)"
+            />
+            <Line 
+              type="monotone" 
+              dataKey="tsb" 
+              stroke="var(--color-tsb)" 
+              strokeWidth={2}
+              dot={{ r: 3 }}
+              name="TSB (Forme)"
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </ChartContainer>
     </div>
   );
 };

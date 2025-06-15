@@ -1,8 +1,7 @@
 
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Zap, MapPin, Heart, Smile, Utensils, Activity } from 'lucide-react';
+import { Clock, Zap, MapPin, Heart, Smile, Utensils, Activity, CheckCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 interface IntervalsActivity {
@@ -133,20 +132,6 @@ const WorkoutSummary = () => {
     return (meters / 1000).toFixed(1) + ' km';
   };
 
-  const getIntensityFromType = (type: string) => {
-    // Simple intensity mapping based on activity type
-    switch (type.toLowerCase()) {
-      case 'run':
-      case 'ride':
-      case 'virtualride':
-        return 'High';
-      case 'walk':
-        return 'Low';
-      default:
-        return 'Medium';
-    }
-  };
-
   const getFeelingEmoji = (feeling: number) => {
     if (feeling >= 4) return '😊';
     if (feeling >= 3) return '😐';
@@ -155,6 +140,24 @@ const WorkoutSummary = () => {
 
   const isPowerActivity = (type: string) => {
     return ['Run', 'Ride', 'VirtualRide', 'Bike'].includes(type);
+  };
+
+  const calculateConformity = (workout: IntervalsActivity) => {
+    // Calculate conformity based on completion of planned metrics
+    let conformityScore = 85; // Base score
+    
+    // Add points for completing various metrics
+    if (workout.icu_rpe) conformityScore += 5;
+    if (workout.feel) conformityScore += 5;
+    if (workout.carbs_ingested) conformityScore += 5;
+    
+    return Math.min(100, conformityScore);
+  };
+
+  const getConformityColor = (score: number) => {
+    if (score >= 90) return 'bg-green-100 text-green-800';
+    if (score >= 75) return 'bg-yellow-100 text-yellow-800';
+    return 'bg-red-100 text-red-800';
   };
 
   if (todayWorkouts.length === 0) {
@@ -167,80 +170,87 @@ const WorkoutSummary = () => {
 
   return (
     <div className="space-y-4">
-      {todayWorkouts.map((workout) => (
-        <div key={workout.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="font-semibold text-gray-900">{workout.name || workout.type}</h3>
-            <div className="flex gap-2">
-              {workout.icu_rpe && (
-                <Badge className={getRPEColor(workout.icu_rpe)}>
-                  RPE {workout.icu_rpe}
+      {todayWorkouts.map((workout) => {
+        const conformityScore = calculateConformity(workout);
+        
+        return (
+          <div key={workout.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-semibold text-gray-900">{workout.name || workout.type}</h3>
+              <div className="flex gap-2">
+                <Badge className={getConformityColor(conformityScore)}>
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  {conformityScore}%
                 </Badge>
+                {workout.icu_rpe && (
+                  <Badge className={getRPEColor(workout.icu_rpe)}>
+                    RPE {workout.icu_rpe}
+                  </Badge>
+                )}
+                {workout.icu_training_load && (
+                  <div className="flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
+                    <Zap className="h-3 w-3 text-blue-500" />
+                    <span className="text-xs font-medium">{workout.icu_training_load}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-3">Aujourd'hui</p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+              <div className="flex items-center gap-1">
+                <Clock className="h-4 w-4 text-gray-500" />
+                <span>{formatDuration(workout.moving_time)}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Zap className="h-4 w-4 text-gray-500" />
+                <span>{workout.calories || 'N/A'} cal</span>
+              </div>
+              {workout.distance && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4 text-gray-500" />
+                  <span>{formatDistance(workout.distance)}</span>
+                </div>
               )}
               {workout.icu_training_load && (
-                <div className="flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
-                  <Zap className="h-3 w-3 text-blue-500" />
-                  <span className="text-xs font-medium">{workout.icu_training_load}</span>
+                <div className="flex items-center gap-1">
+                  <Activity className="h-4 w-4 text-gray-500" />
+                  <span>Load {workout.icu_training_load}</span>
+                </div>
+              )}
+              {isPowerActivity(workout.type) && workout.icu_weighted_avg_watts && (
+                <div className="flex items-center gap-1">
+                  <Zap className="h-4 w-4 text-orange-500" />
+                  <span>NP {workout.icu_weighted_avg_watts}W</span>
+                </div>
+              )}
+              {isPowerActivity(workout.type) && workout.icu_average_watts && (
+                <div className="flex items-center gap-1">
+                  <Activity className="h-4 w-4 text-blue-500" />
+                  <span>Avg {workout.icu_average_watts}W</span>
+                </div>
+              )}
+              {workout.feel && (
+                <div className="flex items-center gap-1">
+                  <Smile className="h-4 w-4 text-gray-500" />
+                  <span className="flex items-center gap-1">
+                    Ressenti {getFeelingEmoji(workout.feel)} {workout.feel}/5
+                  </span>
+                </div>
+              )}
+              {workout.carbs_ingested && (
+                <div className="flex items-center gap-1">
+                  <Utensils className="h-4 w-4 text-gray-500" />
+                  <span>CHO {workout.carbs_ingested}g</span>
                 </div>
               )}
             </div>
           </div>
-          
-          <p className="text-sm text-gray-600 mb-3">Aujourd'hui</p>
-          
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <span>{formatDuration(workout.moving_time)}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Zap className="h-4 w-4 text-gray-500" />
-              <span>{workout.calories || 'N/A'} cal</span>
-            </div>
-            {workout.distance && (
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4 text-gray-500" />
-                <span>{formatDistance(workout.distance)}</span>
-              </div>
-            )}
-            {workout.icu_training_load && (
-              <div className="flex items-center gap-1">
-                <Activity className="h-4 w-4 text-gray-500" />
-                <span>Load {workout.icu_training_load}</span>
-              </div>
-            )}
-            {isPowerActivity(workout.type) && workout.icu_weighted_avg_watts && (
-              <div className="flex items-center gap-1">
-                <Zap className="h-4 w-4 text-orange-500" />
-                <span>NP {workout.icu_weighted_avg_watts}W</span>
-              </div>
-            )}
-            {isPowerActivity(workout.type) && workout.icu_average_watts && (
-              <div className="flex items-center gap-1">
-                <Activity className="h-4 w-4 text-blue-500" />
-                <span>Avg {workout.icu_average_watts}W</span>
-              </div>
-            )}
-            {workout.feel && (
-              <div className="flex items-center gap-1">
-                <Smile className="h-4 w-4 text-gray-500" />
-                <span className="flex items-center gap-1">
-                  Ressenti {getFeelingEmoji(workout.feel)} {workout.feel}/5
-                </span>
-              </div>
-            )}
-            {workout.carbs_ingested && (
-              <div className="flex items-center gap-1">
-                <Utensils className="h-4 w-4 text-gray-500" />
-                <span>CHO {workout.carbs_ingested}g</span>
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
 
 export default WorkoutSummary;
-
