@@ -115,8 +115,8 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Planned Workouts and Today's Workouts - Reordered */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        {/* Planned Workouts and Today's Workouts - First Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -140,7 +140,10 @@ const Dashboard = () => {
               <WorkoutSummary />
             </CardContent>
           </Card>
+        </div>
 
+        {/* Tomorrow's Workouts - Second Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

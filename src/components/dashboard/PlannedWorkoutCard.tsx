@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Clock, Target, MapPin, Calendar, Zap } from 'lucide-react';
+import { Bike, Waves, PersonStanding } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 
 interface PlannedWorkout {
@@ -40,11 +41,11 @@ const PlannedWorkoutCard = () => {
           {
             id: '2',
             name: 'Récupération Active',
-            type: 'Easy Run',
+            type: 'Ride',
             planned_date: today,
             moving_time: 2400,
             distance: 5000,
-            description: 'Course facile 40min',
+            description: 'Sortie vélo facile',
             load: 35
           }
         ] as PlannedWorkout[];
@@ -86,6 +87,43 @@ const PlannedWorkoutCard = () => {
     return (meters / 1000).toFixed(1) + ' km';
   };
 
+  const getActivityIcon = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes('bike') || lowerType.includes('ride') || lowerType.includes('cycling')) {
+      return Bike;
+    }
+    if (lowerType.includes('swim')) {
+      return Waves;
+    }
+    return PersonStanding; // Default for run and other activities
+  };
+
+  const getActivityColors = (type: string) => {
+    const lowerType = type.toLowerCase();
+    if (lowerType.includes('bike') || lowerType.includes('ride') || lowerType.includes('cycling')) {
+      return {
+        bg: 'bg-green-50',
+        hover: 'hover:bg-green-100',
+        border: 'border-green-200',
+        icon: 'text-green-500'
+      };
+    }
+    if (lowerType.includes('swim')) {
+      return {
+        bg: 'bg-blue-50',
+        hover: 'hover:bg-blue-100',
+        border: 'border-blue-200',
+        icon: 'text-blue-500'
+      };
+    }
+    return {
+      bg: 'bg-orange-50',
+      hover: 'hover:bg-orange-100',
+      border: 'border-orange-200',
+      icon: 'text-orange-500'
+    };
+  };
+
   if (plannedWorkouts.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -97,40 +135,48 @@ const PlannedWorkoutCard = () => {
 
   return (
     <div className="space-y-4">
-      {plannedWorkouts.map((workout) => (
-        <div key={workout.id} className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors border border-purple-200">
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="font-semibold text-gray-900">{workout.name}</h3>
-          </div>
-          
-          {workout.description && (
-            <p className="text-sm text-gray-600 mb-3 italic">{workout.description}</p>
-          )}
-          
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4 text-purple-500" />
-              <span>{formatDuration(workout.moving_time)}</span>
-            </div>
-            {workout.distance && (
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4 text-purple-500" />
-                <span>{formatDistance(workout.distance)}</span>
+      {plannedWorkouts.map((workout) => {
+        const ActivityIcon = getActivityIcon(workout.type);
+        const colors = getActivityColors(workout.type);
+        
+        return (
+          <div key={workout.id} className={`p-4 ${colors.bg} rounded-lg ${colors.hover} transition-colors border ${colors.border}`}>
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex items-center gap-2">
+                <ActivityIcon className={`h-5 w-5 ${colors.icon}`} />
+                <h3 className="font-semibold text-gray-900">{workout.name}</h3>
               </div>
-            )}
-            <div className="flex items-center gap-1">
-              <Target className="h-4 w-4 text-purple-500" />
-              <span>{workout.type}</span>
             </div>
-            {workout.load && (
-              <div className="flex items-center gap-1">
-                <Zap className="h-4 w-4 text-purple-500" />
-                <span>Load: {workout.load}</span>
-              </div>
+            
+            {workout.description && (
+              <p className="text-sm text-gray-600 mb-3 italic">{workout.description}</p>
             )}
+            
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="flex items-center gap-1">
+                <Clock className={`h-4 w-4 ${colors.icon}`} />
+                <span>{formatDuration(workout.moving_time)}</span>
+              </div>
+              {workout.distance && (
+                <div className="flex items-center gap-1">
+                  <MapPin className={`h-4 w-4 ${colors.icon}`} />
+                  <span>{formatDistance(workout.distance)}</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1">
+                <Target className={`h-4 w-4 ${colors.icon}`} />
+                <span>{workout.type}</span>
+              </div>
+              {workout.load && (
+                <div className="flex items-center gap-1">
+                  <Zap className={`h-4 w-4 ${colors.icon}`} />
+                  <span>Load: {workout.load}</span>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };
