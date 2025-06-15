@@ -8,6 +8,9 @@ import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import TrainingStressChart from '@/components/dashboard/TrainingStressChart';
 import PlannedWorkoutCard from '@/components/dashboard/PlannedWorkoutCard';
 import TomorrowWorkoutCard from '@/components/dashboard/TomorrowWorkoutCard';
+import CTLATLTSBChart from '@/components/dashboard/CTLATLTSBChart';
+import HydrationChart from '@/components/dashboard/HydrationChart';
+import ChartPeriodSwitch from '@/components/dashboard/ChartPeriodSwitch';
 import { useIntervalsAuth, useIntervalsDailyStats, useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 
 const Dashboard = () => {
@@ -96,23 +99,12 @@ const Dashboard = () => {
             unit="h"
             icon={Moon}
             color="bg-purple-500"
-            trend="+0.5"
           />
         </div>
 
-        {/* Training Stress Chart */}
+        {/* Charts Section */}
         <div className="mb-8">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-blue-500" />
-                Évolution CTL, ATL et TSB
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TrainingStressChart />
-            </CardContent>
-          </Card>
+          <TrainingStressChart />
         </div>
 
         {/* Planned Workouts and Today's Workouts - First Row */}
