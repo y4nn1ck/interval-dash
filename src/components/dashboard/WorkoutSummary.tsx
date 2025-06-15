@@ -16,7 +16,7 @@ interface IntervalsActivity {
   calories?: number;
   icu_rpe?: number;
   feel?: number;
-  choing?: number;
+  carbs_ingested?: number;
   icu_training_load?: number;
   icu_weighted_avg_watts?: number;
   icu_average_watts?: number;
@@ -44,7 +44,7 @@ const WorkoutSummary = () => {
             calories: 420,
             icu_rpe: 7,
             feel: 4,
-            choing: 45,
+            carbs_ingested: 45,
             icu_training_load: 85,
             icu_weighted_avg_watts: 245,
             icu_average_watts: 230
@@ -58,7 +58,7 @@ const WorkoutSummary = () => {
             calories: 280,
             icu_rpe: 8,
             feel: 3,
-            choing: 30,
+            carbs_ingested: 30,
             icu_training_load: 65
           }
         ] as IntervalsActivity[];
@@ -90,7 +90,7 @@ const WorkoutSummary = () => {
         calories: activity.calories,
         icu_rpe: activity.icu_rpe,
         feel: activity.feel,
-        choing: activity.choing,
+        carbs_ingested: activity.carbs_ingested,
         icu_training_load: activity.icu_training_load,
         icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
         icu_average_watts: activity.icu_average_watts
@@ -229,10 +229,10 @@ const WorkoutSummary = () => {
                 </span>
               </div>
             )}
-            {workout.choing && (
+            {workout.carbs_ingested && (
               <div className="flex items-center gap-1">
                 <Utensils className="h-4 w-4 text-gray-500" />
-                <span>CHO {workout.choing}g</span>
+                <span>CHO {workout.carbs_ingested}g</span>
               </div>
             )}
           </div>
