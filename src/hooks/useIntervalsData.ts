@@ -35,6 +35,7 @@ export const useIntervalsAuth = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['intervals-daily-stats'] });
       queryClient.invalidateQueries({ queryKey: ['intervals-weekly-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['intervals-monthly-stats'] });
       toast({
         title: "Success",
         description: "Data synced successfully!",
@@ -71,5 +72,12 @@ export const useIntervalsWeeklyStats = () => {
   return useQuery({
     queryKey: ['intervals-weekly-stats'],
     queryFn: () => intervalsService.getWeeklyStats(),
+  });
+};
+
+export const useIntervalsMonthlyStats = () => {
+  return useQuery({
+    queryKey: ['intervals-monthly-stats'],
+    queryFn: () => intervalsService.getMonthlyStats(),
   });
 };

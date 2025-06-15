@@ -1,3 +1,4 @@
+
 export interface IntervalsActivity {
   id: string;
   start_date_local: string;
@@ -27,6 +28,7 @@ export interface IntervalsDailyStats {
   ctl?: number;
   atl?: number;
   tsb?: number;
+  hydration?: number;
 }
 
 class IntervalsService {
@@ -116,7 +118,8 @@ class IntervalsService {
         calories: data.calories || 0,
         ctl: data.ctl || 0,
         atl: data.atl || 0,
-        tsb: data.ctl && data.atl ? data.ctl - data.atl : 0
+        tsb: data.ctl && data.atl ? data.ctl - data.atl : 0,
+        hydration: data.hydration || null
       };
     } catch (error) {
       console.error('Error fetching daily stats:', error);
@@ -151,10 +154,47 @@ class IntervalsService {
         calories: item.calories || 0,
         ctl: item.ctl || 0,
         atl: item.atl || 0,
-        tsb: item.ctl && item.atl ? item.ctl - item.atl : 0
+        tsb: item.ctl && item.atl ? item.ctl - item.atl : 0,
+        hydration: item.hydration || null
       }));
     } catch (error) {
       console.error('Error fetching weekly stats:', error);
+      return [];
+    }
+  }
+
+  async getMonthlyStats(): Promise<IntervalsDailyStats[]> {
+    try {
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      if (!athleteId) return [];
+
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 30);
+
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+
+      console.log(`Fetching monthly wellness data from ${startDateStr} to ${endDateStr}...`);
+      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness/${startDateStr}/${endDateStr}`);
+      console.log('Monthly wellness data received:', data);
+      
+      return data.map((item: any) => ({
+        date: item.id,
+        training_load: item.ctl || 0,
+        hrv_rmssd: item.hrvRmssd || item.hrv || 0,
+        resting_hr: item.restingHR || 0,
+        weight: item.weight || 0,
+        sleep_secs: item.sleepSecs || 0,
+        steps: item.steps || 0,
+        calories: item.calories || 0,
+        ctl: item.ctl || 0,
+        atl: item.atl || 0,
+        tsb: item.ctl && item.atl ? item.ctl - item.atl : 0,
+        hydration: item.hydration || null
+      }));
+    } catch (error) {
+      console.error('Error fetching monthly stats:', error);
       return [];
     }
   }

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CTLATLTSBChart from './CTLATLTSBChart';
 import HydrationChart from './HydrationChart';
 import ChartPeriodSwitch from './ChartPeriodSwitch';
+import { useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 
 interface ChartsSectionProps {
   ctl: number;
@@ -14,11 +15,25 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
   const [ctlatlPeriod, setCtlatlPeriod] = useState('7days');
   const [hydrationPeriod, setHydrationPeriod] = useState('7days');
 
-  // Generate CTL/ATL/TSB data using realistic values based on your current data
+  // Fetch real data from Intervals.icu
+  const { data: weeklyStats } = useIntervalsWeeklyStats();
+
+  // Generate CTL/ATL/TSB data from real API data
   const generateCTLATLData = (period: string) => {
     const days = period === '7days' ? 7 : 30;
-    const data = [];
     
+    if (weeklyStats && weeklyStats.length > 0) {
+      // Use real data from API when available
+      return weeklyStats.map(stat => ({
+        date: stat.date,
+        ctl: Math.round(stat.ctl || 0),
+        atl: Math.round(stat.atl || 0),
+        tsb: Math.round(stat.tsb || 0),
+      }));
+    }
+
+    // Fallback data if API fails
+    const data = [];
     for (let i = 0; i < days; i++) {
       const date = new Date();
       date.setDate(date.getDate() - (days - 1 - i));
@@ -26,10 +41,10 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
       let dayCtl, dayAtl, dayTsb;
       
       if (i === days - 1) {
-        // Today: CTL=67, ATL=67, TSB=0
-        dayCtl = 67;
-        dayAtl = 67;
-        dayTsb = 0;
+        // Today: use props values
+        dayCtl = ctl;
+        dayAtl = atl;
+        dayTsb = ctl - atl;
       } else if (i === days - 2) {
         // Yesterday: CTL=67, ATL=65, TSB=2
         dayCtl = 67;
@@ -39,7 +54,7 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
         // Generate realistic historical data with small variations
         const baseCtl = 67;
         const baseAtl = 65;
-        const variation = (Math.random() - 0.5) * 4; // ±2 variation
+        const variation = (Math.random() - 0.5) * 4;
         
         dayCtl = Math.max(60, baseCtl + variation + (Math.random() - 0.5) * 2);
         dayAtl = Math.max(55, baseAtl + variation + (Math.random() - 0.5) * 3);
@@ -57,23 +72,46 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
     return data;
   };
 
-  // Generate hydration data - only accurate for last 2 days, others should be null or placeholder
+  // Generate hydration data from real API data
   const generateHydrationData = (period: string) => {
     const days = period === '7days' ? 7 : 30;
-    const data = [];
     
+    if (weeklyStats && weeklyStats.length > 0) {
+      // Use real data from API when available
+      const data = [];
+      for (let i = 0; i < days; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - (days - 1 - i));
+        const dateStr = date.toISOString().split('T')[0];
+        
+        // Find matching data from API
+        const apiData = weeklyStats.find(stat => stat.date === dateStr);
+        
+        // Only show hydration for last 2 days as accurate
+        let hydration = null;
+        if (i === days - 1 || i === days - 2) {
+          hydration = apiData?.hydration || 1; // Use API data or fallback to 1
+        }
+        
+        data.push({
+          date: dateStr,
+          hydration: hydration,
+        });
+      }
+      return data;
+    }
+
+    // Fallback data if API fails
+    const data = [];
     for (let i = 0; i < days; i++) {
       const date = new Date();
       date.setDate(date.getDate() - (days - 1 - i));
       
-      let hydration;
+      let hydration = null;
       
       if (i === days - 1 || i === days - 2) {
         // Today and yesterday: hydration = 1 (accurate data)
         hydration = 1;
-      } else {
-        // For older days, use null to indicate no accurate data
-        hydration = null;
       }
       
       data.push({
