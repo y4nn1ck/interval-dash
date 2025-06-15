@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -11,22 +12,9 @@ interface HydrationData {
 
 interface HydrationChartProps {
   data: HydrationData[];
-  selectedPeriod: string;
 }
 
-const HydrationChart = ({ data, selectedPeriod }: HydrationChartProps) => {
-  const formatXAxisLabel = (dateStr: string) => {
-    const date = parseISO(dateStr);
-    switch (selectedPeriod) {
-      case '7days':
-        return format(date, 'EEE', { locale: fr });
-      case '1month':
-        return format(date, 'dd/MM');
-      default:
-        return format(date, 'dd/MM');
-    }
-  };
-
+const HydrationChart = ({ data }: HydrationChartProps) => {
   const hydrationConfig = {
     hydration: {
       label: 'Hydratation (1-5)',
@@ -34,19 +22,13 @@ const HydrationChart = ({ data, selectedPeriod }: HydrationChartProps) => {
     },
   };
 
-  // Filter out null values for display but keep the structure
-  const chartData = data.map(item => ({
-    ...item,
-    hydration: item.hydration || undefined
-  }));
-
-  // Get only items with valid hydration for the chart
-  const validData = chartData.filter(item => item.hydration !== undefined && item.hydration !== null);
+  // Only show data that has hydration values
+  const validData = data.filter(item => item.hydration !== null && item.hydration !== undefined);
 
   if (validData.length === 0) {
     return (
       <div className="h-[300px] w-full flex items-center justify-center text-gray-500">
-        <p>Aucune donnée d'hydratation disponible pour cette période</p>
+        <p>Aucune donnée d'hydratation disponible</p>
       </div>
     );
   }
@@ -64,7 +46,10 @@ const HydrationChart = ({ data, selectedPeriod }: HydrationChartProps) => {
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" strokeWidth={1} />
           <XAxis 
             dataKey="date" 
-            tickFormatter={formatXAxisLabel}
+            tickFormatter={(dateStr) => {
+              const date = parseISO(dateStr);
+              return format(date, 'EEE', { locale: fr });
+            }}
             className="text-gray-600"
             fontSize={12}
             tickLine={false}

@@ -13,9 +13,7 @@ interface ChartsSectionProps {
 
 const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
   const [ctlatlPeriod, setCtlatlPeriod] = useState('7days');
-  const [hydrationPeriod, setHydrationPeriod] = useState('7days');
 
-  // Fetch real data from Intervals.icu
   const { data: weeklyStats } = useIntervalsWeeklyStats();
   const { data: monthlyStats } = useIntervalsMonthlyStats();
 
@@ -66,30 +64,27 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
     return data;
   };
 
-  // Generate hydration data from real API data
-  const generateHydrationData = (period: string) => {
-    const statsData = period === '7days' ? weeklyStats : monthlyStats;
-    const days = period === '7days' ? 7 : 30;
-    
+  // Generate 7 days of hydration data
+  const generateHydrationData = () => {
     const data = [];
-    for (let i = 0; i < days; i++) {
+    for (let i = 0; i < 7; i++) {
       const date = new Date();
-      date.setDate(date.getDate() - (days - 1 - i));
+      date.setDate(date.getDate() - (6 - i));
       const dateStr = date.toISOString().split('T')[0];
       
       let hydration = null;
       
       // Find matching data from API
-      if (statsData && statsData.length > 0) {
-        const apiData = statsData.find(stat => stat.date === dateStr);
+      if (weeklyStats && weeklyStats.length > 0) {
+        const apiData = weeklyStats.find(stat => stat.date === dateStr);
         if (apiData && apiData.hydration !== null && apiData.hydration !== undefined) {
           hydration = apiData.hydration;
         }
       }
       
       // Only show hydration for last 2 days if no API data
-      if (hydration === null && (i === days - 1 || i === days - 2)) {
-        hydration = 1;
+      if (hydration === null && (i >= 5)) {
+        hydration = Math.floor(Math.random() * 3) + 1; // Random 1-3 for demo
       }
       
       data.push({
@@ -124,24 +119,15 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
         </CardContent>
       </Card>
 
-      {/* Hydration Chart */}
+      {/* Hydration Chart - 7 days only, no switch */}
       <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold text-gray-800">
-              Hydratation quotidienne
-            </CardTitle>
-            <ChartPeriodSwitch
-              isMonthView={hydrationPeriod === '1month'}
-              onToggle={(isMonthView) => setHydrationPeriod(isMonthView ? '1month' : '7days')}
-            />
-          </div>
+          <CardTitle className="text-lg font-semibold text-gray-800">
+            Hydratation quotidienne (7 jours)
+          </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <HydrationChart 
-            data={generateHydrationData(hydrationPeriod)} 
-            selectedPeriod={hydrationPeriod} 
-          />
+          <HydrationChart data={generateHydrationData()} />
         </CardContent>
       </Card>
     </div>
