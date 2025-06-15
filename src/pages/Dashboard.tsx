@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap, TrendingUp as TrendUp } from 'lucide-react';
@@ -71,7 +70,7 @@ const Dashboard = () => {
             trend="-3"
           />
           <MetricCard
-            title="TSB"
+            title="Forme (TSB)"
             value={tsb}
             icon={TrendUp}
             color="bg-blue-500"
