@@ -13,6 +13,7 @@ interface PlannedWorkout {
   distance?: number;
   description?: string;
   load?: number;
+  icu_training_load?: number;
   moving_time?: number;
 }
 
@@ -138,6 +139,7 @@ const PlannedWorkoutCard = () => {
       {plannedWorkouts.map((workout) => {
         const ActivityIcon = getActivityIcon(workout.type);
         const colors = getActivityColors(workout.type);
+        const workoutLoad = workout.icu_training_load || workout.load;
         
         return (
           <div key={workout.id} className={`p-4 ${colors.bg} rounded-lg ${colors.hover} transition-colors border ${colors.border}`}>
@@ -146,10 +148,10 @@ const PlannedWorkoutCard = () => {
                 <ActivityIcon className={`h-5 w-5 ${colors.icon}`} />
                 <h3 className="font-semibold text-gray-900">{workout.name}</h3>
               </div>
-              {workout.load && (
+              {workoutLoad && (
                 <div className="flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
                   <Zap className={`h-3 w-3 ${colors.icon}`} />
-                  <span className="text-xs font-medium">{workout.load}</span>
+                  <span className="text-xs font-medium">{workoutLoad}</span>
                 </div>
               )}
             </div>
