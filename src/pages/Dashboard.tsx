@@ -1,10 +1,12 @@
 
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Heart, Activity, Moon, Target, TrendingUp, Calendar, Zap, TrendingUp as TrendUp } from 'lucide-react';
 import WorkoutSummary from '@/components/dashboard/WorkoutSummary';
 import MetricCard from '@/components/dashboard/MetricCard';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
+import TrainingStressChart from '@/components/dashboard/TrainingStressChart';
 import { useIntervalsAuth, useIntervalsDailyStats, useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 
 const Dashboard = () => {
@@ -87,13 +89,28 @@ const Dashboard = () => {
           />
         </div>
 
+        {/* Training Stress Chart */}
+        <div className="mb-8">
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-500" />
+                Évolution CTL, ATL et TSB
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <TrainingStressChart />
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Today's Workouts */}
         <div className="grid grid-cols-1 gap-6">
           <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-green-500" />
-                Today's Workouts
+                Séance(s) du jour
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -107,3 +124,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
