@@ -1,9 +1,19 @@
 
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { GarminDailyStats } from '@/services/garminService';
 
-const StepsChart = () => {
-  const data = [
+interface StepsChartProps {
+  data?: GarminDailyStats[];
+}
+
+const StepsChart = ({ data }: StepsChartProps) => {
+  // Fallback to sample data if no real data provided
+  const chartData = data ? data.map((item, index) => ({
+    day: new Date(item.date).toLocaleDateString('en-US', { weekday: 'short' }),
+    steps: item.steps,
+    goal: 10000
+  })) : [
     { day: 'Mon', steps: 8543, goal: 10000 },
     { day: 'Tue', steps: 12234, goal: 10000 },
     { day: 'Wed', steps: 9876, goal: 10000 },
@@ -16,7 +26,7 @@ const StepsChart = () => {
   return (
     <div className="h-80">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+        <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis 
             dataKey="day" 

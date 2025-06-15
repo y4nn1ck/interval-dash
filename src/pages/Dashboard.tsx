@@ -7,18 +7,27 @@ import HeartRateChart from '@/components/dashboard/HeartRateChart';
 import SleepChart from '@/components/dashboard/SleepChart';
 import WorkoutSummary from '@/components/dashboard/WorkoutSummary';
 import MetricCard from '@/components/dashboard/MetricCard';
+import GarminAuth from '@/components/dashboard/GarminAuth';
+import { useGarminAuth, useGarminDailyStats, useGarminWeeklyStats } from '@/hooks/useGarminData';
 
 const Dashboard = () => {
-  // Sample data that would come from Garmin Connect API
-  const todayMetrics = {
+  const { isAuthenticated } = useGarminAuth();
+  const today = new Date().toISOString().split('T')[0];
+  
+  const { data: todayStats } = useGarminDailyStats(today);
+  const { data: weeklyStats } = useGarminWeeklyStats();
+
+  // Fallback to sample data if not authenticated or no data
+  const todayMetrics = todayStats || {
     steps: 8743,
-    stepsGoal: 10000,
-    heartRate: 72,
-    sleepHours: 7.5,
-    sleepGoal: 8,
+    distance: 6.2,
+    calories: 2240,
     activeMinutes: 45,
-    calories: 2240
+    restingHeartRate: 72
   };
+
+  const sleepGoal = 8;
+  const stepsGoal = 10000;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
@@ -29,39 +38,45 @@ const Dashboard = () => {
           <p className="text-gray-600">Track your health and fitness metrics</p>
         </div>
 
+        {/* Garmin Auth Card */}
+        {!isAuthenticated && (
+          <div className="mb-8">
+            <GarminAuth />
+          </div>
+        )}
+
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <MetricCard
             title="Steps Today"
             value={todayMetrics.steps.toLocaleString()}
-            goal={todayMetrics.stepsGoal.toLocaleString()}
+            goal={stepsGoal.toLocaleString()}
             icon={Activity}
             color="bg-blue-500"
-            progress={(todayMetrics.steps / todayMetrics.stepsGoal) * 100}
+            progress={(todayMetrics.steps / stepsGoal) * 100}
           />
           <MetricCard
             title="Resting Heart Rate"
-            value={`${todayMetrics.heartRate}`}
+            value={`${todayMetrics.restingHeartRate || 72}`}
             unit="bpm"
             icon={Heart}
             color="bg-red-500"
             trend="+2"
           />
           <MetricCard
-            title="Sleep Last Night"
-            value={`${todayMetrics.sleepHours}`}
-            unit="hours"
-            goal={`${todayMetrics.sleepGoal}h`}
-            icon={Moon}
-            color="bg-purple-500"
-            progress={(todayMetrics.sleepHours / todayMetrics.sleepGoal) * 100}
+            title="Distance Today"
+            value={`${(todayMetrics.distance || 0).toFixed(1)}`}
+            unit="km"
+            icon={Target}
+            color="bg-green-500"
+            trend="+0.5"
           />
           <MetricCard
             title="Active Minutes"
-            value={`${todayMetrics.activeMinutes}`}
+            value={`${todayMetrics.activeMinutes || 45}`}
             unit="min"
             icon={Target}
-            color="bg-green-500"
+            color="bg-purple-500"
             trend="+5"
           />
         </div>
@@ -76,7 +91,7 @@ const Dashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <StepsChart />
+              <StepsChart data={weeklyStats} />
             </CardContent>
           </Card>
 
