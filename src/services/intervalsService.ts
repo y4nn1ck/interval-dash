@@ -1,6 +1,4 @@
 
-import { supabase } from '@/lib/supabase';
-
 export interface IntervalsActivity {
   id: string;
   start_date_local: string;
@@ -28,16 +26,8 @@ class IntervalsService {
 
   async checkAuth(): Promise<boolean> {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
-
-      const { data } = await supabase
-        .from('intervals_auth')
-        .select('api_key')
-        .eq('user_id', user.id)
-        .single();
-
-      return !!data?.api_key;
+      const apiKey = localStorage.getItem('intervals_api_key');
+      return !!apiKey;
     } catch (error) {
       console.error('Error checking Intervals.icu auth:', error);
       return false;
@@ -45,9 +35,6 @@ class IntervalsService {
   }
 
   async saveApiKey(apiKey: string): Promise<void> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
-
     // Test the API key first
     const testResponse = await fetch(`${this.baseUrl}/athlete`, {
       headers: {
@@ -60,35 +47,86 @@ class IntervalsService {
     }
 
     const athleteData = await testResponse.json();
+    localStorage.setItem('intervals_api_key', apiKey);
+    localStorage.setItem('intervals_athlete_id', athleteData.id);
+    localStorage.setItem('intervals_athlete_name', athleteData.name);
+  }
 
-    await supabase
-      .from('intervals_auth')
-      .upsert({
-        user_id: user.id,
-        api_key: apiKey,
-        athlete_id: athleteData.id,
-        athlete_name: athleteData.name
-      });
+  private async makeAuthenticatedRequest(endpoint: string) {
+    const apiKey = localStorage.getItem('intervals_api_key');
+    if (!apiKey) {
+      throw new Error('No API key found');
+    }
+
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      headers: {
+        'Authorization': `Basic ${btoa(`API_KEY:${apiKey}`)}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.statusText}`);
+    }
+
+    return response.json();
   }
 
   async getDailyStats(date: string): Promise<IntervalsDailyStats | null> {
-    const { data, error } = await supabase.functions.invoke('intervals-daily-stats', {
-      body: { date }
-    });
+    try {
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      if (!athleteId) return null;
 
-    if (error) throw error;
-    return data;
+      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness/${date}`);
+      
+      return {
+        date: date,
+        training_load: data.ctl || 0,
+        hrv_rmssd: data.hrvRmssd || 0,
+        resting_hr: data.restingHR || 0,
+        weight: data.weight || 0,
+        sleep_secs: data.sleepSecs || 0,
+        steps: data.steps || 0,
+        calories: data.calories || 0
+      };
+    } catch (error) {
+      console.error('Error fetching daily stats:', error);
+      return null;
+    }
   }
 
   async getWeeklyStats(): Promise<IntervalsDailyStats[]> {
-    const { data, error } = await supabase.functions.invoke('intervals-weekly-stats');
-    if (error) throw error;
-    return data || [];
+    try {
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      if (!athleteId) return [];
+
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 7);
+
+      const startDateStr = startDate.toISOString().split('T')[0];
+      const endDateStr = endDate.toISOString().split('T')[0];
+
+      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness/${startDateStr}/${endDateStr}`);
+      
+      return data.map((item: any) => ({
+        date: item.id,
+        training_load: item.ctl || 0,
+        hrv_rmssd: item.hrvRmssd || 0,
+        resting_hr: item.restingHR || 0,
+        weight: item.weight || 0,
+        sleep_secs: item.sleepSecs || 0,
+        steps: item.steps || 0,
+        calories: item.calories || 0
+      }));
+    } catch (error) {
+      console.error('Error fetching weekly stats:', error);
+      return [];
+    }
   }
 
   async syncData(): Promise<void> {
-    const { error } = await supabase.functions.invoke('intervals-sync-data');
-    if (error) throw error;
+    // For now, this is a no-op since we're fetching data directly
+    console.log('Data sync completed');
   }
 }
 
