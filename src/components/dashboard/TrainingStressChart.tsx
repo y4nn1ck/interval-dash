@@ -6,6 +6,7 @@ import { format, subDays, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useQuery } from '@tanstack/react-query';
 import { intervalsService } from '@/services/intervalsService';
+import { TrendingUp, Droplets } from 'lucide-react';
 
 interface TrainingStressData {
   date: string;
@@ -163,9 +164,9 @@ const TrainingStressChart = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gray-100 p-6 rounded-lg">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Évolution CTL, ATL et TSB</h3>
+        <h3 className="text-lg font-semibold">Graphiques</h3>
         <div className="flex items-center space-x-3">
           <span className={`text-sm font-medium ${!isMonthView ? 'text-gray-900' : 'text-gray-500'}`}>
             7 jours
@@ -180,54 +181,64 @@ const TrainingStressChart = () => {
         </div>
       </div>
       
-      <ChartContainer config={chartConfig} className="h-[400px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis 
-              dataKey="date" 
-              tickFormatter={formatXAxisLabel}
-              className="text-muted-foreground"
-            />
-            <YAxis className="text-muted-foreground" />
-            <ChartTooltip 
-              content={<ChartTooltipContent />}
-              labelFormatter={(value) => {
-                const date = parseISO(value as string);
-                return format(date, 'dd MMMM yyyy', { locale: fr });
-              }}
-            />
-            <Line 
-              type="monotone" 
-              dataKey="ctl" 
-              stroke="var(--color-ctl)" 
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              name="CTL (Fitness)"
-            />
-            <Line 
-              type="monotone" 
-              dataKey="atl" 
-              stroke="var(--color-atl)" 
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              name="ATL (Fatigue)"
-            />
-            <Line 
-              type="monotone" 
-              dataKey="tsb" 
-              stroke="var(--color-tsb)" 
-              strokeWidth={2}
-              dot={{ r: 3 }}
-              name="TSB (Forme)"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </ChartContainer>
+      {/* CTL, ATL, TSB Chart */}
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="h-5 w-5 text-blue-500" />
+          <h4 className="text-md font-medium">Évolution CTL, ATL et TSB</h4>
+        </div>
+        <ChartContainer config={chartConfig} className="h-[400px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+              <XAxis 
+                dataKey="date" 
+                tickFormatter={formatXAxisLabel}
+                className="text-muted-foreground"
+              />
+              <YAxis className="text-muted-foreground" />
+              <ChartTooltip 
+                content={<ChartTooltipContent />}
+                labelFormatter={(value) => {
+                  const date = parseISO(value as string);
+                  return format(date, 'dd MMMM yyyy', { locale: fr });
+                }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="ctl" 
+                stroke="var(--color-ctl)" 
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                name="CTL (Fitness)"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="atl" 
+                stroke="var(--color-atl)" 
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                name="ATL (Fatigue)"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="tsb" 
+                stroke="var(--color-tsb)" 
+                strokeWidth={2}
+                dot={{ r: 3 }}
+                name="TSB (Forme)"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartContainer>
+      </div>
 
       {/* Hydration Bar Chart */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Hydratation quotidienne</h3>
+      <div className="bg-white p-4 rounded-lg shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <Droplets className="h-5 w-5 text-cyan-500" />
+          <h4 className="text-md font-medium">Hydratation quotidienne</h4>
+        </div>
         <ChartContainer config={hydrationConfig} className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={hydrationData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
