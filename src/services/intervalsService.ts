@@ -93,7 +93,9 @@ class IntervalsService {
       const athleteId = localStorage.getItem('intervals_athlete_id');
       if (!athleteId) return null;
 
+      console.log(`Fetching wellness data for ${date} from Intervals.icu...`);
       const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness/${date}`);
+      console.log('Wellness data received:', data);
       
       return {
         date: date,
@@ -123,7 +125,9 @@ class IntervalsService {
       const startDateStr = startDate.toISOString().split('T')[0];
       const endDateStr = endDate.toISOString().split('T')[0];
 
+      console.log(`Fetching weekly wellness data from ${startDateStr} to ${endDateStr}...`);
       const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness/${startDateStr}/${endDateStr}`);
+      console.log('Weekly wellness data received:', data);
       
       return data.map((item: any) => ({
         date: item.id,
