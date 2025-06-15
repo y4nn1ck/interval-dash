@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Zap, MapPin, Heart, Smile, Utensils } from 'lucide-react';
@@ -16,6 +15,7 @@ interface IntervalsActivity {
   icu_rpe?: number;
   feel?: number;
   carbs_used?: number;
+  workout_load?: number;
 }
 
 const WorkoutSummary = () => {
@@ -28,7 +28,7 @@ const WorkoutSummary = () => {
       const athleteId = localStorage.getItem('intervals_athlete_id');
       
       if (!apiKey || !athleteId) {
-        // Return mock data with RPE, Feeling, and CHO for demo
+        // Return mock data with RPE, Feeling, CHO and workout_load for demo
         return [
           {
             id: '1',
@@ -40,7 +40,8 @@ const WorkoutSummary = () => {
             calories: 420,
             icu_rpe: 7,
             feel: 4,
-            carbs_used: 45
+            carbs_used: 45,
+            workout_load: 85
           },
           {
             id: '2',
@@ -51,7 +52,8 @@ const WorkoutSummary = () => {
             calories: 280,
             icu_rpe: 8,
             feel: 3,
-            carbs_used: 30
+            carbs_used: 30,
+            workout_load: 65
           }
         ] as IntervalsActivity[];
       }
@@ -82,7 +84,8 @@ const WorkoutSummary = () => {
         calories: activity.calories,
         icu_rpe: activity.icu_rpe,
         feel: activity.feel,
-        carbs_used: activity.carbs_used
+        carbs_used: activity.carbs_used,
+        workout_load: activity.workout_load
       })) as IntervalsActivity[];
     },
     enabled: true, // Always enabled to show demo data
@@ -157,9 +160,12 @@ const WorkoutSummary = () => {
           <div className="flex justify-between items-start mb-3">
             <h3 className="font-semibold text-gray-900">{workout.name || workout.type}</h3>
             <div className="flex gap-2">
-              <Badge className={getIntensityColor(getIntensityFromType(workout.type))}>
-                {getIntensityFromType(workout.type)}
-              </Badge>
+              {workout.workout_load && (
+                <div className="flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
+                  <Zap className="h-3 w-3 text-blue-500" />
+                  <span className="text-xs font-medium">{workout.workout_load}</span>
+                </div>
+              )}
               {workout.icu_rpe && (
                 <Badge className={getRPEColor(workout.icu_rpe)}>
                   RPE {workout.icu_rpe}
