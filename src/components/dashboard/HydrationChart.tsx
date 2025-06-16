@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -17,9 +17,20 @@ interface HydrationChartProps {
 const HydrationChart = ({ data }: HydrationChartProps) => {
   const hydrationConfig = {
     hydration: {
-      label: 'Hydratation (1-5)',
+      label: 'Hydratation (1-4)',
       color: '#06b6d4',
     },
+  };
+
+  // Get the color for each hydration level
+  const getHydrationColor = (value: number) => {
+    switch (value) {
+      case 1: return '#ef4444'; // red
+      case 2: return '#f97316'; // orange
+      case 3: return '#22c55e'; // green
+      case 4: return '#3b82f6'; // blue
+      default: return '#9ca3af'; // gray
+    }
   };
 
   // Only show data that has hydration values
@@ -37,12 +48,6 @@ const HydrationChart = ({ data }: HydrationChartProps) => {
     <ChartContainer config={hydrationConfig} className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={validData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-          <defs>
-            <linearGradient id="hydrationGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.3}/>
-            </linearGradient>
-          </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" strokeWidth={1} />
           <XAxis 
             dataKey="date" 
@@ -57,7 +62,7 @@ const HydrationChart = ({ data }: HydrationChartProps) => {
           />
           <YAxis 
             className="text-gray-600"
-            domain={[0, 5]}
+            domain={[0, 4]}
             fontSize={12}
             tickLine={false}
             axisLine={false}
@@ -71,12 +76,18 @@ const HydrationChart = ({ data }: HydrationChartProps) => {
           />
           <Bar 
             dataKey="hydration" 
-            fill="url(#hydrationGradient)"
-            name="Hydratation (1-5)"
+            name="Hydratation (1-4)"
             radius={[6, 6, 0, 0]}
-            stroke="#06b6d4"
             strokeWidth={1}
-          />
+          >
+            {validData.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={getHydrationColor(entry.hydration || 0)}
+                stroke={getHydrationColor(entry.hydration || 0)}
+              />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </ChartContainer>

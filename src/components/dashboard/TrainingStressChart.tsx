@@ -51,8 +51,9 @@ const TrainingStressChart = () => {
     const endDate = new Date();
     const data: HydrationData[] = [];
     
-    // Generate 7 days of hydration data with realistic values (all days have data)
-    const hydrationValues = [3, 4, 2, 5, 4, 3, 4]; // All 7 days have hydration data
+    // Generate 7 days of hydration data with realistic 1-4 values
+    // Today: 4, Yesterday: 1, Saturday: 1, and other realistic values
+    const hydrationValues = [1, 2, 1, 3, 2, 1, 4]; // Saturday to Today
     
     for (let i = 6; i >= 0; i--) {
       const date = subDays(endDate, i);
@@ -128,8 +129,9 @@ const TrainingStressChart = () => {
             if (apiData && apiData.hydration !== null && apiData.hydration !== undefined) {
               hydration = apiData.hydration;
             } else {
-              // Provide realistic fallback data for all days
-              const fallbackValues = [3, 4, 2, 5, 4, 3, 4];
+              // Provide realistic fallback data with 1-4 scale
+              // Today: 4, Yesterday: 1, Saturday: 1
+              const fallbackValues = [1, 2, 1, 3, 2, 1, 4]; // Saturday to Today
               hydration = fallbackValues[6 - i];
             }
             

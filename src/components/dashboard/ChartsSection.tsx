@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CTLATLTSBChart from './CTLATLTSBChart';
@@ -59,7 +58,7 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
     return data;
   };
 
-  // Generate 7 days of hydration data
+  // Generate 7 days of hydration data with 1-4 scale
   const generateHydrationData = () => {
     const data = [];
     for (let i = 0; i < 7; i++) {
@@ -77,9 +76,10 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
         }
       }
       
-      // Provide realistic fallback data for all days
+      // Provide realistic fallback data with 1-4 scale
       if (hydration === null) {
-        const fallbackValues = [3, 4, 2, 5, 4, 3, 4];
+        // Today: 4, Yesterday: 1, Saturday: 1, and other realistic values
+        const fallbackValues = [1, 2, 1, 3, 2, 1, 4]; // Saturday to Today
         hydration = fallbackValues[i];
       }
       
