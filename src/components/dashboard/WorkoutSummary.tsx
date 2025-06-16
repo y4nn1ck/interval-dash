@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Zap, MapPin, Heart, Smile, Utensils, Activity, CheckCircle } from 'lucide-react';
@@ -25,6 +24,20 @@ interface IntervalsActivity {
 const WorkoutSummary = () => {
   const today = new Date().toISOString().split('T')[0];
 
+  const calculateConformityScore = (workout: IntervalsActivity): number => {
+    // Start with base score
+    let score = 75;
+    
+    // Add points for having various metrics
+    if (workout.icu_rpe) score += 8;
+    if (workout.feel) score += 7;
+    if (workout.carbs_ingested) score += 5;
+    if (workout.moving_time) score += 5;
+    
+    // Return the API score if available, otherwise use calculated score
+    return workout.icu_compliance_score || Math.min(100, score);
+  };
+
   const { data: todayWorkouts = [] } = useQuery({
     queryKey: ['intervals-activities', today],
     queryFn: async () => {
@@ -32,7 +45,7 @@ const WorkoutSummary = () => {
       const athleteId = localStorage.getItem('intervals_athlete_id');
       
       if (!apiKey || !athleteId) {
-        // Return mock data with real conformity score
+        // Return mock data with realistic conformity scores
         return [
           {
             id: '1',
@@ -48,7 +61,7 @@ const WorkoutSummary = () => {
             icu_training_load: 85,
             icu_weighted_avg_watts: 245,
             icu_average_watts: 230,
-            icu_compliance_score: 82
+            icu_compliance_score: 95
           },
           {
             id: '2',
@@ -61,7 +74,7 @@ const WorkoutSummary = () => {
             feel: 3,
             carbs_ingested: 30,
             icu_training_load: 65,
-            icu_compliance_score: 78
+            icu_compliance_score: 88
           }
         ] as IntervalsActivity[];
       }
@@ -96,10 +109,10 @@ const WorkoutSummary = () => {
         icu_training_load: activity.icu_training_load,
         icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
         icu_average_watts: activity.icu_average_watts,
-        icu_compliance_score: activity.icu_compliance_score || 82
+        icu_compliance_score: activity.icu_compliance_score
       })) as IntervalsActivity[];
     },
-    enabled: true, // Always enabled to show demo data
+    enabled: true,
   });
 
   const getIntensityColor = (intensity: string) => {
@@ -146,18 +159,6 @@ const WorkoutSummary = () => {
     return ['Run', 'Ride', 'VirtualRide', 'Bike'].includes(type);
   };
 
-  const calculateConformity = (workout: IntervalsActivity) => {
-    // Calculate conformity based on completion of planned metrics
-    let conformityScore = 85; // Base score
-    
-    // Add points for completing various metrics
-    if (workout.icu_rpe) conformityScore += 5;
-    if (workout.feel) conformityScore += 5;
-    if (workout.carbs_ingested) conformityScore += 5;
-    
-    return Math.min(100, conformityScore);
-  };
-
   const getConformityColor = (score: number) => {
     if (score >= 90) return 'bg-green-100 text-green-800';
     if (score >= 75) return 'bg-yellow-100 text-yellow-800';
@@ -175,7 +176,7 @@ const WorkoutSummary = () => {
   return (
     <div className="space-y-4">
       {todayWorkouts.map((workout) => {
-        const conformityScore = workout.icu_compliance_score || 82;
+        const conformityScore = calculateConformityScore(workout);
         
         return (
           <div key={workout.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
