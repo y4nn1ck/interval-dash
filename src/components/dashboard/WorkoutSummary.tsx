@@ -18,25 +18,11 @@ interface IntervalsActivity {
   icu_training_load?: number;
   icu_weighted_avg_watts?: number;
   icu_average_watts?: number;
-  icu_compliance_score?: number;
+  compliance?: number;
 }
 
 const WorkoutSummary = () => {
   const today = new Date().toISOString().split('T')[0];
-
-  const calculateConformityScore = (workout: IntervalsActivity): number => {
-    // Start with base score
-    let score = 75;
-    
-    // Add points for having various metrics
-    if (workout.icu_rpe) score += 8;
-    if (workout.feel) score += 7;
-    if (workout.carbs_ingested) score += 5;
-    if (workout.moving_time) score += 5;
-    
-    // Return the API score if available, otherwise use calculated score
-    return workout.icu_compliance_score || Math.min(100, score);
-  };
 
   const { data: todayWorkouts = [] } = useQuery({
     queryKey: ['intervals-activities', today],
@@ -45,7 +31,7 @@ const WorkoutSummary = () => {
       const athleteId = localStorage.getItem('intervals_athlete_id');
       
       if (!apiKey || !athleteId) {
-        // Return mock data with realistic conformity scores
+        // Return mock data with realistic compliance scores
         return [
           {
             id: '1',
@@ -61,7 +47,7 @@ const WorkoutSummary = () => {
             icu_training_load: 85,
             icu_weighted_avg_watts: 245,
             icu_average_watts: 230,
-            icu_compliance_score: 95
+            compliance: 95
           },
           {
             id: '2',
@@ -74,7 +60,7 @@ const WorkoutSummary = () => {
             feel: 3,
             carbs_ingested: 30,
             icu_training_load: 65,
-            icu_compliance_score: 88
+            compliance: 88
           }
         ] as IntervalsActivity[];
       }
@@ -109,7 +95,7 @@ const WorkoutSummary = () => {
         icu_training_load: activity.icu_training_load,
         icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
         icu_average_watts: activity.icu_average_watts,
-        icu_compliance_score: activity.icu_compliance_score
+        compliance: activity.compliance
       })) as IntervalsActivity[];
     },
     enabled: true,
@@ -160,7 +146,7 @@ const WorkoutSummary = () => {
   };
 
   const getConformityColor = (score: number) => {
-    if (score >= 90) return 'bg-green-100 text-green-800';
+    if (score >= 100) return 'bg-green-100 text-green-800';
     if (score >= 75) return 'bg-yellow-100 text-yellow-800';
     return 'bg-red-100 text-red-800';
   };
@@ -176,7 +162,7 @@ const WorkoutSummary = () => {
   return (
     <div className="space-y-4">
       {todayWorkouts.map((workout) => {
-        const conformityScore = calculateConformityScore(workout);
+        const conformityScore = Math.round(workout.compliance || 85);
         
         return (
           <div key={workout.id} className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
