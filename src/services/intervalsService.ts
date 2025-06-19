@@ -133,30 +133,54 @@ class IntervalsService {
       if (!athleteId) return [];
 
       const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - 7);
+      const results: IntervalsDailyStats[] = [];
 
-      const startDateStr = startDate.toISOString().split('T')[0];
-      const endDateStr = endDate.toISOString().split('T')[0];
+      // Fetch individual daily data for the last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(endDate.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
 
-      console.log(`Fetching weekly wellness data from ${startDateStr} to ${endDateStr}...`);
-      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness/${startDateStr}/${endDateStr}`);
-      console.log('Weekly wellness data received:', data);
+        try {
+          console.log(`Fetching wellness data for ${dateStr}...`);
+          const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness/${dateStr}`);
+          console.log(`Wellness data for ${dateStr}:`, data);
+          
+          results.push({
+            date: dateStr,
+            training_load: data.ctl || 0,
+            hrv_rmssd: data.hrvRmssd || data.hrv || 0,
+            resting_hr: data.restingHR || 0,
+            weight: data.weight || 0,
+            sleep_secs: data.sleepSecs || 0,
+            steps: data.steps || 0,
+            calories: data.calories || 0,
+            ctl: data.ctl || 0,
+            atl: data.atl || 0,
+            tsb: data.ctl && data.atl ? data.ctl - data.atl : 0,
+            hydration: data.hydration || null
+          });
+        } catch (error) {
+          console.error(`Error fetching wellness data for ${dateStr}:`, error);
+          // Add placeholder data if API call fails
+          results.push({
+            date: dateStr,
+            training_load: 0,
+            hrv_rmssd: 0,
+            resting_hr: 0,
+            weight: 0,
+            sleep_secs: 0,
+            steps: 0,
+            calories: 0,
+            ctl: 0,
+            atl: 0,
+            tsb: 0,
+            hydration: null
+          });
+        }
+      }
       
-      return data.map((item: any) => ({
-        date: item.id,
-        training_load: item.ctl || 0,
-        hrv_rmssd: item.hrvRmssd || item.hrv || 0,
-        resting_hr: item.restingHR || 0,
-        weight: item.weight || 0,
-        sleep_secs: item.sleepSecs || 0,
-        steps: item.steps || 0,
-        calories: item.calories || 0,
-        ctl: item.ctl || 0,
-        atl: item.atl || 0,
-        tsb: item.ctl && item.atl ? item.ctl - item.atl : 0,
-        hydration: item.hydration || null
-      }));
+      return results;
     } catch (error) {
       console.error('Error fetching weekly stats:', error);
       return [];
