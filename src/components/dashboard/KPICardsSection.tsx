@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Heart, Moon, Target, Zap, TrendingUp as TrendUp } from 'lucide-react';
 import MetricCard from './MetricCard';
 import RestingHRChart from './RestingHRChart';
+import CTLChart from './CTLChart';
 import { IntervalsDailyStats } from '@/services/intervalsService';
 import { useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -17,6 +18,7 @@ interface KPICardsSectionProps {
 
 const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: KPICardsSectionProps) => {
   const [isRestingHRDialogOpen, setIsRestingHRDialogOpen] = useState(false);
+  const [isCTLDialogOpen, setIsCTLDialogOpen] = useState(false);
   const { data: weeklyStats } = useIntervalsWeeklyStats();
 
   // Generate resting HR data for the chart
@@ -52,6 +54,39 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
     return data;
   };
 
+  // Generate CTL data for the chart
+  const generateCTLData = () => {
+    if (weeklyStats && weeklyStats.length > 0) {
+      return weeklyStats.slice(-7).map(stat => ({
+        date: stat.date,
+        ctl: stat.ctl || 0,
+      }));
+    }
+
+    // Fallback data for 7 days
+    const data = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      
+      let dayCTL;
+      if (i === 6) {
+        dayCTL = ctl || 67;
+      } else {
+        const baseCTL = 67;
+        const variation = (Math.random() - 0.5) * 10;
+        dayCTL = Math.max(0, baseCTL + variation);
+      }
+      
+      data.push({
+        date: date.toISOString().split('T')[0],
+        ctl: Math.round(dayCTL),
+      });
+    }
+    
+    return data;
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
       <Dialog open={isRestingHRDialogOpen} onOpenChange={setIsRestingHRDialogOpen}>
@@ -75,13 +110,26 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
         </DialogContent>
       </Dialog>
       
-      <MetricCard
-        title="Fitness (CTL)"
-        value={`${ctl}`}
-        icon={Target}
-        color="bg-green-500"
-        trend="+5"
-      />
+      <Dialog open={isCTLDialogOpen} onOpenChange={setIsCTLDialogOpen}>
+        <DialogTrigger asChild>
+          <div className="cursor-pointer">
+            <MetricCard
+              title="Fitness (CTL)"
+              value={`${ctl}`}
+              icon={Target}
+              color="bg-green-500"
+              trend="+5"
+            />
+          </div>
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Fitness (CTL) - 7 derniers jours</DialogTitle>
+          </DialogHeader>
+          <CTLChart data={generateCTLData()} />
+        </DialogContent>
+      </Dialog>
+      
       <MetricCard
         title="Fatigue (ATL)"
         value={`${atl}`}
