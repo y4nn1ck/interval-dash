@@ -80,7 +80,7 @@ const RestingHRChart = ({ data }: RestingHRChartProps) => {
             stroke="#3b82f6" 
             strokeWidth={1}
             strokeDasharray="5 5"
-            label={{ value: `Moyenne: ${Math.round(averageRestingHR)} bpm`, position: "topRight", fontSize: 11, fill: "#3b82f6" }}
+            label={{ value: `Moyenne: ${Math.round(averageRestingHR)} bpm`, position: "top", fontSize: 11, fill: "#3b82f6" }}
           />
           <Line 
             type="monotone" 
