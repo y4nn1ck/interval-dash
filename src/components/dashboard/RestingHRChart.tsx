@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -32,6 +32,9 @@ const RestingHRChart = ({ data }: RestingHRChartProps) => {
       </div>
     );
   }
+
+  // Calculate average resting heart rate
+  const averageRestingHR = validData.reduce((sum, item) => sum + item.resting_hr, 0) / validData.length;
 
   return (
     <ChartContainer config={chartConfig} className="h-[300px] w-full">
@@ -71,6 +74,13 @@ const RestingHRChart = ({ data }: RestingHRChartProps) => {
               const date = parseISO(value as string);
               return format(date, 'dd MMMM yyyy', { locale: fr });
             }}
+          />
+          <ReferenceLine 
+            y={averageRestingHR} 
+            stroke="#3b82f6" 
+            strokeWidth={1}
+            strokeDasharray="5 5"
+            label={{ value: `Moyenne: ${Math.round(averageRestingHR)} bpm`, position: "topRight", fontSize: 11, fill: "#3b82f6" }}
           />
           <Line 
             type="monotone" 
