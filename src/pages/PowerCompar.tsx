@@ -13,13 +13,27 @@ interface PowerData {
 
 interface FileData {
   name: string;
-  avgNormalizedPower: number;
+  avgWatts: number;
   powerData: PowerData[];
 }
 
 const PowerCompar = () => {
   const [file1, setFile1] = useState<FileData | null>(null);
   const [file2, setFile2] = useState<FileData | null>(null);
+
+  const smoothPowerData = (data: PowerData[], windowSize: number = 3): PowerData[] => {
+    return data.map((point, index) => {
+      const start = Math.max(0, index - Math.floor(windowSize / 2));
+      const end = Math.min(data.length, index + Math.ceil(windowSize / 2));
+      const slice = data.slice(start, end);
+      const avgPower = slice.reduce((sum, p) => sum + p.power, 0) / slice.length;
+      
+      return {
+        time: point.time,
+        power: avgPower
+      };
+    });
+  };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, fileNumber: 1 | 2) => {
     const file = event.target.files?.[0];
@@ -36,14 +50,17 @@ const PowerCompar = () => {
       });
     }
 
-    const avgNormalizedPower = Math.round(
-      mockPowerData.reduce((sum, point) => sum + point.power, 0) / mockPowerData.length
+    // Apply 3-second smoothing
+    const smoothedData = smoothPowerData(mockPowerData, 3);
+
+    const avgWatts = Math.round(
+      smoothedData.reduce((sum, point) => sum + point.power, 0) / smoothedData.length
     );
 
     const fileData: FileData = {
       name: file.name,
-      avgNormalizedPower,
-      powerData: mockPowerData
+      avgWatts,
+      powerData: smoothedData
     };
 
     if (fileNumber === 1) {
@@ -51,6 +68,13 @@ const PowerCompar = () => {
     } else {
       setFile2(fileData);
     }
+  };
+
+  const calculatePercentageDifference = (): number | null => {
+    if (!file1 || !file2) return null;
+    
+    const difference = ((file2.avgWatts - file1.avgWatts) / file1.avgWatts) * 100;
+    return Math.round(difference * 10) / 10; // Round to 1 decimal place
   };
 
   const generateChartData = () => {
@@ -61,7 +85,7 @@ const PowerCompar = () => {
 
     for (let i = 0; i < maxLength; i++) {
       chartData.push({
-        time: i,
+        time: i / 60, // Convert seconds to minutes
         power1: file1.powerData[i]?.power || null,
         power2: file2.powerData[i]?.power || null,
       });
@@ -69,6 +93,8 @@ const PowerCompar = () => {
 
     return chartData;
   };
+
+  const percentageDiff = calculatePercentageDifference();
 
   return (
     <div className="p-6 space-y-6">
@@ -97,7 +123,12 @@ const PowerCompar = () => {
             {file1 && (
               <div className="p-4 bg-green-50 rounded-lg">
                 <p className="font-semibold">{file1.name}</p>
-                <p className="text-lg">NP Moyen: <span className="font-bold">{file1.avgNormalizedPower}W</span></p>
+                <p className="text-lg">Puissance Moyenne: <span className="font-bold">{file1.avgWatts}W</span></p>
+                {percentageDiff !== null && (
+                  <p className="text-sm text-muted-foreground">
+                    Différence: {percentageDiff > 0 ? '+' : ''}{percentageDiff}%
+                  </p>
+                )}
               </div>
             )}
           </CardContent>
@@ -122,7 +153,12 @@ const PowerCompar = () => {
             {file2 && (
               <div className="p-4 bg-blue-50 rounded-lg">
                 <p className="font-semibold">{file2.name}</p>
-                <p className="text-lg">NP Moyen: <span className="font-bold">{file2.avgNormalizedPower}W</span></p>
+                <p className="text-lg">Puissance Moyenne: <span className="font-bold">{file2.avgWatts}W</span></p>
+                {percentageDiff !== null && (
+                  <p className="text-sm text-muted-foreground">
+                    Différence: {percentageDiff > 0 ? '+' : ''}{percentageDiff}%
+                  </p>
+                )}
               </div>
             )}
           </CardContent>
@@ -134,7 +170,7 @@ const PowerCompar = () => {
         <Card>
           <CardHeader>
             <CardTitle>Comparaison des données de puissance</CardTitle>
-            <CardDescription>Évolution de la puissance dans le temps pour les deux fichiers</CardDescription>
+            <CardDescription>Évolution de la puissance dans le temps pour les deux fichiers (lissage 3 secondes)</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="h-[400px] w-full">
@@ -145,6 +181,7 @@ const PowerCompar = () => {
                     dataKey="time" 
                     className="text-gray-600"
                     fontSize={12}
+                    tickFormatter={(value) => `${Math.round(value)}min`}
                   />
                   <YAxis 
                     className="text-gray-600"
@@ -153,10 +190,10 @@ const PowerCompar = () => {
                   />
                   <Tooltip 
                     formatter={(value, name) => [
-                      value ? `${value}W` : 'N/A', 
+                      value ? `${Math.round(Number(value))}W` : 'N/A', 
                       name === 'power1' ? file1.name : file2.name
                     ]}
-                    labelFormatter={(time) => `Temps: ${time}s`}
+                    labelFormatter={(time) => `Temps: ${Math.round(Number(time))}min`}
                   />
                   <Legend />
                   <Line 
