@@ -58,51 +58,53 @@ export const parseFitFile = async (file: File): Promise<ParsedFitData> => {
         
         const records: FitRecord[] = [];
         const definitions: Map<number, FitDefinition> = new Map();
-        let offset = headerSize; // Start after header
+        let offset = headerSize;
         let startTimestamp: number | null = null;
         
-        while (offset < headerSize + dataSize) {
-          if (offset >= arrayBuffer.byteLength) break;
-          
+        while (offset < headerSize + dataSize && offset < arrayBuffer.byteLength) {
           const recordHeader = dataView.getUint8(offset);
           offset++;
-          
-          console.log(`Processing record at offset ${offset - 1}, header: 0x${recordHeader.toString(16)}`);
           
           if (recordHeader & 0x80) {
             // Compressed timestamp header
             const timeOffset = recordHeader & 0x1F;
             const localMessageType = (recordHeader >> 5) & 0x3;
             
-            console.log('Compressed timestamp record:', { timeOffset, localMessageType });
-            
             const definition = definitions.get(localMessageType);
-            if (definition) {
+            if (definition && offset + getMessageSize(definition) <= arrayBuffer.byteLength) {
               const record = parseDataMessage(dataView, offset, definition);
               if (record && startTimestamp !== null) {
                 record.timestamp = startTimestamp + timeOffset;
                 records.push(record);
               }
               offset += getMessageSize(definition);
+            } else {
+              offset++;
             }
           } else {
             // Normal record header
             const messageType = recordHeader & 0x0F;
             const localMessageType = (recordHeader >> 4) & 0x0F;
             
-            console.log('Normal record:', { messageType, localMessageType });
-            
             if (messageType === 1) {
               // Definition message
-              const definition = parseDefinitionMessage(dataView, offset);
-              definitions.set(localMessageType, definition);
-              offset += getDefinitionMessageSize(dataView, offset);
-              
-              console.log('Definition message parsed:', definition);
+              try {
+                const definition = parseDefinitionMessage(dataView, offset);
+                if (definition) {
+                  definitions.set(localMessageType, definition);
+                  const defSize = getDefinitionMessageSize(dataView, offset);
+                  offset += defSize;
+                } else {
+                  offset++;
+                }
+              } catch (e) {
+                console.log('Error parsing definition message:', e);
+                offset++;
+              }
             } else if (messageType === 0) {
               // Data message
               const definition = definitions.get(localMessageType);
-              if (definition) {
+              if (definition && offset + getMessageSize(definition) <= arrayBuffer.byteLength) {
                 const record = parseDataMessage(dataView, offset, definition);
                 if (record) {
                   if (startTimestamp === null && record.timestamp) {
@@ -112,13 +114,15 @@ export const parseFitFile = async (file: File): Promise<ParsedFitData> => {
                 }
                 offset += getMessageSize(definition);
               } else {
-                console.log('No definition found for local message type:', localMessageType);
                 offset++;
               }
             } else {
               offset++;
             }
           }
+          
+          // Safety check to prevent infinite loops
+          if (offset >= arrayBuffer.byteLength) break;
         }
         
         console.log(`Parsed ${records.length} records from FIT file`);
@@ -154,69 +158,98 @@ export const parseFitFile = async (file: File): Promise<ParsedFitData> => {
   });
 };
 
-function parseDefinitionMessage(dataView: DataView, offset: number): FitDefinition {
-  const reserved = dataView.getUint8(offset);
-  const architecture = dataView.getUint8(offset + 1);
-  const globalMessageNumber = dataView.getUint16(offset + 2, architecture === 0);
-  const numFields = dataView.getUint8(offset + 4);
-  
-  const fields = [];
-  let fieldOffset = offset + 5;
-  
-  for (let i = 0; i < numFields; i++) {
-    fields.push({
-      fieldDefNum: dataView.getUint8(fieldOffset),
-      size: dataView.getUint8(fieldOffset + 1),
-      baseType: dataView.getUint8(fieldOffset + 2)
-    });
-    fieldOffset += 3;
+function parseDefinitionMessage(dataView: DataView, offset: number): FitDefinition | null {
+  try {
+    if (offset + 5 >= dataView.byteLength) return null;
+    
+    const reserved = dataView.getUint8(offset);
+    const architecture = dataView.getUint8(offset + 1);
+    const globalMessageNumber = dataView.getUint16(offset + 2, architecture === 0);
+    const numFields = dataView.getUint8(offset + 4);
+    
+    if (numFields > 50 || offset + 5 + (numFields * 3) > dataView.byteLength) {
+      return null;
+    }
+    
+    const fields = [];
+    let fieldOffset = offset + 5;
+    
+    for (let i = 0; i < numFields; i++) {
+      if (fieldOffset + 3 > dataView.byteLength) break;
+      
+      const fieldDefNum = dataView.getUint8(fieldOffset);
+      const size = dataView.getUint8(fieldOffset + 1);
+      const baseType = dataView.getUint8(fieldOffset + 2);
+      
+      // Validate field size
+      if (size > 0 && size <= 255) {
+        fields.push({
+          fieldDefNum,
+          size,
+          baseType
+        });
+      }
+      
+      fieldOffset += 3;
+    }
+    
+    return {
+      localMessageType: 0,
+      globalMessageNumber,
+      fields
+    };
+  } catch (e) {
+    console.log('Error in parseDefinitionMessage:', e);
+    return null;
   }
-  
-  return {
-    localMessageType: 0, // Will be set by caller
-    globalMessageNumber,
-    fields
-  };
 }
 
 function getDefinitionMessageSize(dataView: DataView, offset: number): number {
-  const numFields = dataView.getUint8(offset + 4);
-  return 5 + (numFields * 3);
+  try {
+    if (offset + 5 > dataView.byteLength) return 1;
+    const numFields = dataView.getUint8(offset + 4);
+    if (numFields > 50) return 1;
+    return 5 + (numFields * 3);
+  } catch (e) {
+    return 1;
+  }
 }
 
 function parseDataMessage(dataView: DataView, offset: number, definition: FitDefinition): FitRecord | null {
   const record: FitRecord = {};
   let fieldOffset = offset;
   
-  for (const field of definition.fields) {
-    try {
+  try {
+    for (const field of definition.fields) {
+      if (fieldOffset + field.size > dataView.byteLength) break;
+      
       let value: number | undefined;
       
-      // Parse based on field size and type
+      // Parse based on field size
       if (field.size === 1) {
         value = dataView.getUint8(fieldOffset);
+        if (value === 0xFF) value = undefined;
       } else if (field.size === 2) {
         value = dataView.getUint16(fieldOffset, true);
+        if (value === 0xFFFF) value = undefined;
       } else if (field.size === 4) {
         value = dataView.getUint32(fieldOffset, true);
+        if (value === 0xFFFFFFFF) value = undefined;
       }
       
-      // Map field definition numbers to known fields
-      // These are based on the FIT SDK field definitions
-      if (definition.globalMessageNumber === 20) { // Record message
+      // Map field definition numbers to known fields for Record messages (20)
+      if (definition.globalMessageNumber === 20 && value !== undefined) {
         switch (field.fieldDefNum) {
           case 253: // timestamp
-            if (value && value !== 0xFFFFFFFF) {
-              record.timestamp = value;
-            }
+            record.timestamp = value;
             break;
           case 7: // power
-            if (value && value !== 0xFFFF && value < 2000) {
+            if (value < 2000) {
               record.power = value;
             }
             break;
           case 3: // cadence
-            if (value && value !== 0xFF && value < 200) {
+            if (value < 200) {
               record.cadence = value;
             }
             break;
@@ -224,10 +257,10 @@ function parseDataMessage(dataView: DataView, offset: number, definition: FitDef
       }
       
       fieldOffset += field.size;
-    } catch (e) {
-      console.log('Error parsing field:', e);
-      fieldOffset += field.size;
     }
+  } catch (e) {
+    console.log('Error parsing data message:', e);
+    return null;
   }
   
   // Only return record if it has meaningful data
