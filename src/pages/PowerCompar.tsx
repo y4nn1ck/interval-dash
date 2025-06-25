@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Upload } from 'lucide-react';
+import { parseFitFile } from '@/utils/fitFileParser';
+import { useToast } from '@/hooks/use-toast';
 
 interface PowerData {
   time: number;
@@ -23,6 +24,8 @@ interface FileData {
 const PowerCompar = () => {
   const [file1, setFile1] = useState<FileData | null>(null);
   const [file2, setFile2] = useState<FileData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const smoothPowerData = (data: PowerData[], windowSize: number = 3): PowerData[] => {
     return data.map((point, index) => {
@@ -40,47 +43,86 @@ const PowerCompar = () => {
     });
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>, fileNumber: 1 | 2) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, fileNumber: 1 | 2) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // TODO: Implement actual FIT file parsing
-    // For now, simulate FIT file parsing with more realistic data structure
-    const mockPowerData: PowerData[] = [];
-    const dataPoints = 1000 + Math.random() * 2000; // Random number of data points
-    const durationInSeconds = dataPoints; // 1 data point per second
+    setIsLoading(true);
     
-    for (let i = 0; i < dataPoints; i++) {
-      mockPowerData.push({
-        time: i / 60, // Convert to minutes immediately
-        power: Math.max(0, 200 + Math.sin(i / 100) * 50 + (Math.random() - 0.5) * 100),
-        rpm: Math.max(0, 90 + Math.sin(i / 80) * 15 + (Math.random() - 0.5) * 20)
+    try {
+      console.log(`Parsing FIT file: ${file.name}`);
+      const parsedData = await parseFitFile(file);
+      console.log(`Parsed ${parsedData.records.length} records from ${file.name}`);
+      
+      // Convert parsed data to PowerData format
+      const powerData: PowerData[] = [];
+      let startTime: number | null = null;
+      
+      parsedData.records.forEach((record, index) => {
+        if (record.power !== undefined) {
+          // Use index-based time if no timestamp, or calculate relative time
+          let timeInMinutes: number;
+          
+          if (record.timestamp !== undefined) {
+            if (startTime === null) {
+              startTime = record.timestamp;
+            }
+            timeInMinutes = (record.timestamp - startTime) / 60;
+          } else {
+            timeInMinutes = index / 60; // Assume 1 record per second
+          }
+          
+          powerData.push({
+            time: timeInMinutes,
+            power: record.power,
+            rpm: record.cadence || undefined
+          });
+        }
       });
-    }
+      
+      if (powerData.length === 0) {
+        throw new Error('No power data found in FIT file');
+      }
+      
+      // Apply 3-second smoothing
+      const smoothedData = smoothPowerData(powerData, 3);
 
-    // Apply 3-second smoothing
-    const smoothedData = smoothPowerData(mockPowerData, 3);
+      const avgWatts = Math.round(
+        smoothedData.reduce((sum, point) => sum + point.power, 0) / smoothedData.length
+      );
 
-    const avgWatts = Math.round(
-      smoothedData.reduce((sum, point) => sum + point.power, 0) / smoothedData.length
-    );
+      const avgRpm = Math.round(
+        smoothedData.reduce((sum, point) => sum + (point.rpm || 0), 0) / smoothedData.length
+      );
 
-    const avgRpm = Math.round(
-      smoothedData.reduce((sum, point) => sum + (point.rpm || 0), 0) / smoothedData.length
-    );
+      const fileData: FileData = {
+        name: file.name,
+        avgWatts,
+        avgRpm,
+        powerData: smoothedData,
+        duration: parsedData.duration / 60 // Convert to minutes
+      };
 
-    const fileData: FileData = {
-      name: file.name,
-      avgWatts,
-      avgRpm,
-      powerData: smoothedData,
-      duration: durationInSeconds / 60 // Convert to minutes
-    };
-
-    if (fileNumber === 1) {
-      setFile1(fileData);
-    } else {
-      setFile2(fileData);
+      if (fileNumber === 1) {
+        setFile1(fileData);
+      } else {
+        setFile2(fileData);
+      }
+      
+      toast({
+        title: "Fichier chargé avec succès",
+        description: `${file.name} analysé avec ${smoothedData.length} points de données`,
+      });
+      
+    } catch (error) {
+      console.error('Error parsing FIT file:', error);
+      toast({
+        title: "Erreur lors du chargement",
+        description: `Impossible de lire le fichier ${file.name}. Vérifiez qu'il s'agit d'un fichier FIT valide.`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -133,6 +175,7 @@ const PowerCompar = () => {
                 accept=".fit"
                 onChange={(e) => handleFileUpload(e, 1)}
                 className="flex-1"
+                disabled={isLoading}
               />
               <Upload className="h-5 w-5 text-muted-foreground" />
             </div>
@@ -165,6 +208,7 @@ const PowerCompar = () => {
                 accept=".fit"
                 onChange={(e) => handleFileUpload(e, 2)}
                 className="flex-1"
+                disabled={isLoading}
               />
               <Upload className="h-5 w-5 text-muted-foreground" />
             </div>
@@ -184,6 +228,14 @@ const PowerCompar = () => {
           </CardContent>
         </Card>
       </div>
+
+      {isLoading && (
+        <Card>
+          <CardContent className="p-6 text-center">
+            <p>Analyse du fichier FIT en cours...</p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Power Comparison Chart */}
       {file1 && file2 && (
