@@ -9,12 +9,15 @@ import { Upload } from 'lucide-react';
 interface PowerData {
   time: number;
   power: number;
+  rpm?: number;
 }
 
 interface FileData {
   name: string;
   avgWatts: number;
+  avgRpm: number;
   powerData: PowerData[];
+  duration: number; // in minutes
 }
 
 const PowerCompar = () => {
@@ -27,10 +30,12 @@ const PowerCompar = () => {
       const end = Math.min(data.length, index + Math.ceil(windowSize / 2));
       const slice = data.slice(start, end);
       const avgPower = slice.reduce((sum, p) => sum + p.power, 0) / slice.length;
+      const avgRpm = slice.reduce((sum, p) => sum + (p.rpm || 0), 0) / slice.length;
       
       return {
         time: point.time,
-        power: avgPower
+        power: avgPower,
+        rpm: avgRpm
       };
     });
   };
@@ -39,14 +44,17 @@ const PowerCompar = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Simulate FIT file parsing (in real implementation, you'd use a FIT file parser)
+    // TODO: Implement actual FIT file parsing
+    // For now, simulate FIT file parsing with more realistic data structure
     const mockPowerData: PowerData[] = [];
     const dataPoints = 1000 + Math.random() * 2000; // Random number of data points
+    const durationInSeconds = dataPoints; // 1 data point per second
     
     for (let i = 0; i < dataPoints; i++) {
       mockPowerData.push({
-        time: i,
-        power: Math.max(0, 200 + Math.sin(i / 100) * 50 + (Math.random() - 0.5) * 100)
+        time: i / 60, // Convert to minutes immediately
+        power: Math.max(0, 200 + Math.sin(i / 100) * 50 + (Math.random() - 0.5) * 100),
+        rpm: Math.max(0, 90 + Math.sin(i / 80) * 15 + (Math.random() - 0.5) * 20)
       });
     }
 
@@ -57,10 +65,16 @@ const PowerCompar = () => {
       smoothedData.reduce((sum, point) => sum + point.power, 0) / smoothedData.length
     );
 
+    const avgRpm = Math.round(
+      smoothedData.reduce((sum, point) => sum + (point.rpm || 0), 0) / smoothedData.length
+    );
+
     const fileData: FileData = {
       name: file.name,
       avgWatts,
-      powerData: smoothedData
+      avgRpm,
+      powerData: smoothedData,
+      duration: durationInSeconds / 60 // Convert to minutes
     };
 
     if (fileNumber === 1) {
@@ -85,9 +99,11 @@ const PowerCompar = () => {
 
     for (let i = 0; i < maxLength; i++) {
       chartData.push({
-        time: i / 60, // Convert seconds to minutes
+        time: i / 60, // Already in minutes from data processing
         power1: file1.powerData[i]?.power || null,
         power2: file2.powerData[i]?.power || null,
+        rpm1: file1.powerData[i]?.rpm || null,
+        rpm2: file2.powerData[i]?.rpm || null,
       });
     }
 
@@ -124,6 +140,8 @@ const PowerCompar = () => {
               <div className="p-4 bg-green-50 rounded-lg">
                 <p className="font-semibold">{file1.name}</p>
                 <p className="text-lg">Puissance Moyenne: <span className="font-bold">{file1.avgWatts}W</span></p>
+                <p className="text-sm text-muted-foreground">RPM Moyen: {file1.avgRpm}</p>
+                <p className="text-sm text-muted-foreground">Durée: {Math.round(file1.duration)}min</p>
                 {percentageDiff !== null && (
                   <p className="text-sm text-muted-foreground">
                     Différence: {percentageDiff > 0 ? '+' : ''}{percentageDiff}%
@@ -154,6 +172,8 @@ const PowerCompar = () => {
               <div className="p-4 bg-blue-50 rounded-lg">
                 <p className="font-semibold">{file2.name}</p>
                 <p className="text-lg">Puissance Moyenne: <span className="font-bold">{file2.avgWatts}W</span></p>
+                <p className="text-sm text-muted-foreground">RPM Moyen: {file2.avgRpm}</p>
+                <p className="text-sm text-muted-foreground">Durée: {Math.round(file2.duration)}min</p>
                 {percentageDiff !== null && (
                   <p className="text-sm text-muted-foreground">
                     Différence: {percentageDiff > 0 ? '+' : ''}{percentageDiff}%
@@ -209,6 +229,62 @@ const PowerCompar = () => {
                     type="monotone" 
                     dataKey="power2" 
                     stroke="#3b82f6"
+                    strokeWidth={2}
+                    dot={false}
+                    name={file2.name}
+                    connectNulls={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* RPM Comparison Chart */}
+      {file1 && file2 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Comparaison des données RPM</CardTitle>
+            <CardDescription>Évolution de la cadence dans le temps pour les deux fichiers (lissage 3 secondes)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[400px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={generateChartData()}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis 
+                    dataKey="time" 
+                    className="text-gray-600"
+                    fontSize={12}
+                    tickFormatter={(value) => `${Math.round(value)}min`}
+                  />
+                  <YAxis 
+                    className="text-gray-600"
+                    fontSize={12}
+                    label={{ value: 'RPM', angle: -90, position: 'insideLeft' }}
+                  />
+                  <Tooltip 
+                    formatter={(value, name) => [
+                      value ? `${Math.round(Number(value))} RPM` : 'N/A', 
+                      name === 'rpm1' ? file1.name : file2.name
+                    ]}
+                    labelFormatter={(time) => `Temps: ${Math.round(Number(time))}min`}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="rpm1" 
+                    stroke="#f59e0b"
+                    strokeWidth={2}
+                    dot={false}
+                    name={file1.name}
+                    connectNulls={false}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="rpm2" 
+                    stroke="#ef4444"
                     strokeWidth={2}
                     dot={false}
                     name={file2.name}
