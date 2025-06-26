@@ -32,12 +32,10 @@ const FitAnalyzer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Convert FIT timestamp to JavaScript Date
-  // FIT uses seconds since UTC 00:00 Dec 31 1989
-  const fitToJsDate = (fitTimestamp: number): Date => {
-    // Seconds between Jan 1, 1970 and Dec 31, 1989
-    const FIT_EPOCH_OFFSET = 631065600;
-    return new Date((fitTimestamp + FIT_EPOCH_OFFSET) * 1000);
+  // Convert Unix timestamp to JavaScript Date
+  // FIT timestamps are already in Unix format (seconds since Jan 1, 1970)
+  const unixToJsDate = (unixTimestamp: number): Date => {
+    return new Date(unixTimestamp * 1000);
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,20 +54,20 @@ const FitAnalyzer = () => {
         throw new Error('No valid power data found');
       }
 
-      // Get first and last timestamps
+      // Get first and last timestamps (these are already Unix timestamps)
       const firstRecord = validRecords[0];
       const lastRecord = validRecords[validRecords.length - 1];
       
       const firstTimestamp = firstRecord.timestamp || 0;
       const lastTimestamp = lastRecord.timestamp || 0;
       
-      // Calculate duration in different ways
-      const rawDuration = parsedData.duration;
+      // Calculate duration in seconds
       const calculatedDuration = lastTimestamp - firstTimestamp;
+      const rawDuration = parsedData.duration;
       
       // Convert timestamps to dates
-      const firstDate = fitToJsDate(firstTimestamp);
-      const lastDate = fitToJsDate(lastTimestamp);
+      const firstDate = unixToJsDate(firstTimestamp);
+      const lastDate = unixToJsDate(lastTimestamp);
       
       // Calculate power statistics
       const powers = validRecords.map(r => r.power!);
@@ -84,7 +82,7 @@ const FitAnalyzer = () => {
       // Get sample records with converted timestamps
       const sampleRecords = validRecords.slice(0, 10).map(record => ({
         timestamp: record.timestamp || 0,
-        timestampDate: fitToJsDate(record.timestamp || 0).toISOString(),
+        timestampDate: unixToJsDate(record.timestamp || 0).toISOString(),
         power: record.power!,
         cadence: record.cadence
       }));
@@ -189,9 +187,9 @@ const FitAnalyzer = () => {
               <CardTitle>Analyse des timestamps</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <p><strong>Premier timestamp (brut):</strong> {analysis.firstTimestamp}</p>
+              <p><strong>Premier timestamp (Unix):</strong> {analysis.firstTimestamp}</p>
               <p><strong>Premier timestamp (date):</strong> {analysis.firstTimestampDate}</p>
-              <p><strong>Dernier timestamp (brut):</strong> {analysis.lastTimestamp}</p>
+              <p><strong>Dernier timestamp (Unix):</strong> {analysis.lastTimestamp}</p>
               <p><strong>Dernier timestamp (date):</strong> {analysis.lastTimestampDate}</p>
             </CardContent>
           </Card>
@@ -219,7 +217,7 @@ const FitAnalyzer = () => {
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left p-2">Timestamp (brut)</th>
+                      <th className="text-left p-2">Timestamp (Unix)</th>
                       <th className="text-left p-2">Date/Heure</th>
                       <th className="text-left p-2">Puissance (W)</th>
                       <th className="text-left p-2">Cadence (RPM)</th>
