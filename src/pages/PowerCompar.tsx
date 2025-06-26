@@ -40,23 +40,12 @@ const PowerCompar = () => {
       const parsedData = await parseFitFile(file);
       console.log(`Parsed ${parsedData.records.length} records from ${file.name}`);
       
-      // Convert parsed data to PowerData format
+      // Convert parsed data to PowerData format with proper time handling
       const powerData: PowerData[] = [];
-      let startTime: number | null = null;
       
       parsedData.records.forEach((record, index) => {
-        if (record.power !== undefined) {
-          // Use index-based time if no timestamp, or calculate relative time
-          let timeInMinutes: number;
-          
-          if (record.timestamp !== undefined) {
-            if (startTime === null) {
-              startTime = record.timestamp;
-            }
-            timeInMinutes = (record.timestamp - startTime) / 60;
-          } else {
-            timeInMinutes = index / 60; // Assume 1 record per second
-          }
+        if (record.power !== undefined && record.power > 0) {
+          const timeInMinutes = (record.timestamp || index) / 60; // Convert seconds to minutes
           
           powerData.push({
             time: timeInMinutes,
@@ -67,19 +56,24 @@ const PowerCompar = () => {
       });
       
       if (powerData.length === 0) {
-        throw new Error('No power data found in FIT file');
+        throw new Error('No valid power data found in FIT file');
       }
+      
+      console.log('Power data sample:', powerData.slice(0, 5));
       
       // Apply 3-second smoothing
       const smoothedData = smoothPowerData(powerData, 3);
 
+      // Calculate averages from smoothed data
+      const validPowerData = smoothedData.filter(point => point.power > 0);
       const avgWatts = Math.round(
-        smoothedData.reduce((sum, point) => sum + point.power, 0) / smoothedData.length
+        validPowerData.reduce((sum, point) => sum + point.power, 0) / validPowerData.length
       );
 
-      const avgRpm = Math.round(
-        smoothedData.reduce((sum, point) => sum + (point.rpm || 0), 0) / smoothedData.length
-      );
+      const validRpmData = smoothedData.filter(point => point.rpm && point.rpm > 0);
+      const avgRpm = validRpmData.length > 0 ? Math.round(
+        validRpmData.reduce((sum, point) => sum + (point.rpm || 0), 0) / validRpmData.length
+      ) : 0;
 
       const fileData: FileData = {
         name: file.name,
@@ -88,6 +82,14 @@ const PowerCompar = () => {
         powerData: smoothedData,
         duration: parsedData.duration / 60 // Convert to minutes
       };
+
+      console.log('File data processed:', {
+        name: fileData.name,
+        avgWatts: fileData.avgWatts,
+        avgRpm: fileData.avgRpm,
+        dataPoints: fileData.powerData.length,
+        duration: fileData.duration
+      });
 
       if (fileNumber === 1) {
         setFile1(fileData);

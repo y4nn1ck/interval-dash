@@ -45,69 +45,75 @@ export const parseFitFile = async (file: File): Promise<ParsedFitData> => {
         
         const records: FitRecord[] = [];
         let offset = headerSize;
-        const endOffset = Math.min(headerSize + dataSize, arrayBuffer.byteLength - 2); // -2 for CRC
+        const endOffset = Math.min(headerSize + dataSize, arrayBuffer.byteLength - 2);
         
-        // Simple parsing approach - look for record patterns
-        while (offset < endOffset) {
+        let recordCounter = 0;
+        let baseTimestamp: number | null = null;
+        
+        // Parse records with improved time handling
+        while (offset < endOffset && recordCounter < 10000) { // Safety limit
           try {
-            // Try to find record data patterns
-            const record = extractRecordData(dataView, offset);
+            const record = extractRecordData(dataView, offset, recordCounter);
             if (record) {
+              // Set base timestamp from first valid record
+              if (baseTimestamp === null && record.timestamp) {
+                baseTimestamp = record.timestamp;
+                console.log('Base timestamp set to:', baseTimestamp);
+              }
+              
+              // Convert timestamp to relative seconds
+              if (record.timestamp && baseTimestamp) {
+                record.timestamp = record.timestamp - baseTimestamp;
+              } else if (!record.timestamp) {
+                // Use record counter as fallback timestamp (assuming 1Hz recording)
+                record.timestamp = recordCounter;
+              }
+              
               records.push(record);
-              offset += 20; // Skip ahead for next potential record
-            } else {
-              offset += 1; // Move forward byte by byte if no pattern found
+              recordCounter++;
             }
+            offset += 12; // Move to next potential record
           } catch (e) {
-            offset += 1; // Continue parsing on error
+            offset += 1;
           }
           
-          // Safety break to prevent infinite loops
           if (offset >= arrayBuffer.byteLength - 20) break;
         }
         
         console.log(`Extracted ${records.length} records from FIT file`);
         
-        if (records.length === 0) {
-          // Generate sample data if no records found
-          console.log('No records found, generating sample data for testing');
-          for (let i = 0; i < 300; i++) {
-            records.push({
-              timestamp: i,
-              power: Math.floor(Math.random() * 300) + 100,
-              cadence: Math.floor(Math.random() * 40) + 70
-            });
-          }
+        // Filter out invalid records and sort by timestamp
+        const validRecords = records
+          .filter(record => record.power !== undefined && record.power > 0 && record.power < 2000)
+          .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+        
+        console.log(`Filtered to ${validRecords.length} valid records`);
+        
+        if (validRecords.length === 0) {
+          throw new Error('No valid power data found in FIT file');
         }
         
-        // Calculate duration
-        const duration = records.length > 0 ? records.length : 300; // seconds
+        // Calculate actual duration from timestamps
+        const firstTimestamp = validRecords[0].timestamp || 0;
+        const lastTimestamp = validRecords[validRecords.length - 1].timestamp || validRecords.length;
+        const duration = lastTimestamp - firstTimestamp;
         
-        console.log('FIT parsing complete:', { recordCount: records.length, duration });
+        console.log('FIT parsing complete:', { 
+          recordCount: validRecords.length, 
+          duration,
+          firstTimestamp,
+          lastTimestamp,
+          sampleData: validRecords.slice(0, 3)
+        });
         
         resolve({
-          records,
+          records: validRecords,
           duration
         });
         
       } catch (error) {
         console.error('Error parsing FIT file:', error);
-        
-        // Fallback: generate sample data
-        console.log('Generating fallback sample data');
-        const fallbackRecords: FitRecord[] = [];
-        for (let i = 0; i < 300; i++) {
-          fallbackRecords.push({
-            timestamp: i,
-            power: Math.floor(Math.random() * 300) + 100,
-            cadence: Math.floor(Math.random() * 40) + 70
-          });
-        }
-        
-        resolve({
-          records: fallbackRecords,
-          duration: 300
-        });
+        reject(error);
       }
     };
     
@@ -116,43 +122,46 @@ export const parseFitFile = async (file: File): Promise<ParsedFitData> => {
   });
 };
 
-function extractRecordData(dataView: DataView, offset: number): FitRecord | null {
+function extractRecordData(dataView: DataView, offset: number, recordIndex: number): FitRecord | null {
   try {
     if (offset + 20 > dataView.byteLength) return null;
     
-    // Look for potential power and cadence values in the data
     let power: number | undefined;
     let cadence: number | undefined;
     let timestamp: number | undefined;
     
-    // Scan through bytes looking for realistic values
+    // Look for timestamp (32-bit values)
+    for (let i = 0; i <= 16; i += 4) {
+      if (offset + i + 3 >= dataView.byteLength) break;
+      
+      const value32 = dataView.getUint32(offset + i, true);
+      // FIT timestamps are seconds since UTC 00:00 Dec 31 1989
+      // They should be large values (> 631065600 which is Jan 1 2010)
+      if (value32 > 631065600 && value32 < 2147483647 && !timestamp) {
+        timestamp = value32;
+      }
+    }
+    
+    // Look for power and cadence (16-bit and 8-bit values)
     for (let i = 0; i < 16; i += 2) {
       if (offset + i + 1 >= dataView.byteLength) break;
       
       const value16 = dataView.getUint16(offset + i, true);
       const value8 = dataView.getUint8(offset + i);
       
-      // Check for power values (typically 50-500 watts)
-      if (value16 > 50 && value16 < 1000 && !power) {
+      // Power values (typically 0-1000 watts)
+      if (value16 >= 0 && value16 <= 1000 && !power) {
         power = value16;
       }
       
-      // Check for cadence values (typically 50-120 rpm)
-      if (value8 > 40 && value8 < 150 && !cadence) {
+      // Cadence values (typically 0-150 rpm)
+      if (value8 >= 0 && value8 <= 150 && !cadence) {
         cadence = value8;
-      }
-      
-      // Check for timestamp (large 32-bit values)
-      if (i <= 12) {
-        const value32 = dataView.getUint32(offset + i, true);
-        if (value32 > 1000000 && !timestamp) {
-          timestamp = value32;
-        }
       }
     }
     
-    // Return record if we found at least power data
-    if (power) {
+    // Return record if we found power data
+    if (power !== undefined && power > 0) {
       return {
         timestamp,
         power,
