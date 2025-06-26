@@ -1,10 +1,14 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Upload } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { parseFitFile } from '@/utils/fitFileParser';
 import { useToast } from '@/hooks/use-toast';
+import FileUploadSection from '@/components/fit-analyzer/FileUploadSection';
+import FileInfoCard from '@/components/fit-analyzer/FileInfoCard';
+import DurationAnalysisCard from '@/components/fit-analyzer/DurationAnalysisCard';
+import TimestampAnalysisCard from '@/components/fit-analyzer/TimestampAnalysisCard';
+import PowerStatisticsCard from '@/components/fit-analyzer/PowerStatisticsCard';
+import SampleDataTable from '@/components/fit-analyzer/SampleDataTable';
 
 interface FitAnalysis {
   fileName: string;
@@ -130,24 +134,7 @@ const FitAnalyzer = () => {
         <p className="text-muted-foreground">Analysez en détail un fichier FIT pour déboguer les données</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Télécharger un fichier FIT</CardTitle>
-          <CardDescription>Sélectionnez un fichier FIT pour une analyse détaillée</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <Input
-              type="file"
-              accept=".fit"
-              onChange={handleFileUpload}
-              className="flex-1"
-              disabled={isLoading}
-            />
-            <Upload className="h-5 w-5 text-muted-foreground" />
-          </div>
-        </CardContent>
-      </Card>
+      <FileUploadSection onFileUpload={handleFileUpload} isLoading={isLoading} />
 
       {isLoading && (
         <Card>
@@ -159,84 +146,28 @@ const FitAnalyzer = () => {
 
       {analysis && (
         <div className="space-y-6">
-          {/* File Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Informations du fichier</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p><strong>Nom:</strong> {analysis.fileName}</p>
-              <p><strong>Nombre d'enregistrements:</strong> {analysis.recordCount}</p>
-            </CardContent>
-          </Card>
-
-          {/* Duration Analysis */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Analyse de la durée</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p><strong>Durée brute (parser):</strong> {analysis.rawDuration} secondes ({Math.round(analysis.rawDuration / 60)} minutes)</p>
-              <p><strong>Durée calculée (dernier - premier timestamp):</strong> {analysis.calculatedDuration} secondes ({Math.round(analysis.calculatedDuration / 60)} minutes)</p>
-            </CardContent>
-          </Card>
-
-          {/* Timestamp Analysis */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Analyse des timestamps</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p><strong>Premier timestamp (Unix):</strong> {analysis.firstTimestamp}</p>
-              <p><strong>Premier timestamp (date):</strong> {analysis.firstTimestampDate}</p>
-              <p><strong>Dernier timestamp (Unix):</strong> {analysis.lastTimestamp}</p>
-              <p><strong>Dernier timestamp (date):</strong> {analysis.lastTimestampDate}</p>
-            </CardContent>
-          </Card>
-
-          {/* Power Statistics */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Statistiques de puissance</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p><strong>Puissance moyenne:</strong> {analysis.avgPower}W</p>
-              <p><strong>Puissance maximale:</strong> {analysis.maxPower}W</p>
-              <p><strong>Puissance minimale:</strong> {analysis.minPower}W</p>
-              <p><strong>Cadence moyenne:</strong> {analysis.avgCadence} RPM</p>
-            </CardContent>
-          </Card>
-
-          {/* Sample Data */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Échantillon de données (10 premiers enregistrements)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-sm">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left p-2">Timestamp (Unix)</th>
-                      <th className="text-left p-2">Date/Heure</th>
-                      <th className="text-left p-2">Puissance (W)</th>
-                      <th className="text-left p-2">Cadence (RPM)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {analysis.sampleRecords.map((record, index) => (
-                      <tr key={index} className="border-b">
-                        <td className="p-2">{record.timestamp}</td>
-                        <td className="p-2">{new Date(record.timestampDate).toLocaleString()}</td>
-                        <td className="p-2">{record.power}</td>
-                        <td className="p-2">{record.cadence || 'N/A'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+          <FileInfoCard fileName={analysis.fileName} recordCount={analysis.recordCount} />
+          
+          <DurationAnalysisCard 
+            rawDuration={analysis.rawDuration} 
+            calculatedDuration={analysis.calculatedDuration} 
+          />
+          
+          <TimestampAnalysisCard
+            firstTimestamp={analysis.firstTimestamp}
+            lastTimestamp={analysis.lastTimestamp}
+            firstTimestampDate={analysis.firstTimestampDate}
+            lastTimestampDate={analysis.lastTimestampDate}
+          />
+          
+          <PowerStatisticsCard
+            avgPower={analysis.avgPower}
+            maxPower={analysis.maxPower}
+            minPower={analysis.minPower}
+            avgCadence={analysis.avgCadence}
+          />
+          
+          <SampleDataTable sampleRecords={analysis.sampleRecords} />
         </div>
       )}
     </div>
