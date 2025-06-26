@@ -1,5 +1,4 @@
-
-import { LayoutDashboard, BarChart3 } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileSearch } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -22,6 +21,11 @@ const menuItems = [
     title: "Power Compar",
     url: "/power-compar",
     icon: BarChart3,
+  },
+  {
+    title: "FIT Analyzer",
+    url: "/fit-analyzer",
+    icon: FileSearch,
   },
 ];
 
