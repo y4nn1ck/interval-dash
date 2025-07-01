@@ -11,6 +11,9 @@ interface ParsedFitData {
   duration: number;
 }
 
+// FIT Epoch: December 31, 1989 00:00:00 UTC
+const FIT_EPOCH = new Date('1989-12-31T00:00:00Z').getTime() / 1000;
+
 export const parseFitFile = async (file: File): Promise<ParsedFitData> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -47,14 +50,21 @@ export const parseFitFile = async (file: File): Promise<ParsedFitData> => {
         let offset = headerSize;
         const endOffset = Math.min(headerSize + dataSize, arrayBuffer.byteLength - 2);
         
-        // Parse records looking for power and cadence data
+        // More systematic approach to find record data
         while (offset < endOffset) {
           try {
-            const record = extractRecordData(dataView, offset);
-            if (record && record.power && record.power > 0) {
-              records.push(record);
+            // Look for record header byte
+            const recordHeader = dataView.getUint8(offset);
+            
+            // Check if this might be a normal record (bit 7 = 0)
+            if ((recordHeader & 0x80) === 0) {
+              const record = parseRecord(dataView, offset);
+              if (record && record.power && record.power > 0) {
+                records.push(record);
+              }
             }
-            offset += 1; // Move byte by byte to find data patterns
+            
+            offset += 1;
           } catch (e) {
             offset += 1;
           }
@@ -82,6 +92,8 @@ export const parseFitFile = async (file: File): Promise<ParsedFitData> => {
           duration,
           firstTimestamp,
           lastTimestamp,
+          firstFitTimestamp: firstTimestamp,
+          lastFitTimestamp: lastTimestamp,
           sampleData: sortedRecords.slice(0, 3)
         });
         
@@ -101,7 +113,7 @@ export const parseFitFile = async (file: File): Promise<ParsedFitData> => {
   });
 };
 
-function extractRecordData(dataView: DataView, offset: number): FitRecord | null {
+function parseRecord(dataView: DataView, offset: number): FitRecord | null {
   try {
     if (offset + 20 > dataView.byteLength) return null;
     
@@ -109,34 +121,35 @@ function extractRecordData(dataView: DataView, offset: number): FitRecord | null
     let cadence: number | undefined;
     let timestamp: number | undefined;
     
-    // Look for Unix timestamp (32-bit values)
-    // Unix timestamps for 2025 should be around 1735689600+ (Jan 1 2025)
+    // Look for FIT timestamp (32-bit values)
+    // FIT timestamps are seconds since December 31, 1989
+    // Recent FIT files should have timestamps > 1,000,000,000 (from FIT epoch)
     for (let i = 0; i <= 16; i += 4) {
       if (offset + i + 3 >= dataView.byteLength) break;
       
       const value32 = dataView.getUint32(offset + i, true);
-      // Unix timestamps for recent years (2020-2030)
-      if (value32 > 1577836800 && value32 < 1893456000 && !timestamp) {
+      // FIT timestamps should be reasonable values from FIT epoch
+      if (value32 > 1000000000 && value32 < 2000000000 && !timestamp) {
         timestamp = value32;
       }
     }
     
-    // Look for power values (16-bit, typically 0-1000 watts)
+    // Look for power values (16-bit, typically 0-2000 watts)
     for (let i = 0; i < 16; i += 2) {
       if (offset + i + 1 >= dataView.byteLength) break;
       
       const value16 = dataView.getUint16(offset + i, true);
-      if (value16 > 0 && value16 <= 1500 && !power) {
+      if (value16 > 0 && value16 <= 2000 && !power) {
         power = value16;
       }
     }
     
-    // Look for cadence values (8-bit, typically 0-150 rpm)
+    // Look for cadence values (8-bit, typically 0-200 rpm)
     for (let i = 0; i < 20; i++) {
       if (offset + i >= dataView.byteLength) break;
       
       const value8 = dataView.getUint8(offset + i);
-      if (value8 > 0 && value8 <= 150 && !cadence) {
+      if (value8 > 0 && value8 <= 200 && !cadence) {
         cadence = value8;
       }
     }
@@ -155,3 +168,10 @@ function extractRecordData(dataView: DataView, offset: number): FitRecord | null
     return null;
   }
 }
+
+// Convert FIT timestamp to JavaScript Date
+export const fitTimestampToDate = (fitTimestamp: number): Date => {
+  // FIT timestamps are seconds since December 31, 1989 00:00:00 UTC
+  const unixTimestamp = fitTimestamp + FIT_EPOCH;
+  return new Date(unixTimestamp * 1000);
+};

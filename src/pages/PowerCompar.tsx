@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { parseFitFile } from '@/utils/fitFileParser';
+import { parseFitFile, fitTimestampToDate } from '@/utils/fitFileParser';
 import { useToast } from '@/hooks/use-toast';
 import { smoothPowerData } from '@/utils/dataSmoothing';
 import { generateChartData } from '@/utils/chartDataGenerator';
@@ -43,12 +42,16 @@ const PowerCompar = () => {
       // Convert parsed data to PowerData format with proper time handling
       const powerData: PowerData[] = [];
       
+      // Get the first timestamp to calculate relative time
+      const firstTimestamp = parsedData.records[0]?.timestamp || 0;
+      
       parsedData.records.forEach((record, index) => {
         if (record.power !== undefined && record.power > 0) {
-          const timeInMinutes = (record.timestamp || index) / 60; // Convert seconds to minutes
+          // Calculate time in minutes from start of workout
+          const relativeTime = record.timestamp ? (record.timestamp - firstTimestamp) / 60 : index / 60;
           
           powerData.push({
-            time: timeInMinutes,
+            time: relativeTime,
             power: record.power,
             rpm: record.cadence || undefined
           });
@@ -60,6 +63,7 @@ const PowerCompar = () => {
       }
       
       console.log('Power data sample:', powerData.slice(0, 5));
+      console.log('First FIT timestamp:', firstTimestamp, 'Converted to date:', fitTimestampToDate(firstTimestamp).toISOString());
       
       // Apply 3-second smoothing
       const smoothedData = smoothPowerData(powerData, 3);

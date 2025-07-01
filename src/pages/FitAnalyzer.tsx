@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { parseFitFile } from '@/utils/fitFileParser';
+import { parseFitFile, fitTimestampToDate } from '@/utils/fitFileParser';
 import { useToast } from '@/hooks/use-toast';
 import FileUploadSection from '@/components/fit-analyzer/FileUploadSection';
 import FileInfoCard from '@/components/fit-analyzer/FileInfoCard';
@@ -36,12 +36,6 @@ const FitAnalyzer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  // Convert Unix timestamp to JavaScript Date
-  // FIT timestamps are already in Unix format (seconds since Jan 1, 1970)
-  const unixToJsDate = (unixTimestamp: number): Date => {
-    return new Date(unixTimestamp * 1000);
-  };
-
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -58,7 +52,7 @@ const FitAnalyzer = () => {
         throw new Error('No valid power data found');
       }
 
-      // Get first and last timestamps (these are already Unix timestamps)
+      // Get first and last timestamps (these are FIT timestamps)
       const firstRecord = validRecords[0];
       const lastRecord = validRecords[validRecords.length - 1];
       
@@ -69,9 +63,16 @@ const FitAnalyzer = () => {
       const calculatedDuration = lastTimestamp - firstTimestamp;
       const rawDuration = parsedData.duration;
       
-      // Convert timestamps to dates
-      const firstDate = unixToJsDate(firstTimestamp);
-      const lastDate = unixToJsDate(lastTimestamp);
+      // Convert FIT timestamps to dates
+      const firstDate = fitTimestampToDate(firstTimestamp);
+      const lastDate = fitTimestampToDate(lastTimestamp);
+      
+      console.log('Timestamp conversion:', {
+        firstFitTimestamp: firstTimestamp,
+        lastFitTimestamp: lastTimestamp,
+        firstDate: firstDate.toISOString(),
+        lastDate: lastDate.toISOString()
+      });
       
       // Calculate power statistics
       const powers = validRecords.map(r => r.power!);
@@ -86,7 +87,7 @@ const FitAnalyzer = () => {
       // Get sample records with converted timestamps
       const sampleRecords = validRecords.slice(0, 10).map(record => ({
         timestamp: record.timestamp || 0,
-        timestampDate: unixToJsDate(record.timestamp || 0).toISOString(),
+        timestampDate: fitTimestampToDate(record.timestamp || 0).toISOString(),
         power: record.power!,
         cadence: record.cadence
       }));
