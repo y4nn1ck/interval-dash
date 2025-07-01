@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { parseFitFile, fitTimestampToDate } from '@/utils/fitFileParser';
+import { parseProperFitFile } from '@/utils/properFitParser';
 import { useToast } from '@/hooks/use-toast';
 import { smoothPowerData } from '@/utils/dataSmoothing';
 import { generateChartData } from '@/utils/chartDataGenerator';
@@ -35,20 +35,26 @@ const PowerCompar = () => {
     setIsLoading(true);
     
     try {
-      console.log(`Parsing FIT file: ${file.name}`);
-      const parsedData = await parseFitFile(file);
+      console.log(`Parsing FIT file with proper parser: ${file.name}`);
+      const parsedData = await parseProperFitFile(file);
       console.log(`Parsed ${parsedData.records.length} records from ${file.name}`);
       
-      // Convert parsed data to PowerData format with proper time handling
+      // Convert parsed data to PowerData format
       const powerData: PowerData[] = [];
       
       // Get the first timestamp to calculate relative time
-      const firstTimestamp = parsedData.records[0]?.timestamp || 0;
+      const firstRecord = parsedData.records[0];
+      const firstTimestamp = firstRecord?.timestamp ? new Date(firstRecord.timestamp).getTime() : 0;
       
       parsedData.records.forEach((record, index) => {
         if (record.power !== undefined && record.power > 0) {
           // Calculate time in minutes from start of workout
-          const relativeTime = record.timestamp ? (record.timestamp - firstTimestamp) / 60 : index / 60;
+          let relativeTime = index / 60; // fallback to index-based time
+          
+          if (record.timestamp) {
+            const recordTime = new Date(record.timestamp).getTime();
+            relativeTime = (recordTime - firstTimestamp) / (1000 * 60); // Convert to minutes
+          }
           
           powerData.push({
             time: relativeTime,
@@ -63,7 +69,6 @@ const PowerCompar = () => {
       }
       
       console.log('Power data sample:', powerData.slice(0, 5));
-      console.log('First FIT timestamp:', firstTimestamp, 'Converted to date:', fitTimestampToDate(firstTimestamp).toISOString());
       
       // Apply 3-second smoothing
       const smoothedData = smoothPowerData(powerData, 3);
@@ -87,7 +92,7 @@ const PowerCompar = () => {
         duration: parsedData.duration / 60 // Convert to minutes
       };
 
-      console.log('File data processed:', {
+      console.log('File data processed with proper parser:', {
         name: fileData.name,
         avgWatts: fileData.avgWatts,
         avgRpm: fileData.avgRpm,
@@ -102,15 +107,15 @@ const PowerCompar = () => {
       }
       
       toast({
-        title: "Fichier chargé avec succès",
+        title: "Fichier chargé avec le parser FIT",
         description: `${file.name} analysé avec ${smoothedData.length} points de données`,
       });
       
     } catch (error) {
-      console.error('Error parsing FIT file:', error);
+      console.error('Error parsing FIT file with proper parser:', error);
       toast({
         title: "Erreur lors du chargement",
-        description: `Impossible de lire le fichier ${file.name}. Vérifiez qu'il s'agit d'un fichier FIT valide.`,
+        description: `Impossible de lire le fichier ${file.name}. ${error}`,
         variant: "destructive",
       });
     } finally {
@@ -131,8 +136,8 @@ const PowerCompar = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Power Compar</h1>
-        <p className="text-muted-foreground">Analysez et comparez les données de puissance de deux fichiers FIT</p>
+        <h1 className="text-3xl font-bold">Power Compar (Proper Parser)</h1>
+        <p className="text-muted-foreground">Analysez et comparez les données de puissance avec un parser FIT professionnel</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -160,7 +165,7 @@ const PowerCompar = () => {
       {isLoading && (
         <Card>
           <CardContent className="p-6 text-center">
-            <p>Analyse du fichier FIT en cours...</p>
+            <p>Analyse du fichier FIT avec le parser professionnel...</p>
           </CardContent>
         </Card>
       )}
