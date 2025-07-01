@@ -1,4 +1,5 @@
-import { LayoutDashboard, BarChart3, FileSearch } from "lucide-react";
+
+import { LayoutDashboard, BarChart3, FileSearch, Binary } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -26,6 +27,11 @@ const menuItems = [
     title: "FIT Analyzer",
     url: "/fit-analyzer",
     icon: FileSearch,
+  },
+  {
+    title: "FIT Raw Reader",
+    url: "/fit-raw-reader",
+    icon: Binary,
   },
 ];
 

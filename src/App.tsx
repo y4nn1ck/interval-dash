@@ -9,6 +9,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import Dashboard from "./pages/Dashboard";
 import PowerCompar from "./pages/PowerCompar";
 import FitAnalyzer from "./pages/FitAnalyzer";
+import FitRawReader from "./pages/FitRawReader";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
                   <Route path="/" element={<Dashboard />} />
                   <Route path="/power-compar" element={<PowerCompar />} />
                   <Route path="/fit-analyzer" element={<FitAnalyzer />} />
+                  <Route path="/fit-raw-reader" element={<FitRawReader />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
