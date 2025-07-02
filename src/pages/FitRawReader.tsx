@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -272,61 +271,109 @@ const FitRawReader = () => {
       )}
 
       {parsedFitData && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Données FIT parsées</CardTitle>
-            <CardDescription>Structure des données extraites par le parser FIT</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="font-medium">Records</p>
-                  <p className="text-muted-foreground">{parsedFitData.records.length}</p>
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle>Structure complète des données FIT (Debug)</CardTitle>
+              <CardDescription>Toutes les données trouvées par le parser FIT professionnel</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="font-medium">Records</p>
+                    <p className="text-muted-foreground">{parsedFitData.records.length}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Sessions</p>
+                    <p className="text-muted-foreground">{parsedFitData.sessions?.length || 0}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Laps</p>
+                    <p className="text-muted-foreground">{parsedFitData.laps?.length || 0}</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Durée</p>
+                    <p className="text-muted-foreground">{Math.round(parsedFitData.duration)} sec</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium">Sessions</p>
-                  <p className="text-muted-foreground">{parsedFitData.sessions?.length || 0}</p>
-                </div>
-                <div>
-                  <p className="font-medium">Laps</p>
-                  <p className="text-muted-foreground">{parsedFitData.laps?.length || 0}</p>
-                </div>
-                <div>
-                  <p className="font-medium">Durée</p>
-                  <p className="text-muted-foreground">{Math.round(parsedFitData.duration)} sec</p>
+                
+                {parsedFitData.rawDataStructure && (
+                  <div>
+                    <p className="font-medium mb-2">Structure complète des données (RAW):</p>
+                    <pre className="text-xs bg-muted p-4 rounded overflow-x-auto max-h-96">
+                      {JSON.stringify(parsedFitData.rawDataStructure, null, 2)}
+                    </pre>
+                  </div>
+                )}
+                
+                {parsedFitData.records.length > 0 && (
+                  <div>
+                    <p className="font-medium mb-2">Exemples de records extraits:</p>
+                    <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
+                      {JSON.stringify(parsedFitData.records.slice(0, 5), null, 2)}
+                    </pre>
+                  </div>
+                )}
+                
+                {parsedFitData.sessions && parsedFitData.sessions.length > 0 && (
+                  <div>
+                    <p className="font-medium mb-2">Sessions:</p>
+                    <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
+                      {JSON.stringify(parsedFitData.sessions, null, 2)}
+                    </pre>
+                  </div>
+                )}
+                
+                {parsedFitData.device_info && (
+                  <div>
+                    <p className="font-medium mb-2">Info appareil:</p>
+                    <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
+                      {JSON.stringify(parsedFitData.device_info, null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Données FIT parsées (résumé)</CardTitle>
+              <CardDescription>Structure des données extraites par le parser FIT</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <p className="font-medium">Records avec puissance</p>
+                    <p className="text-muted-foreground">
+                      {parsedFitData.records.filter(r => r.power && r.power > 0).length}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Records avec cadence</p>
+                    <p className="text-muted-foreground">
+                      {parsedFitData.records.filter(r => r.cadence && r.cadence > 0).length}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Records avec FC</p>
+                    <p className="text-muted-foreground">
+                      {parsedFitData.records.filter(r => r.heart_rate && r.heart_rate > 0).length}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Records avec vitesse</p>
+                    <p className="text-muted-foreground">
+                      {parsedFitData.records.filter(r => r.speed && r.speed > 0).length}
+                    </p>
+                  </div>
                 </div>
               </div>
-              
-              {parsedFitData.records.length > 0 && (
-                <div>
-                  <p className="font-medium mb-2">Exemple de records:</p>
-                  <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
-                    {JSON.stringify(parsedFitData.records.slice(0, 3), null, 2)}
-                  </pre>
-                </div>
-              )}
-              
-              {parsedFitData.sessions && parsedFitData.sessions.length > 0 && (
-                <div>
-                  <p className="font-medium mb-2">Sessions:</p>
-                  <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
-                    {JSON.stringify(parsedFitData.sessions, null, 2)}
-                  </pre>
-                </div>
-              )}
-              
-              {parsedFitData.device_info && (
-                <div>
-                  <p className="font-medium mb-2">Info appareil:</p>
-                  <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
-                    {JSON.stringify(parsedFitData.device_info, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {header && (
