@@ -47,13 +47,33 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
             return;
           }
 
-          console.log('Raw FIT data parsed:', data);
+          console.log('Raw FIT data structure:', data);
+          console.log('Available data keys:', Object.keys(data));
 
-          // Extract records (the main data points)
+          // Extract records more broadly - check all possible record types
           const records: FitRecord[] = [];
-          if (data.records && Array.isArray(data.records)) {
-            data.records.forEach((record: any) => {
-              if (record.power !== undefined || record.cadence !== undefined) {
+          
+          // Try different ways to access records
+          let recordsSource = data.records || data.activity?.records || [];
+          
+          console.log('Records source found:', recordsSource ? recordsSource.length : 0);
+          console.log('Sample record structure:', recordsSource[0]);
+
+          if (recordsSource && Array.isArray(recordsSource)) {
+            recordsSource.forEach((record: any, index: number) => {
+              // Log first few records to understand structure
+              if (index < 3) {
+                console.log(`Record ${index}:`, record);
+              }
+              
+              // Accept records with any useful data, not just power
+              if (record && (
+                record.power !== undefined || 
+                record.cadence !== undefined || 
+                record.heart_rate !== undefined ||
+                record.speed !== undefined ||
+                record.distance !== undefined
+              )) {
                 records.push({
                   timestamp: record.timestamp,
                   power: record.power,
@@ -64,6 +84,23 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                   altitude: record.altitude,
                   temperature: record.temperature,
                 });
+              }
+            });
+          }
+
+          // If no records found, try alternative data structures
+          if (records.length === 0) {
+            console.log('No records found in standard location, checking alternative structures...');
+            
+            // Check if data is nested differently
+            if (data.activity) {
+              console.log('Activity data:', data.activity);
+            }
+            
+            // Try to find any array that might contain records
+            Object.keys(data).forEach(key => {
+              if (Array.isArray(data[key]) && data[key].length > 0) {
+                console.log(`Found array '${key}' with ${data[key].length} items:`, data[key][0]);
               }
             });
           }
