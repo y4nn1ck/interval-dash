@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Search } from 'lucide-react';
+import { parseProperFitFile } from '@/utils/properFitParser';
 
 interface FitHeader {
   headerSize: number;
@@ -22,12 +23,23 @@ interface MessageInfo {
   data: string;
 }
 
+interface ParsedFitData {
+  records: any[];
+  sessions: any[];
+  laps: any[];
+  duration: number;
+  device_info?: any;
+  file_info?: any;
+  rawDataStructure?: any;
+}
+
 const FitRawReader = () => {
   const [fileData, setFileData] = useState<ArrayBuffer | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [header, setHeader] = useState<FitHeader | null>(null);
   const [messages, setMessages] = useState<MessageInfo[]>([]);
   const [hexData, setHexData] = useState<string>('');
+  const [parsedFitData, setParsedFitData] = useState<ParsedFitData | null>(null);
   const [searchPattern, setSearchPattern] = useState<string>('');
   const [searchResults, setSearchResults] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,6 +68,20 @@ const FitRawReader = () => {
       // Find messages
       const foundMessages = findMessages(dataView, parsedHeader);
       setMessages(foundMessages);
+      
+      // Parse with proper FIT parser
+      try {
+        const fitData = await parseProperFitFile(file);
+        setParsedFitData(fitData);
+        console.log('FIT data parsed successfully:', fitData);
+      } catch (fitError) {
+        console.error('FIT parsing error:', fitError);
+        toast({
+          title: "Erreur du parser FIT",
+          description: `${fitError}`,
+          variant: "destructive",
+        });
+      }
       
       toast({
         title: "Fichier chargé avec succès",
@@ -245,6 +271,64 @@ const FitRawReader = () => {
         </Card>
       )}
 
+      {parsedFitData && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Données FIT parsées</CardTitle>
+            <CardDescription>Structure des données extraites par le parser FIT</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="font-medium">Records</p>
+                  <p className="text-muted-foreground">{parsedFitData.records.length}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Sessions</p>
+                  <p className="text-muted-foreground">{parsedFitData.sessions?.length || 0}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Laps</p>
+                  <p className="text-muted-foreground">{parsedFitData.laps?.length || 0}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Durée</p>
+                  <p className="text-muted-foreground">{Math.round(parsedFitData.duration)} sec</p>
+                </div>
+              </div>
+              
+              {parsedFitData.records.length > 0 && (
+                <div>
+                  <p className="font-medium mb-2">Exemple de records:</p>
+                  <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
+                    {JSON.stringify(parsedFitData.records.slice(0, 3), null, 2)}
+                  </pre>
+                </div>
+              )}
+              
+              {parsedFitData.sessions && parsedFitData.sessions.length > 0 && (
+                <div>
+                  <p className="font-medium mb-2">Sessions:</p>
+                  <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
+                    {JSON.stringify(parsedFitData.sessions, null, 2)}
+                  </pre>
+                </div>
+              )}
+              
+              {parsedFitData.device_info && (
+                <div>
+                  <p className="font-medium mb-2">Info appareil:</p>
+                  <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
+                    {JSON.stringify(parsedFitData.device_info, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {header && (
         <>
           {/* Header Information */}
@@ -355,6 +439,142 @@ const FitRawReader = () => {
       )}
     </div>
   );
+
+  function parseHeader(dataView: DataView): FitHeader {
+    const headerSize = dataView.getUint8(0);
+    const protocolVersion = dataView.getUint8(1);
+    const profileVersion = dataView.getUint16(2, true);
+    const dataSize = dataView.getUint32(4, true);
+    
+    // Read signature
+    const signature = new TextDecoder().decode(dataView.buffer.slice(8, 12));
+    
+    let crc: number | undefined;
+    if (headerSize >= 14) {
+      crc = dataView.getUint16(12, true);
+    }
+    
+    return {
+      headerSize,
+      protocolVersion,
+      profileVersion,
+      dataSize,
+      signature,
+      crc
+    };
+  }
+
+  function generateHexDump(buffer: ArrayBuffer): string {
+    const uint8Array = new Uint8Array(buffer);
+    let hex = '';
+    
+    for (let i = 0; i < Math.min(uint8Array.length, 2048); i += 16) {
+      // Offset
+      const offset = i.toString(16).padStart(8, '0').toUpperCase();
+      
+      // Hex bytes
+      let hexBytes = '';
+      let asciiBytes = '';
+      
+      for (let j = 0; j < 16; j++) {
+        if (i + j < uint8Array.length) {
+          const byte = uint8Array[i + j];
+          hexBytes += byte.toString(16).padStart(2, '0').toUpperCase() + ' ';
+          asciiBytes += (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.';
+        } else {
+          hexBytes += '   ';
+          asciiBytes += ' ';
+        }
+      }
+      
+      hex += `${offset}: ${hexBytes} |${asciiBytes}|\n`;
+    }
+    
+    if (uint8Array.length > 2048) {
+      hex += `\n... (showing first 2048 bytes of ${uint8Array.length} total bytes)`;
+    }
+    
+    return hex;
+  }
+
+  function findMessages(dataView: DataView, header: FitHeader): MessageInfo[] {
+    const messages: MessageInfo[] = [];
+    let offset = header.headerSize;
+    const endOffset = Math.min(header.headerSize + header.dataSize, dataView.byteLength - 2);
+    
+    while (offset < endOffset && messages.length < 100) {
+      try {
+        const recordHeader = dataView.getUint8(offset);
+        
+        let messageType = 'Unknown';
+        let messageSize = 1;
+        
+        if ((recordHeader & 0x80) === 0) {
+          // Normal record
+          messageType = 'Normal Record';
+          const messageType_field = (recordHeader & 0x0F);
+          messageSize = Math.min(20, endOffset - offset);
+        } else if ((recordHeader & 0x40) === 0) {
+          // Compressed timestamp
+          messageType = 'Compressed Timestamp';
+          messageSize = Math.min(10, endOffset - offset);
+        } else {
+          // Definition message
+          messageType = 'Definition Message';
+          messageSize = Math.min(15, endOffset - offset);
+        }
+        
+        // Get hex data for this message
+        const messageData = new Uint8Array(dataView.buffer, offset, messageSize);
+        const hexData = Array.from(messageData)
+          .map(b => b.toString(16).padStart(2, '0').toUpperCase())
+          .join(' ');
+        
+        messages.push({
+          offset,
+          type: messageType,
+          size: messageSize,
+          data: hexData
+        });
+        
+        offset += messageSize;
+      } catch (e) {
+        offset += 1;
+      }
+    }
+    
+    return messages;
+  }
+
+  function searchInFile() {
+    if (!fileData || !searchPattern) return;
+    
+    const uint8Array = new Uint8Array(fileData);
+    const results: number[] = [];
+    
+    // Search for hex pattern
+    if (searchPattern.match(/^[0-9a-fA-F\s]+$/)) {
+      const hexBytes = searchPattern.replace(/\s/g, '').match(/.{2}/g);
+      if (hexBytes) {
+        const searchBytes = hexBytes.map(hex => parseInt(hex, 16));
+        
+        for (let i = 0; i <= uint8Array.length - searchBytes.length; i++) {
+          let match = true;
+          for (let j = 0; j < searchBytes.length; j++) {
+            if (uint8Array[i + j] !== searchBytes[j]) {
+              match = false;
+              break;
+            }
+          }
+          if (match) {
+            results.push(i);
+          }
+        }
+      }
+    }
+    
+    setSearchResults(results);
+  }
 };
 
 export default FitRawReader;
