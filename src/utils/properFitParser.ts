@@ -52,78 +52,21 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           console.log('Full parsed data:', data);
           
           const records: FitRecord[] = [];
-          let recordsSource: any[] = [];
 
-          // NEW LOGIC: Direct access to activity records
-          if (data.activity) {
-            console.log('Found activity data:', typeof data.activity, Array.isArray(data.activity));
+          // FIXED LOGIC: Direct access to activity array as described by user
+          if (data.activity && Array.isArray(data.activity)) {
+            console.log(`Processing activity array with ${data.activity.length} records`);
             
-            // If activity is an array, each element should be a record
-            if (Array.isArray(data.activity)) {
-              console.log(`Activity is array with ${data.activity.length} elements`);
-              recordsSource = data.activity;
-            }
-            // If activity is an object, it might have nested structure
-            else if (typeof data.activity === 'object') {
-              console.log('Activity is object, looking for records inside');
-              
-              // Check if activity has records property
-              if (data.activity.records && Array.isArray(data.activity.records)) {
-                console.log(`Found ${data.activity.records.length} records in activity.records`);
-                recordsSource = data.activity.records;
-              }
-              // Check if activity has sessions with records
-              else if (data.activity.sessions && Array.isArray(data.activity.sessions)) {
-                console.log('Looking for records in sessions');
-                data.activity.sessions.forEach((session: any, sessionIndex: number) => {
-                  if (session.records && Array.isArray(session.records)) {
-                    console.log(`Found ${session.records.length} records in session ${sessionIndex}`);
-                    recordsSource = recordsSource.concat(session.records);
-                  }
-                });
-              }
-              // Check if activity has laps with records
-              else if (data.activity.laps && Array.isArray(data.activity.laps)) {
-                console.log('Looking for records in laps');
-                data.activity.laps.forEach((lap: any, lapIndex: number) => {
-                  if (lap.records && Array.isArray(lap.records)) {
-                    console.log(`Found ${lap.records.length} records in lap ${lapIndex}`);
-                    recordsSource = recordsSource.concat(lap.records);
-                  }
-                });
-              }
-            }
-          }
-          
-          // Fallback: check for direct records array
-          if (recordsSource.length === 0 && data.records && Array.isArray(data.records)) {
-            console.log('Using direct records array with length:', data.records.length);
-            recordsSource = data.records;
-          }
-
-          console.log('=== RECORD EXTRACTION ===');
-          console.log('Total raw records found:', recordsSource.length);
-          
-          if (recordsSource.length > 0) {
-            console.log('Sample raw records:', recordsSource.slice(0, 3));
-            
-            recordsSource.forEach((record: any, index: number) => {
+            data.activity.forEach((record: any, index: number) => {
+              // Each record in the activity array represents one second of data
               if (record && typeof record === 'object') {
-                // Handle timestamp - look for ISO string format
+                // Handle timestamp
                 let timestamp: number | undefined;
                 if (record.timestamp) {
                   if (typeof record.timestamp === 'string') {
-                    // Direct ISO string like "2025-07-01T16:03:31.000Z"
                     timestamp = new Date(record.timestamp).getTime();
                   } else if (typeof record.timestamp === 'number') {
                     timestamp = record.timestamp;
-                  } else if (record.timestamp && record.timestamp.value) {
-                    // Handle nested timestamp objects
-                    if (typeof record.timestamp.value === 'string') {
-                      timestamp = new Date(record.timestamp.value).getTime();
-                    } else if (typeof record.timestamp.value === 'number') {
-                      timestamp = record.timestamp.value;
-                    }
                   }
                 }
                 
@@ -142,7 +85,7 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                 
                 // Log first few records for debugging
                 if (index < 10) {
-                  console.log(`Record ${index}:`, extractedRecord);
+                  console.log(`Activity Record ${index}:`, extractedRecord);
                 }
               }
             });
@@ -152,20 +95,10 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           let sessions: any[] = [];
           let laps: any[] = [];
           
-          if (data.activity) {
-            if (data.activity.sessions && Array.isArray(data.activity.sessions)) {
-              sessions = data.activity.sessions;
-            }
-            if (data.activity.laps && Array.isArray(data.activity.laps)) {
-              laps = data.activity.laps;
-            }
-          }
-          
-          // Fallback for sessions and laps
-          if (sessions.length === 0 && data.sessions && Array.isArray(data.sessions)) {
+          if (data.sessions && Array.isArray(data.sessions)) {
             sessions = data.sessions;
           }
-          if (laps.length === 0 && data.laps && Array.isArray(data.laps)) {
+          if (data.laps && Array.isArray(data.laps)) {
             laps = data.laps;
           }
 
