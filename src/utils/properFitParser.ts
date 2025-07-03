@@ -54,29 +54,45 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           const records: FitRecord[] = [];
           let recordsSource: any[] = [];
 
-          // Look for records in the activity structure
-          if (data.activity && Array.isArray(data.activity)) {
-            console.log('Found activity array with', data.activity.length, 'items');
+          // NEW LOGIC: Direct access to activity records
+          if (data.activity) {
+            console.log('Found activity data:', typeof data.activity, Array.isArray(data.activity));
             
-            data.activity.forEach((activityItem: any, index: number) => {
-              console.log(`Activity item ${index}:`, activityItem);
+            // If activity is an array, each element should be a record
+            if (Array.isArray(data.activity)) {
+              console.log(`Activity is array with ${data.activity.length} elements`);
+              recordsSource = data.activity;
+            }
+            // If activity is an object, it might have nested structure
+            else if (typeof data.activity === 'object') {
+              console.log('Activity is object, looking for records inside');
               
-              // Check if this activity item has direct record data
-              if (Array.isArray(activityItem)) {
-                console.log(`Activity item ${index} is an array with ${activityItem.length} records`);
-                recordsSource = recordsSource.concat(activityItem);
+              // Check if activity has records property
+              if (data.activity.records && Array.isArray(data.activity.records)) {
+                console.log(`Found ${data.activity.records.length} records in activity.records`);
+                recordsSource = data.activity.records;
               }
-              // Check if records are nested in a records property
-              else if (activityItem.records && Array.isArray(activityItem.records)) {
-                console.log(`Found ${activityItem.records.length} records in activity[${index}].records`);
-                recordsSource = recordsSource.concat(activityItem.records);
+              // Check if activity has sessions with records
+              else if (data.activity.sessions && Array.isArray(data.activity.sessions)) {
+                console.log('Looking for records in sessions');
+                data.activity.sessions.forEach((session: any, sessionIndex: number) => {
+                  if (session.records && Array.isArray(session.records)) {
+                    console.log(`Found ${session.records.length} records in session ${sessionIndex}`);
+                    recordsSource = recordsSource.concat(session.records);
+                  }
+                });
               }
-              // Check if the activity item itself contains record-like data
-              else if (activityItem.timestamp || activityItem.power || activityItem.cadence) {
-                console.log(`Activity item ${index} appears to be a record itself`);
-                recordsSource.push(activityItem);
+              // Check if activity has laps with records
+              else if (data.activity.laps && Array.isArray(data.activity.laps)) {
+                console.log('Looking for records in laps');
+                data.activity.laps.forEach((lap: any, lapIndex: number) => {
+                  if (lap.records && Array.isArray(lap.records)) {
+                    console.log(`Found ${lap.records.length} records in lap ${lapIndex}`);
+                    recordsSource = recordsSource.concat(lap.records);
+                  }
+                });
               }
-            });
+            }
           }
           
           // Fallback: check for direct records array
@@ -93,13 +109,21 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
             
             recordsSource.forEach((record: any, index: number) => {
               if (record && typeof record === 'object') {
-                // Handle timestamp - could be ISO string or number
+                // Handle timestamp - look for ISO string format
                 let timestamp: number | undefined;
                 if (record.timestamp) {
                   if (typeof record.timestamp === 'string') {
+                    // Direct ISO string like "2025-07-01T16:03:31.000Z"
                     timestamp = new Date(record.timestamp).getTime();
                   } else if (typeof record.timestamp === 'number') {
                     timestamp = record.timestamp;
+                  } else if (record.timestamp && record.timestamp.value) {
+                    // Handle nested timestamp objects
+                    if (typeof record.timestamp.value === 'string') {
+                      timestamp = new Date(record.timestamp.value).getTime();
+                    } else if (typeof record.timestamp.value === 'number') {
+                      timestamp = record.timestamp.value;
+                    }
                   }
                 }
                 
@@ -117,26 +141,24 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                 records.push(extractedRecord);
                 
                 // Log first few records for debugging
-                if (index < 5) {
+                if (index < 10) {
                   console.log(`Record ${index}:`, extractedRecord);
                 }
               }
             });
           }
 
-          // Extract sessions and laps with similar logic
+          // Extract sessions and laps
           let sessions: any[] = [];
           let laps: any[] = [];
           
-          if (data.activity && Array.isArray(data.activity)) {
-            data.activity.forEach((activityItem: any) => {
-              if (activityItem.sessions && Array.isArray(activityItem.sessions)) {
-                sessions = sessions.concat(activityItem.sessions);
-              }
-              if (activityItem.laps && Array.isArray(activityItem.laps)) {
-                laps = laps.concat(activityItem.laps);
-              }
-            });
+          if (data.activity) {
+            if (data.activity.sessions && Array.isArray(data.activity.sessions)) {
+              sessions = data.activity.sessions;
+            }
+            if (data.activity.laps && Array.isArray(data.activity.laps)) {
+              laps = data.activity.laps;
+            }
           }
           
           // Fallback for sessions and laps
@@ -165,7 +187,7 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           }
 
           console.log(`=== FINAL EXTRACTION RESULTS ===`);
-          console.log(`Extracted ${records.length} records`);
+          console.log(`Extracted ${records.length} total records`);
           console.log(`Records with power: ${records.filter(r => r.power && r.power > 0).length}`);
           console.log(`Records with cadence: ${records.filter(r => r.cadence && r.cadence > 0).length}`);
           console.log(`Records with heart_rate: ${records.filter(r => r.heart_rate && r.heart_rate > 0).length}`);
