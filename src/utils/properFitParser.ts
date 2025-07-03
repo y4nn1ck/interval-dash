@@ -53,20 +53,43 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           
           const records: FitRecord[] = [];
 
-          // FIXED LOGIC: Direct access to activity array as described by user
-          if (data.activity && Array.isArray(data.activity)) {
-            console.log(`Processing activity array with ${data.activity.length} records`);
+          // NEW LOGIC: Based on user description - activity contains multiple arrays, one per second
+          if (data.activity) {
+            console.log('Found activity data:', data.activity);
             
-            data.activity.forEach((record: any, index: number) => {
-              // Each record in the activity array represents one second of data
+            // Check if activity is an object containing arrays or if it's directly an array
+            let activityRecords: any[] = [];
+            
+            if (Array.isArray(data.activity)) {
+              activityRecords = data.activity;
+            } else if (typeof data.activity === 'object') {
+              // If activity is an object, look for arrays within it
+              Object.keys(data.activity).forEach(key => {
+                const value = data.activity[key];
+                if (Array.isArray(value)) {
+                  activityRecords = activityRecords.concat(value);
+                } else if (value && typeof value === 'object') {
+                  // Check if this object has the expected structure (timestamp, power, etc.)
+                  if (value.timestamp !== undefined || value.power !== undefined) {
+                    activityRecords.push(value);
+                  }
+                }
+              });
+            }
+            
+            console.log(`Processing ${activityRecords.length} activity records`);
+            
+            activityRecords.forEach((record: any, index: number) => {
               if (record && typeof record === 'object') {
-                // Handle timestamp
+                // Handle timestamp conversion
                 let timestamp: number | undefined;
                 if (record.timestamp) {
                   if (typeof record.timestamp === 'string') {
                     timestamp = new Date(record.timestamp).getTime();
                   } else if (typeof record.timestamp === 'number') {
                     timestamp = record.timestamp;
+                  } else if (record.timestamp instanceof Date) {
+                    timestamp = record.timestamp.getTime();
                   }
                 }
                 
@@ -84,9 +107,74 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                 records.push(extractedRecord);
                 
                 // Log first few records for debugging
-                if (index < 10) {
+                if (index < 5) {
                   console.log(`Activity Record ${index}:`, extractedRecord);
                 }
+              }
+            });
+          }
+          
+          // FALLBACK: Try to extract from other possible locations
+          if (records.length === 0) {
+            console.log('No records found in activity, trying other locations...');
+            
+            // Try sessions
+            if (data.sessions && Array.isArray(data.sessions)) {
+              data.sessions.forEach((session: any) => {
+                if (session.records && Array.isArray(session.records)) {
+                  session.records.forEach((record: any) => {
+                    if (record.power !== undefined) {
+                      records.push({
+                        timestamp: record.timestamp,
+                        power: record.power,
+                        cadence: record.cadence,
+                        heart_rate: record.heart_rate,
+                        speed: record.speed,
+                        distance: record.distance,
+                        altitude: record.altitude,
+                        temperature: record.temperature,
+                      });
+                    }
+                  });
+                }
+              });
+            }
+            
+            // Try records directly
+            if (data.records && Array.isArray(data.records)) {
+              data.records.forEach((record: any) => {
+                if (record.power !== undefined) {
+                  records.push({
+                    timestamp: record.timestamp,
+                    power: record.power,
+                    cadence: record.cadence,
+                    heart_rate: record.heart_rate,
+                    speed: record.speed,
+                    distance: record.distance,
+                    altitude: record.altitude,
+                    temperature: record.temperature,
+                  });
+                }
+              });
+            }
+            
+            // Try any top-level arrays
+            Object.keys(data).forEach(key => {
+              if (Array.isArray(data[key]) && key !== 'sessions' && key !== 'laps') {
+                data[key].forEach((item: any) => {
+                  if (item && typeof item === 'object' && item.power !== undefined) {
+                    records.push({
+                      timestamp: item.timestamp,
+                      power: item.power,
+                      cadence: item.cadence,
+                      heart_rate: item.heart_rate,
+                      speed: item.speed,
+                      distance: item.distance,
+                      altitude: item.altitude,
+                      temperature: item.temperature,
+                    });
+                  }
+                });
               }
             });
           }
