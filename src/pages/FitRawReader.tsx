@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Search } from 'lucide-react';
 import { parseProperFitFile } from '@/utils/properFitParser';
@@ -235,6 +236,12 @@ const FitRawReader = () => {
     setSearchResults(results);
   };
 
+  const formatTimestamp = (timestamp: number) => {
+    if (!timestamp) return 'N/A';
+    const date = new Date(timestamp);
+    return date.toISOString().replace('T', ' ').substring(0, 19);
+  };
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -266,6 +273,40 @@ const FitRawReader = () => {
         <Card>
           <CardContent className="p-6 text-center">
             <p>Analyse du fichier en cours...</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {parsedFitData && parsedFitData.records && parsedFitData.records.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Données FIT extraites - 50 premiers enregistrements</CardTitle>
+            <CardDescription>Date/Heure, Puissance et Cadence des premiers enregistrements</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date/Heure</TableHead>
+                    <TableHead>Puissance (W)</TableHead>
+                    <TableHead>Cadence (RPM)</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {parsedFitData.records.slice(0, 50).map((record, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{formatTimestamp(record.timestamp)}</TableCell>
+                      <TableCell>{record.power !== undefined ? record.power : 'N/A'}</TableCell>
+                      <TableCell>{record.cadence !== undefined ? record.cadence : 'N/A'}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="mt-4 text-sm text-muted-foreground">
+              Affichage de {Math.min(50, parsedFitData.records.length)} enregistrements sur {parsedFitData.records.length} total
+            </div>
           </CardContent>
         </Card>
       )}
