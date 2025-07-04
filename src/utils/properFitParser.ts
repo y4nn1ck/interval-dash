@@ -49,43 +49,39 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           }
 
           console.log('=== FIT DATA STRUCTURE DEBUG ===');
-          console.log('Full parsed data:', data);
+          console.log('Full parsed data keys:', Object.keys(data));
+          console.log('Data.activity type:', typeof data.activity);
+          console.log('Data.activity is array:', Array.isArray(data.activity));
+          
+          if (data.activity) {
+            console.log('Activity length:', data.activity.length);
+            console.log('First 3 activity records:', data.activity.slice(0, 3));
+          }
           
           const records: FitRecord[] = [];
 
-          // NEW LOGIC: Based on user description - activity contains multiple arrays, one per second
-          if (data.activity) {
-            console.log('Found activity data:', data.activity);
+          // SIMPLIFIED EXTRACTION: Direct access to data.activity array
+          if (data.activity && Array.isArray(data.activity)) {
+            console.log(`Processing ${data.activity.length} activity records directly`);
             
-            // Check if activity is an object containing arrays or if it's directly an array
-            let activityRecords: any[] = [];
-            
-            if (Array.isArray(data.activity)) {
-              activityRecords = data.activity;
-            } else if (typeof data.activity === 'object') {
-              // If activity is an object, look for arrays within it
-              Object.keys(data.activity).forEach(key => {
-                const value = data.activity[key];
-                if (Array.isArray(value)) {
-                  activityRecords = activityRecords.concat(value);
-                } else if (value && typeof value === 'object') {
-                  // Check if this object has the expected structure (timestamp, power, etc.)
-                  if (value.timestamp !== undefined || value.power !== undefined) {
-                    activityRecords.push(value);
-                  }
-                }
-              });
-            }
-            
-            console.log(`Processing ${activityRecords.length} activity records`);
-            
-            activityRecords.forEach((record: any, index: number) => {
+            data.activity.forEach((record: any, index: number) => {
               if (record && typeof record === 'object') {
-                // Handle timestamp conversion
+                // FIXED TIMESTAMP CONVERSION
                 let timestamp: number | undefined;
                 if (record.timestamp) {
                   if (typeof record.timestamp === 'string') {
-                    timestamp = new Date(record.timestamp).getTime();
+                    // Properly convert ISO date string to Unix timestamp (in milliseconds)
+                    const date = new Date(record.timestamp);
+                    timestamp = date.getTime();
+                    
+                    // Debug timestamp conversion for first few records
+                    if (index < 3) {
+                      console.log(`Record ${index} timestamp conversion:`, {
+                        original: record.timestamp,
+                        converted: timestamp,
+                        humanReadable: new Date(timestamp).toISOString()
+                      });
+                    }
                   } else if (typeof record.timestamp === 'number') {
                     timestamp = record.timestamp;
                   } else if (record.timestamp instanceof Date) {
@@ -93,6 +89,7 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                   }
                 }
                 
+                // DIRECT VALUE EXTRACTION - no filtering, just extract what's there
                 const extractedRecord: FitRecord = {
                   timestamp,
                   power: record.power,
@@ -108,44 +105,38 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                 
                 // Log first few records for debugging
                 if (index < 5) {
-                  console.log(`Activity Record ${index}:`, extractedRecord);
+                  console.log(`Activity Record ${index}:`, {
+                    timestamp: extractedRecord.timestamp,
+                    power: extractedRecord.power,
+                    cadence: extractedRecord.cadence,
+                    heart_rate: extractedRecord.heart_rate,
+                    originalRecord: record
+                  });
                 }
               }
             });
           }
           
-          // FALLBACK: Try to extract from other possible locations
+          // FALLBACK: Try other locations if activity didn't work
           if (records.length === 0) {
-            console.log('No records found in activity, trying other locations...');
-            
-            // Try sessions
-            if (data.sessions && Array.isArray(data.sessions)) {
-              data.sessions.forEach((session: any) => {
-                if (session.records && Array.isArray(session.records)) {
-                  session.records.forEach((record: any) => {
-                    if (record.power !== undefined) {
-                      records.push({
-                        timestamp: record.timestamp,
-                        power: record.power,
-                        cadence: record.cadence,
-                        heart_rate: record.heart_rate,
-                        speed: record.speed,
-                        distance: record.distance,
-                        altitude: record.altitude,
-                        temperature: record.temperature,
-                      });
-                    }
-                  });
-                }
-              });
-            }
+            console.log('No records found in activity array, trying other locations...');
             
             // Try records directly
             if (data.records && Array.isArray(data.records)) {
-              data.records.forEach((record: any) => {
-                if (record.power !== undefined) {
+              console.log('Trying data.records array with', data.records.length, 'items');
+              data.records.forEach((record: any, index: number) => {
+                if (record && typeof record === 'object') {
+                  let timestamp: number | undefined;
+                  if (record.timestamp) {
+                    if (typeof record.timestamp === 'string') {
+                      timestamp = new Date(record.timestamp).getTime();
+                    } else if (typeof record.timestamp === 'number') {
+                      timestamp = record.timestamp;
+                    }
+                  }
+                  
                   records.push({
-                    timestamp: record.timestamp,
+                    timestamp,
                     power: record.power,
                     cadence: record.cadence,
                     heart_rate: record.heart_rate,
@@ -154,29 +145,43 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                     altitude: record.altitude,
                     temperature: record.temperature,
                   });
+                  
+                  if (index < 3) {
+                    console.log(`Records[${index}]:`, record);
+                  }
                 }
               });
             }
             
-            // Try any top-level arrays
-            Object.keys(data).forEach(key => {
-              if (Array.isArray(data[key]) && key !== 'sessions' && key !== 'laps') {
-                data[key].forEach((item: any) => {
-                  if (item && typeof item === 'object' && item.power !== undefined) {
+            // Try sessions
+            if (records.length === 0 && data.sessions && Array.isArray(data.sessions)) {
+              console.log('Trying sessions with', data.sessions.length, 'sessions');
+              data.sessions.forEach((session: any) => {
+                if (session.records && Array.isArray(session.records)) {
+                  session.records.forEach((record: any) => {
+                    let timestamp: number | undefined;
+                    if (record.timestamp) {
+                      if (typeof record.timestamp === 'string') {
+                        timestamp = new Date(record.timestamp).getTime();
+                      } else if (typeof record.timestamp === 'number') {
+                        timestamp = record.timestamp;
+                      }
+                    }
+                    
                     records.push({
-                      timestamp: item.timestamp,
-                      power: item.power,
-                      cadence: item.cadence,
-                      heart_rate: item.heart_rate,
-                      speed: item.speed,
-                      distance: item.distance,
-                      altitude: item.altitude,
-                      temperature: item.temperature,
+                      timestamp,
+                      power: record.power,
+                      cadence: record.cadence,
+                      heart_rate: record.heart_rate,
+                      speed: record.speed,
+                      distance: record.distance,
+                      altitude: record.altitude,
+                      temperature: record.temperature,
                     });
-                  }
-                });
-              }
-            });
+                  });
+                }
+              });
+            }
           }
 
           // Extract sessions and laps
@@ -209,12 +214,17 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
 
           console.log(`=== FINAL EXTRACTION RESULTS ===`);
           console.log(`Extracted ${records.length} total records`);
-          console.log(`Records with power: ${records.filter(r => r.power && r.power > 0).length}`);
-          console.log(`Records with cadence: ${records.filter(r => r.cadence && r.cadence > 0).length}`);
-          console.log(`Records with heart_rate: ${records.filter(r => r.heart_rate && r.heart_rate > 0).length}`);
+          console.log(`Records with power: ${records.filter(r => r.power !== undefined && r.power !== null).length}`);
+          console.log(`Records with cadence: ${records.filter(r => r.cadence !== undefined && r.cadence !== null).length}`);
+          console.log(`Records with heart_rate: ${records.filter(r => r.heart_rate !== undefined && r.heart_rate !== null).length}`);
+          console.log(`Records with timestamp: ${records.filter(r => r.timestamp !== undefined).length}`);
           console.log(`Sessions: ${sessions.length}`);
           console.log(`Laps: ${laps.length}`);
           console.log(`Duration: ${duration} seconds`);
+          
+          // Log sample of actual extracted data
+          const sampleRecords = records.slice(0, 3);
+          console.log('Sample extracted records:', sampleRecords);
 
           resolve({
             records,
