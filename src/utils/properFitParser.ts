@@ -54,130 +54,70 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           console.log('Data.activity is array:', Array.isArray(data.activity));
           
           if (data.activity) {
-            console.log('Activity length:', data.activity.length);
-            console.log('First 3 activity records:', data.activity.slice(0, 3));
+            console.log('Activity keys:', Object.keys(data.activity));
+            console.log('Activity content sample:', data.activity);
           }
           
           const records: FitRecord[] = [];
 
-          // SIMPLIFIED EXTRACTION: Direct access to data.activity array
-          if (data.activity && Array.isArray(data.activity)) {
-            console.log(`Processing ${data.activity.length} activity records directly`);
-            
-            data.activity.forEach((record: any, index: number) => {
-              if (record && typeof record === 'object') {
-                // FIXED TIMESTAMP CONVERSION
-                let timestamp: number | undefined;
-                if (record.timestamp) {
-                  if (typeof record.timestamp === 'string') {
-                    // Properly convert ISO date string to Unix timestamp (in milliseconds)
-                    const date = new Date(record.timestamp);
-                    timestamp = date.getTime();
-                    
-                    // Debug timestamp conversion for first few records
-                    if (index < 3) {
-                      console.log(`Record ${index} timestamp conversion:`, {
-                        original: record.timestamp,
-                        converted: timestamp,
-                        humanReadable: new Date(timestamp).toISOString()
-                      });
-                    }
-                  } else if (typeof record.timestamp === 'number') {
-                    timestamp = record.timestamp;
-                  } else if (record.timestamp instanceof Date) {
-                    timestamp = record.timestamp.getTime();
-                  }
+          // Handle different data structures
+          if (data.activity) {
+            if (Array.isArray(data.activity)) {
+              // If activity is an array, process each record
+              console.log(`Processing ${data.activity.length} activity records as array`);
+              data.activity.forEach((record: any, index: number) => {
+                if (record && typeof record === 'object') {
+                  const extractedRecord = extractRecord(record, index);
+                  if (extractedRecord) records.push(extractedRecord);
                 }
-                
-                // DIRECT VALUE EXTRACTION - no filtering, just extract what's there
-                const extractedRecord: FitRecord = {
-                  timestamp,
-                  power: record.power,
-                  cadence: record.cadence,
-                  heart_rate: record.heart_rate,
-                  speed: record.speed,
-                  distance: record.distance,
-                  altitude: record.altitude,
-                  temperature: record.temperature,
-                };
-                
-                records.push(extractedRecord);
-                
-                // Log first few records for debugging
-                if (index < 5) {
-                  console.log(`Activity Record ${index}:`, {
-                    timestamp: extractedRecord.timestamp,
-                    power: extractedRecord.power,
-                    cadence: extractedRecord.cadence,
-                    heart_rate: extractedRecord.heart_rate,
-                    originalRecord: record
+              });
+            } else if (typeof data.activity === 'object') {
+              // If activity is an object, look for nested arrays
+              console.log('Activity is object, looking for nested data...');
+              
+              // Check for records property
+              if (data.activity.records && Array.isArray(data.activity.records)) {
+                console.log(`Found activity.records with ${data.activity.records.length} items`);
+                data.activity.records.forEach((record: any, index: number) => {
+                  const extractedRecord = extractRecord(record, index);
+                  if (extractedRecord) records.push(extractedRecord);
+                });
+              }
+              
+              // Check for other possible array properties
+              Object.keys(data.activity).forEach(key => {
+                if (Array.isArray(data.activity[key])) {
+                  console.log(`Found activity.${key} array with ${data.activity[key].length} items`);
+                  data.activity[key].forEach((record: any, index: number) => {
+                    const extractedRecord = extractRecord(record, index);
+                    if (extractedRecord) records.push(extractedRecord);
                   });
                 }
-              }
-            });
+              });
+            }
           }
           
-          // FALLBACK: Try other locations if activity didn't work
+          // Fallback: Try other locations if no records found
           if (records.length === 0) {
-            console.log('No records found in activity array, trying other locations...');
+            console.log('No records found in activity, trying other locations...');
             
-            // Try records directly
+            // Try direct records array
             if (data.records && Array.isArray(data.records)) {
-              console.log('Trying data.records array with', data.records.length, 'items');
+              console.log(`Found data.records with ${data.records.length} items`);
               data.records.forEach((record: any, index: number) => {
-                if (record && typeof record === 'object') {
-                  let timestamp: number | undefined;
-                  if (record.timestamp) {
-                    if (typeof record.timestamp === 'string') {
-                      timestamp = new Date(record.timestamp).getTime();
-                    } else if (typeof record.timestamp === 'number') {
-                      timestamp = record.timestamp;
-                    }
-                  }
-                  
-                  records.push({
-                    timestamp,
-                    power: record.power,
-                    cadence: record.cadence,
-                    heart_rate: record.heart_rate,
-                    speed: record.speed,
-                    distance: record.distance,
-                    altitude: record.altitude,
-                    temperature: record.temperature,
-                  });
-                  
-                  if (index < 3) {
-                    console.log(`Records[${index}]:`, record);
-                  }
-                }
+                const extractedRecord = extractRecord(record, index);
+                if (extractedRecord) records.push(extractedRecord);
               });
             }
             
             // Try sessions
-            if (records.length === 0 && data.sessions && Array.isArray(data.sessions)) {
-              console.log('Trying sessions with', data.sessions.length, 'sessions');
+            if (data.sessions && Array.isArray(data.sessions)) {
+              console.log(`Checking ${data.sessions.length} sessions for records`);
               data.sessions.forEach((session: any) => {
                 if (session.records && Array.isArray(session.records)) {
-                  session.records.forEach((record: any) => {
-                    let timestamp: number | undefined;
-                    if (record.timestamp) {
-                      if (typeof record.timestamp === 'string') {
-                        timestamp = new Date(record.timestamp).getTime();
-                      } else if (typeof record.timestamp === 'number') {
-                        timestamp = record.timestamp;
-                      }
-                    }
-                    
-                    records.push({
-                      timestamp,
-                      power: record.power,
-                      cadence: record.cadence,
-                      heart_rate: record.heart_rate,
-                      speed: record.speed,
-                      distance: record.distance,
-                      altitude: record.altitude,
-                      temperature: record.temperature,
-                    });
+                  session.records.forEach((record: any, index: number) => {
+                    const extractedRecord = extractRecord(record, index);
+                    if (extractedRecord) records.push(extractedRecord);
                   });
                 }
               });
@@ -247,3 +187,57 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
     reader.readAsArrayBuffer(file);
   });
 };
+
+// Helper function to extract and convert record data
+function extractRecord(record: any, index: number): FitRecord | null {
+  if (!record || typeof record !== 'object') return null;
+  
+  // Handle timestamp conversion properly
+  let timestamp: number | undefined;
+  if (record.timestamp) {
+    if (typeof record.timestamp === 'string') {
+      // Handle ISO date strings properly
+      const date = new Date(record.timestamp);
+      timestamp = date.getTime(); // Already in milliseconds
+      
+      // Debug timestamp conversion for first few records
+      if (index < 3) {
+        console.log(`Record ${index} timestamp conversion:`, {
+          original: record.timestamp,
+          converted: timestamp,
+          humanReadable: new Date(timestamp).toISOString()
+        });
+      }
+    } else if (typeof record.timestamp === 'number') {
+      timestamp = record.timestamp;
+    } else if (record.timestamp instanceof Date) {
+      timestamp = record.timestamp.getTime();
+    }
+  }
+  
+  // Extract all available data without filtering
+  const extractedRecord: FitRecord = {
+    timestamp,
+    power: record.power,
+    cadence: record.cadence,
+    heart_rate: record.heart_rate,
+    speed: record.speed,
+    distance: record.distance,
+    altitude: record.altitude,
+    temperature: record.temperature,
+  };
+  
+  // Log first few records for debugging
+  if (index < 5) {
+    console.log(`Record ${index}:`, {
+      timestamp: extractedRecord.timestamp,
+      power: extractedRecord.power,
+      cadence: extractedRecord.cadence,
+      heart_rate: extractedRecord.heart_rate,
+      originalRecord: record
+    });
+  }
+  
+  return extractedRecord;
+}
+
