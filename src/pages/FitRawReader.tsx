@@ -74,6 +74,26 @@ const FitRawReader = () => {
         const fitData = await parseProperFitFile(file);
         setParsedFitData(fitData);
         console.log('FIT data parsed successfully:', fitData);
+        
+        // Extract records from nested structure
+        let extractedRecords = [];
+        if (fitData.rawDataStructure?.activity?.sessions?.[0]?.laps) {
+          for (const lap of fitData.rawDataStructure.activity.sessions[0].laps) {
+            if (lap.records && Array.isArray(lap.records)) {
+              extractedRecords = extractedRecords.concat(lap.records);
+            }
+          }
+        }
+        
+        // Update the parsedFitData with extracted records
+        if (extractedRecords.length > 0) {
+          setParsedFitData({
+            ...fitData,
+            records: extractedRecords
+          });
+          console.log('Extracted records:', extractedRecords.slice(0, 5));
+        }
+        
       } catch (fitError) {
         console.error('FIT parsing error:', fitError);
         toast({
@@ -236,10 +256,30 @@ const FitRawReader = () => {
     setSearchResults(results);
   };
 
-  const formatTimestamp = (timestamp: number) => {
+  const formatTimestamp = (timestamp: any) => {
     if (!timestamp) return 'N/A';
-    const date = new Date(timestamp);
-    return date.toISOString().replace('T', ' ').substring(0, 19);
+    
+    // Handle different timestamp formats
+    if (typeof timestamp === 'object' && timestamp.value) {
+      if (timestamp.value.iso) {
+        return new Date(timestamp.value.iso).toISOString().replace('T', ' ').substring(0, 19);
+      } else if (typeof timestamp.value === 'number') {
+        return new Date(timestamp.value).toISOString().replace('T', ' ').substring(0, 19);
+      }
+    } else if (typeof timestamp === 'number') {
+      return new Date(timestamp).toISOString().replace('T', ' ').substring(0, 19);
+    } else if (typeof timestamp === 'string') {
+      return new Date(timestamp).toISOString().replace('T', ' ').substring(0, 19);
+    }
+    
+    return 'N/A';
+  };
+
+  const extractValue = (field: any) => {
+    if (field === null || field === undefined) return 'N/A';
+    if (typeof field === 'number') return field;
+    if (typeof field === 'object' && field.value !== undefined) return field.value;
+    return 'N/A';
   };
 
   return (
@@ -277,36 +317,46 @@ const FitRawReader = () => {
         </Card>
       )}
 
-      {parsedFitData && parsedFitData.records && parsedFitData.records.length > 0 && (
+      {/* Always show the table if we have any parsed data */}
+      {parsedFitData && (
         <Card>
           <CardHeader>
             <CardTitle>Données FIT extraites - 50 premiers enregistrements</CardTitle>
             <CardDescription>Date/Heure, Puissance et Cadence des premiers enregistrements</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date/Heure</TableHead>
-                    <TableHead>Puissance (W)</TableHead>
-                    <TableHead>Cadence (RPM)</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {parsedFitData.records.slice(0, 50).map((record, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{formatTimestamp(record.timestamp)}</TableCell>
-                      <TableCell>{record.power !== undefined ? record.power : 'N/A'}</TableCell>
-                      <TableCell>{record.cadence !== undefined ? record.cadence : 'N/A'}</TableCell>
+            {parsedFitData.records && parsedFitData.records.length > 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date/Heure</TableHead>
+                      <TableHead>Puissance (W)</TableHead>
+                      <TableHead>Cadence (RPM)</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="mt-4 text-sm text-muted-foreground">
-              Affichage de {Math.min(50, parsedFitData.records.length)} enregistrements sur {parsedFitData.records.length} total
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {parsedFitData.records.slice(0, 50).map((record, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{formatTimestamp(record.timestamp)}</TableCell>
+                        <TableCell>{extractValue(record.power)}</TableCell>
+                        <TableCell>{extractValue(record.cadence)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                <div className="mt-4 text-sm text-muted-foreground">
+                  Affichage de {Math.min(50, parsedFitData.records.length)} enregistrements sur {parsedFitData.records.length} total
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">Aucun enregistrement trouvé dans les données FIT</p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Structure détectée: {parsedFitData.rawDataStructure ? 'Oui' : 'Non'}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
