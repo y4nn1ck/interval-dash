@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, Moon, Target, Zap, TrendingUp as TrendUp } from 'lucide-react';
+import { Heart, Moon, Target, Zap, TrendingUp as TrendUp, ChevronRight } from 'lucide-react';
 import MetricCard from './MetricCard';
 import RestingHRChart from './RestingHRChart';
 import CTLChart from './CTLChart';
@@ -97,11 +97,12 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
               unit="bpm"
               icon={Heart}
               color="bg-red-500"
-              trend="+2"
             />
-            {/* Subtle clickable indicator */}
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <div className="w-2 h-2 bg-white/80 rounded-full shadow-sm"></div>
+            {/* More visible clickable indicator */}
+            <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:scale-110">
+              <div className="flex items-center justify-center w-6 h-6 bg-white/90 rounded-full shadow-md">
+                <ChevronRight className="w-3 h-3 text-red-500" />
+              </div>
             </div>
           </div>
         </DialogTrigger>
@@ -121,11 +122,12 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
               value={`${ctl}`}
               icon={Target}
               color="bg-green-500"
-              trend="+5"
             />
-            {/* Subtle clickable indicator */}
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <div className="w-2 h-2 bg-white/80 rounded-full shadow-sm"></div>
+            {/* More visible clickable indicator */}
+            <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:scale-110">
+              <div className="flex items-center justify-center w-6 h-6 bg-white/90 rounded-full shadow-md">
+                <ChevronRight className="w-3 h-3 text-green-500" />
+              </div>
             </div>
           </div>
         </DialogTrigger>
@@ -142,14 +144,12 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
         value={`${atl}`}
         icon={Zap}
         color="bg-orange-500"
-        trend="-3"
       />
       <MetricCard
         title="Forme (TSB)"
         value={`${tsb}`}
         icon={TrendUp}
         color="bg-blue-500"
-        trend="+2"
       />
       <MetricCard
         title="Sommeil"
