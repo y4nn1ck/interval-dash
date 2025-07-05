@@ -10,6 +10,7 @@ interface FitRecord {
   distance?: number;
   altitude?: number;
   temperature?: number;
+  elapsed_time?: number;
   [key: string]: any;
 }
 
@@ -22,6 +23,27 @@ interface ParsedFitData {
   file_info?: any;
   rawDataStructure?: any;
 }
+
+const extractTimestamp = (timestampData: any): number | undefined => {
+  if (!timestampData) return undefined;
+  
+  // Handle direct ISO string format (like "2025-07-01T16:03:24.000Z")
+  if (typeof timestampData === 'string') {
+    return new Date(timestampData).getTime();
+  }
+  
+  // Handle direct Date object
+  if (timestampData instanceof Date) {
+    return timestampData.getTime();
+  }
+  
+  // Handle direct number (Unix timestamp)
+  if (typeof timestampData === 'number') {
+    return timestampData;
+  }
+  
+  return undefined;
+};
 
 export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => {
   return new Promise((resolve, reject) => {
@@ -59,16 +81,13 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
             
             data.activity.records.forEach((record: any, index: number) => {
               if (record && typeof record === 'object') {
-                // Direct extraction of values without any conversion issues
+                // Direct extraction of values with proper timestamp handling
                 const extractedRecord: FitRecord = {};
                 
-                // Handle timestamp - convert ISO string to Unix timestamp in milliseconds
-                if (record.timestamp) {
-                  if (typeof record.timestamp === 'string') {
-                    extractedRecord.timestamp = new Date(record.timestamp).getTime();
-                  } else if (record.timestamp instanceof Date) {
-                    extractedRecord.timestamp = record.timestamp.getTime();
-                  }
+                // Handle timestamp with improved extraction
+                const extractedTimestamp = extractTimestamp(record.timestamp);
+                if (extractedTimestamp) {
+                  extractedRecord.timestamp = extractedTimestamp;
                 }
                 
                 // Extract all numeric values directly
@@ -79,6 +98,7 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                 if (typeof record.distance === 'number') extractedRecord.distance = record.distance;
                 if (typeof record.altitude === 'number') extractedRecord.altitude = record.altitude;
                 if (typeof record.temperature === 'number') extractedRecord.temperature = record.temperature;
+                if (typeof record.elapsed_time === 'number') extractedRecord.elapsed_time = record.elapsed_time;
                 
                 records.push(extractedRecord);
                 
@@ -89,6 +109,7 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                     power: extractedRecord.power,
                     cadence: extractedRecord.cadence,
                     heart_rate: extractedRecord.heart_rate,
+                    elapsed_time: extractedRecord.elapsed_time,
                     originalRecord: record
                   });
                 }
@@ -104,10 +125,9 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                 if (record && typeof record === 'object') {
                   const extractedRecord: FitRecord = {};
                   
-                  if (record.timestamp) {
-                    extractedRecord.timestamp = typeof record.timestamp === 'string' 
-                      ? new Date(record.timestamp).getTime()
-                      : record.timestamp;
+                  const extractedTimestamp = extractTimestamp(record.timestamp);
+                  if (extractedTimestamp) {
+                    extractedRecord.timestamp = extractedTimestamp;
                   }
                   
                   if (typeof record.power === 'number') extractedRecord.power = record.power;
@@ -117,6 +137,7 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                   if (typeof record.distance === 'number') extractedRecord.distance = record.distance;
                   if (typeof record.altitude === 'number') extractedRecord.altitude = record.altitude;
                   if (typeof record.temperature === 'number') extractedRecord.temperature = record.temperature;
+                  if (typeof record.elapsed_time === 'number') extractedRecord.elapsed_time = record.elapsed_time;
                   
                   records.push(extractedRecord);
                 }

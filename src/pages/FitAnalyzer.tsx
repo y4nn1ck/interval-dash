@@ -42,6 +42,43 @@ const FitAnalyzer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const formatTimestamp = (timestamp: any) => {
+    if (!timestamp) return 'N/A';
+    
+    // Handle direct ISO string format (like "2025-07-01T16:03:24.000Z")
+    if (typeof timestamp === 'string') {
+      try {
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().replace('T', ' ').substring(0, 19);
+        }
+      } catch (e) {
+        console.log('Error parsing string timestamp:', e);
+      }
+    }
+    
+    // Handle direct Date object
+    if (timestamp instanceof Date) {
+      if (!isNaN(timestamp.getTime())) {
+        return timestamp.toISOString().replace('T', ' ').substring(0, 19);
+      }
+    }
+    
+    // Handle direct number (Unix timestamp)
+    if (typeof timestamp === 'number') {
+      try {
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().replace('T', ' ').substring(0, 19);
+        }
+      } catch (e) {
+        console.log('Error parsing number timestamp:', e);
+      }
+    }
+    
+    return 'N/A';
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -52,13 +89,28 @@ const FitAnalyzer = () => {
       console.log(`Analyzing FIT file with proper parser: ${file.name}`);
       const parsedData = await parseProperFitFile(file);
       
-      const validRecords = parsedData.records.filter(r => r.power && r.power > 0);
+      // Extract records from nested structure similar to FitRawReader
+      let extractedRecords = [];
+      if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.laps) {
+        for (const lap of parsedData.rawDataStructure.activity.sessions[0].laps) {
+          if (lap.records && Array.isArray(lap.records)) {
+            extractedRecords = extractedRecords.concat(lap.records);
+          }
+        }
+      }
+      
+      // Filter records starting from elapsed_time: 0 (start of training)
+      const trainingRecords = extractedRecords.filter(record => 
+        record.elapsed_time !== undefined && record.elapsed_time >= 0 && record.power && record.power > 0
+      );
+      
+      const validRecords = trainingRecords.length > 0 ? trainingRecords : parsedData.records.filter(r => r.power && r.power > 0);
       
       if (validRecords.length === 0) {
         throw new Error('No valid power data found');
       }
 
-      // Get first and last timestamps
+      // Get first and last timestamps with proper formatting
       const firstRecord = validRecords[0];
       const lastRecord = validRecords[validRecords.length - 1];
       
@@ -69,16 +121,9 @@ const FitAnalyzer = () => {
       const calculatedDuration = lastTimestamp - firstTimestamp;
       const rawDuration = parsedData.duration;
       
-      // Convert timestamps to dates
-      const firstDate = firstRecord.timestamp ? new Date(firstRecord.timestamp) : new Date();
-      const lastDate = lastRecord.timestamp ? new Date(lastRecord.timestamp) : new Date();
-      
-      console.log('Proper timestamp conversion:', {
-        firstTimestamp,
-        lastTimestamp,
-        firstDate: firstDate.toISOString(),
-        lastDate: lastDate.toISOString()
-      });
+      // Convert timestamps to dates with proper formatting
+      const firstDate = firstRecord.timestamp ? formatTimestamp(firstRecord.timestamp) : 'N/A';
+      const lastDate = lastRecord.timestamp ? formatTimestamp(lastRecord.timestamp) : 'N/A';
       
       // Calculate statistics
       const powers = validRecords.map(r => r.power!);
@@ -92,10 +137,10 @@ const FitAnalyzer = () => {
       const heartRates = validRecords.filter(r => r.heart_rate && r.heart_rate > 0).map(r => r.heart_rate!);
       const avgHeartRate = heartRates.length > 0 ? heartRates.reduce((sum, hr) => sum + hr, 0) / heartRates.length : 0;
       
-      // Get sample records
+      // Get sample records with proper timestamp formatting
       const sampleRecords = validRecords.slice(0, 10).map(record => ({
         timestamp: record.timestamp ? new Date(record.timestamp).getTime() / 1000 : 0,
-        timestampDate: record.timestamp ? new Date(record.timestamp).toISOString() : '',
+        timestampDate: formatTimestamp(record.timestamp),
         power: record.power!,
         cadence: record.cadence,
         heart_rate: record.heart_rate,
@@ -109,8 +154,8 @@ const FitAnalyzer = () => {
         calculatedDuration,
         firstTimestamp,
         lastTimestamp,
-        firstTimestampDate: firstDate.toISOString(),
-        lastTimestampDate: lastDate.toISOString(),
+        firstTimestampDate: firstDate,
+        lastTimestampDate: lastDate,
         avgPower: Math.round(avgPower),
         maxPower,
         minPower,

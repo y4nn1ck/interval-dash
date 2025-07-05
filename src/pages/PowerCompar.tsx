@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { parseProperFitFile } from '@/utils/properFitParser';
@@ -39,14 +40,32 @@ const PowerCompar = () => {
       const parsedData = await parseProperFitFile(file);
       console.log(`Parsed ${parsedData.records.length} records from ${file.name}`);
       
+      // Extract records from nested structure similar to other pages
+      let extractedRecords = [];
+      if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.laps) {
+        for (const lap of parsedData.rawDataStructure.activity.sessions[0].laps) {
+          if (lap.records && Array.isArray(lap.records)) {
+            extractedRecords = extractedRecords.concat(lap.records);
+          }
+        }
+      }
+      
+      // Filter records starting from elapsed_time: 0 (start of training)
+      const trainingRecords = extractedRecords.filter(record => 
+        record.elapsed_time !== undefined && record.elapsed_time >= 0 && record.power && record.power > 0
+      );
+      
+      // Use extracted records if available, otherwise fallback to parsed records
+      const recordsToUse = trainingRecords.length > 0 ? trainingRecords : parsedData.records;
+      
       // Convert parsed data to PowerData format
       const powerData: PowerData[] = [];
       
       // Get the first timestamp to calculate relative time
-      const firstRecord = parsedData.records[0];
+      const firstRecord = recordsToUse[0];
       const firstTimestamp = firstRecord?.timestamp ? new Date(firstRecord.timestamp).getTime() : 0;
       
-      parsedData.records.forEach((record, index) => {
+      recordsToUse.forEach((record, index) => {
         if (record.power !== undefined && record.power > 0) {
           // Calculate time in minutes from start of workout
           let relativeTime = index / 60; // fallback to index-based time
