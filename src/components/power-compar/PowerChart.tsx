@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -18,53 +17,149 @@ interface PowerChartProps {
 }
 
 const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name }) => {
+  // Custom tick formatter for 5-minute intervals
+  const formatXAxisTick = (value: number) => {
+    const minutes = Math.round(value);
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}min`;
+  };
+
+  // Generate ticks every 5 minutes
+  const generateTicks = () => {
+    if (chartData.length === 0) return [];
+    
+    const maxTime = Math.max(...chartData.map(d => d.time));
+    const ticks = [];
+    
+    for (let i = 0; i <= maxTime; i += 5) {
+      ticks.push(i);
+    }
+    
+    return ticks;
+  };
+
+  const xAxisTicks = generateTicks();
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Comparaison des données de puissance</CardTitle>
+    <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-xl">
+          <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-blue-500 rounded-full"></div>
+          Comparaison des données de puissance
+        </CardTitle>
         <CardDescription>Évolution de la puissance dans le temps pour les deux fichiers (lissage 3 secondes)</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="h-[400px] w-full">
+      <CardContent className="pt-2">
+        <div className="h-[450px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+              <defs>
+                <linearGradient id="powerGradient1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="powerGradient2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="#e2e8f0" 
+                strokeWidth={1}
+                opacity={0.6}
+              />
               <XAxis 
                 dataKey="time" 
                 className="text-gray-600"
                 fontSize={12}
-                tickFormatter={(value) => `${Math.round(value)}min`}
+                tickFormatter={formatXAxisTick}
+                ticks={xAxisTicks}
+                domain={['dataMin', 'dataMax']}
+                type="number"
+                scale="linear"
+                tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                interval={0}
+                angle={-45}
+                textAnchor="end"
+                height={60}
               />
               <YAxis 
                 className="text-gray-600"
                 fontSize={12}
-                label={{ value: 'Puissance (W)', angle: -90, position: 'insideLeft' }}
+                label={{ 
+                  value: 'Puissance (W)', 
+                  angle: -90, 
+                  position: 'insideLeft',
+                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '12px' }
+                }}
+                tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                domain={['dataMin - 20', 'dataMax + 20']}
               />
               <Tooltip 
                 formatter={(value, name) => [
                   value ? `${Math.round(Number(value))}W` : 'N/A', 
                   name === 'power1' ? file1Name : file2Name
                 ]}
-                labelFormatter={(time) => `Temps: ${Math.round(Number(time))}min`}
+                labelFormatter={(time) => `Temps: ${formatXAxisTick(Number(time))}`}
+                contentStyle={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  fontSize: '12px'
+                }}
+                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }}
               />
-              <Legend />
+              <Legend 
+                wrapperStyle={{ 
+                  paddingTop: '20px',
+                  fontSize: '13px',
+                  fontWeight: '500'
+                }}
+                iconType="line"
+              />
               <Line 
                 type="monotone" 
                 dataKey="power1" 
                 stroke="#10b981"
-                strokeWidth={2}
+                strokeWidth={3}
                 dot={false}
                 name={file1Name}
                 connectNulls={false}
+                fill="url(#powerGradient1)"
+                activeDot={{ 
+                  r: 6, 
+                  stroke: "#10b981", 
+                  strokeWidth: 3, 
+                  fill: '#fff',
+                  filter: 'drop-shadow(0 2px 4px rgba(16, 185, 129, 0.3))'
+                }}
               />
               <Line 
                 type="monotone" 
                 dataKey="power2" 
                 stroke="#3b82f6"
-                strokeWidth={2}
+                strokeWidth={3}
                 dot={false}
                 name={file2Name}
                 connectNulls={false}
+                fill="url(#powerGradient2)"
+                activeDot={{ 
+                  r: 6, 
+                  stroke: "#3b82f6", 
+                  strokeWidth: 3, 
+                  fill: '#fff',
+                  filter: 'drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3))'
+                }}
               />
             </LineChart>
           </ResponsiveContainer>
