@@ -85,6 +85,14 @@ const FitRawReader = () => {
           }
         }
         
+        console.log('=== DEBUG TIMESTAMP FORMAT ===');
+        if (extractedRecords.length > 0) {
+          console.log('First record:', extractedRecords[0]);
+          console.log('Timestamp of first record:', extractedRecords[0].timestamp);
+          console.log('Type of timestamp:', typeof extractedRecords[0].timestamp);
+          console.log('Timestamp structure:', JSON.stringify(extractedRecords[0].timestamp, null, 2));
+        }
+        
         // Filter records starting from elapsed_time: 0 (start of training)
         const trainingRecords = extractedRecords.filter(record => 
           record.elapsed_time !== undefined && record.elapsed_time >= 0
@@ -97,6 +105,14 @@ const FitRawReader = () => {
             records: trainingRecords
           });
           console.log('Extracted training records (from elapsed_time 0):', trainingRecords.slice(0, 5));
+          console.log('=== SAMPLE TIMESTAMPS FOR DEBUG ===');
+          trainingRecords.slice(0, 3).forEach((record, index) => {
+            console.log(`Record ${index} timestamp:`, record.timestamp);
+            console.log(`Record ${index} timestamp type:`, typeof record.timestamp);
+            if (typeof record.timestamp === 'object') {
+              console.log(`Record ${index} timestamp object:`, JSON.stringify(record.timestamp, null, 2));
+            }
+          });
         }
         
       } catch (fitError) {
@@ -262,52 +278,51 @@ const FitRawReader = () => {
   };
 
   const formatTimestamp = (timestamp: any) => {
+    console.log('=== formatTimestamp called with ===');
+    console.log('Value:', timestamp);
+    console.log('Type:', typeof timestamp);
+    console.log('JSON:', JSON.stringify(timestamp, null, 2));
+    
     if (!timestamp) return 'N/A';
     
-    // Handle the nested structure from FIT files
-    if (typeof timestamp === 'object') {
-      // Check for nested value.iso structure
-      if (timestamp.value && timestamp.value.iso && typeof timestamp.value.iso === 'string') {
-        const date = new Date(timestamp.value.iso);
-        if (!isNaN(date.getTime())) {
-          return date.toISOString().replace('T', ' ').substring(0, 19);
-        }
-      }
-      
-      // Check for direct iso property
-      if (timestamp.iso && typeof timestamp.iso === 'string') {
-        const date = new Date(timestamp.iso);
-        if (!isNaN(date.getTime())) {
-          return date.toISOString().replace('T', ' ').substring(0, 19);
-        }
-      }
-      
-      // Check for nested value.value (Unix timestamp)
-      if (timestamp.value && typeof timestamp.value.value === 'number') {
-        const date = new Date(timestamp.value.value);
-        if (!isNaN(date.getTime())) {
-          return date.toISOString().replace('T', ' ').substring(0, 19);
-        }
-      }
-    }
-    
-    // Handle direct ISO string format
+    // Handle direct ISO string format (like "2025-07-01T16:03:24.000Z")
     if (typeof timestamp === 'string') {
-      const date = new Date(timestamp);
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().replace('T', ' ').substring(0, 19);
+      try {
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          const formatted = date.toISOString().replace('T', ' ').substring(0, 19);
+          console.log('Formatted string timestamp:', formatted);
+          return formatted;
+        }
+      } catch (e) {
+        console.log('Error parsing string timestamp:', e);
       }
     }
     
-    // Handle direct number timestamp
+    // Handle direct Date object
+    if (timestamp instanceof Date) {
+      if (!isNaN(timestamp.getTime())) {
+        const formatted = timestamp.toISOString().replace('T', ' ').substring(0, 19);
+        console.log('Formatted Date object:', formatted);
+        return formatted;
+      }
+    }
+    
+    // Handle direct number (Unix timestamp)
     if (typeof timestamp === 'number') {
-      const date = new Date(timestamp);
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().replace('T', ' ').substring(0, 19);
+      try {
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          const formatted = date.toISOString().replace('T', ' ').substring(0, 19);
+          console.log('Formatted number timestamp:', formatted);
+          return formatted;
+        }
+      } catch (e) {
+        console.log('Error parsing number timestamp:', e);
       }
     }
     
-    console.log('Unhandled timestamp format:', timestamp);
+    console.log('Timestamp format not recognized, returning N/A');
     return 'N/A';
   };
 
