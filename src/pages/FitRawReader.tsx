@@ -264,29 +264,38 @@ const FitRawReader = () => {
   const formatTimestamp = (timestamp: any) => {
     if (!timestamp) return 'N/A';
     
-    // Handle the ISO 8601 format directly
-    if (typeof timestamp === 'string') {
-      // It's already in ISO format like "2025-07-01T16:03:24.000Z"
-      // Convert to readable format: YYYY-MM-DD HH:MM:SS
-      const date = new Date(timestamp);
-      if (!isNaN(date.getTime())) {
-        return date.toISOString().replace('T', ' ').substring(0, 19);
-      }
-    }
-    
-    // Handle nested timestamp object structure
+    // Handle the nested structure from FIT files
     if (typeof timestamp === 'object') {
-      if (timestamp.value?.iso) {
+      // Check for nested value.iso structure
+      if (timestamp.value && timestamp.value.iso && typeof timestamp.value.iso === 'string') {
         const date = new Date(timestamp.value.iso);
         if (!isNaN(date.getTime())) {
           return date.toISOString().replace('T', ' ').substring(0, 19);
         }
       }
-      if (timestamp.value && typeof timestamp.value === 'number') {
-        const date = new Date(timestamp.value);
+      
+      // Check for direct iso property
+      if (timestamp.iso && typeof timestamp.iso === 'string') {
+        const date = new Date(timestamp.iso);
         if (!isNaN(date.getTime())) {
           return date.toISOString().replace('T', ' ').substring(0, 19);
         }
+      }
+      
+      // Check for nested value.value (Unix timestamp)
+      if (timestamp.value && typeof timestamp.value.value === 'number') {
+        const date = new Date(timestamp.value.value);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().replace('T', ' ').substring(0, 19);
+        }
+      }
+    }
+    
+    // Handle direct ISO string format
+    if (typeof timestamp === 'string') {
+      const date = new Date(timestamp);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().replace('T', ' ').substring(0, 19);
       }
     }
     
@@ -298,6 +307,7 @@ const FitRawReader = () => {
       }
     }
     
+    console.log('Unhandled timestamp format:', timestamp);
     return 'N/A';
   };
 
