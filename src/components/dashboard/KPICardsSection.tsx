@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Heart, Moon, Target, Zap, TrendingUp as TrendUp } from 'lucide-react';
 import MetricCard from './MetricCard';
@@ -91,7 +90,7 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
       <Dialog open={isRestingHRDialogOpen} onOpenChange={setIsRestingHRDialogOpen}>
         <DialogTrigger asChild>
-          <div className="cursor-pointer">
+          <div className="cursor-pointer transition-all duration-200 hover:scale-105 relative group">
             <MetricCard
               title="FC Repos"
               value={`${todayMetrics.resting_hr || 58}`}
@@ -100,6 +99,10 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
               color="bg-red-500"
               trend="+2"
             />
+            {/* Subtle clickable indicator */}
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="w-2 h-2 bg-white/80 rounded-full shadow-sm"></div>
+            </div>
           </div>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
@@ -112,7 +115,7 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
       
       <Dialog open={isCTLDialogOpen} onOpenChange={setIsCTLDialogOpen}>
         <DialogTrigger asChild>
-          <div className="cursor-pointer">
+          <div className="cursor-pointer transition-all duration-200 hover:scale-105 relative group">
             <MetricCard
               title="Fitness (CTL)"
               value={`${ctl}`}
@@ -120,6 +123,10 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
               color="bg-green-500"
               trend="+5"
             />
+            {/* Subtle clickable indicator */}
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <div className="w-2 h-2 bg-white/80 rounded-full shadow-sm"></div>
+            </div>
           </div>
         </DialogTrigger>
         <DialogContent className="max-w-2xl">
