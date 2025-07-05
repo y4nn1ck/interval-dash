@@ -1,4 +1,3 @@
-
 export interface IntervalsActivity {
   id: string;
   start_date_local: string;
@@ -68,7 +67,17 @@ class IntervalsService {
     if (!testResponse.ok) {
       const errorText = await testResponse.text();
       console.error('API Error Response:', errorText);
-      throw new Error(`Invalid credentials - Status: ${testResponse.status}, Response: ${errorText}`);
+      
+      // Provide specific error messages based on status code
+      if (testResponse.status === 403) {
+        throw new Error('Access denied. Please check that your API Key and Athlete ID are correct. You can find your API Key in the Developer section of your Intervals.icu settings, and your Athlete ID in your profile URL (e.g., intervals.icu/athletes/YOUR_ATHLETE_ID). If the issue persists, try generating a new API key.');
+      } else if (testResponse.status === 401) {
+        throw new Error('Authentication failed. Please verify your API Key is correct and has not expired.');
+      } else if (testResponse.status === 404) {
+        throw new Error('Athlete not found. Please verify your Athlete ID is correct.');
+      } else {
+        throw new Error(`Connection failed (${testResponse.status}): ${errorText || testResponse.statusText}`);
+      }
     }
 
     const athleteData = await testResponse.json();
