@@ -85,13 +85,18 @@ const FitRawReader = () => {
           }
         }
         
-        // Update the parsedFitData with extracted records
-        if (extractedRecords.length > 0) {
+        // Filter records starting from elapsed_time: 0 (start of training)
+        const trainingRecords = extractedRecords.filter(record => 
+          record.elapsed_time !== undefined && record.elapsed_time >= 0
+        );
+        
+        // Update the parsedFitData with filtered training records
+        if (trainingRecords.length > 0) {
           setParsedFitData({
             ...fitData,
-            records: extractedRecords
+            records: trainingRecords
           });
-          console.log('Extracted records:', extractedRecords.slice(0, 5));
+          console.log('Extracted training records (from elapsed_time 0):', trainingRecords.slice(0, 5));
         }
         
       } catch (fitError) {
@@ -259,17 +264,38 @@ const FitRawReader = () => {
   const formatTimestamp = (timestamp: any) => {
     if (!timestamp) return 'N/A';
     
-    // Handle different timestamp formats
-    if (typeof timestamp === 'object' && timestamp.value) {
-      if (timestamp.value.iso) {
-        return new Date(timestamp.value.iso).toISOString().replace('T', ' ').substring(0, 19);
-      } else if (typeof timestamp.value === 'number') {
-        return new Date(timestamp.value).toISOString().replace('T', ' ').substring(0, 19);
+    // Handle the ISO 8601 format directly
+    if (typeof timestamp === 'string') {
+      // It's already in ISO format like "2025-07-01T16:03:24.000Z"
+      // Convert to readable format: YYYY-MM-DD HH:MM:SS
+      const date = new Date(timestamp);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().replace('T', ' ').substring(0, 19);
       }
-    } else if (typeof timestamp === 'number') {
-      return new Date(timestamp).toISOString().replace('T', ' ').substring(0, 19);
-    } else if (typeof timestamp === 'string') {
-      return new Date(timestamp).toISOString().replace('T', ' ').substring(0, 19);
+    }
+    
+    // Handle nested timestamp object structure
+    if (typeof timestamp === 'object') {
+      if (timestamp.value?.iso) {
+        const date = new Date(timestamp.value.iso);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().replace('T', ' ').substring(0, 19);
+        }
+      }
+      if (timestamp.value && typeof timestamp.value === 'number') {
+        const date = new Date(timestamp.value);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString().replace('T', ' ').substring(0, 19);
+        }
+      }
+    }
+    
+    // Handle direct number timestamp
+    if (typeof timestamp === 'number') {
+      const date = new Date(timestamp);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().replace('T', ' ').substring(0, 19);
+      }
     }
     
     return 'N/A';
@@ -321,8 +347,8 @@ const FitRawReader = () => {
       {parsedFitData && (
         <Card>
           <CardHeader>
-            <CardTitle>Données FIT extraites - 50 premiers enregistrements</CardTitle>
-            <CardDescription>Date/Heure, Puissance et Cadence des premiers enregistrements</CardDescription>
+            <CardTitle>Données d'entraînement - 50 premiers enregistrements</CardTitle>
+            <CardDescription>Date/Heure, Puissance et Cadence (filtrés à partir d'elapsed_time: 0)</CardDescription>
           </CardHeader>
           <CardContent>
             {parsedFitData.records && parsedFitData.records.length > 0 ? (
@@ -333,6 +359,7 @@ const FitRawReader = () => {
                       <TableHead>Date/Heure</TableHead>
                       <TableHead>Puissance (W)</TableHead>
                       <TableHead>Cadence (RPM)</TableHead>
+                      <TableHead>Temps écoulé (s)</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -341,19 +368,21 @@ const FitRawReader = () => {
                         <TableCell>{formatTimestamp(record.timestamp)}</TableCell>
                         <TableCell>{extractValue(record.power)}</TableCell>
                         <TableCell>{extractValue(record.cadence)}</TableCell>
+                        <TableCell>{extractValue(record.elapsed_time)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
                 <div className="mt-4 text-sm text-muted-foreground">
                   Affichage de {Math.min(50, parsedFitData.records.length)} enregistrements sur {parsedFitData.records.length} total
+                  (filtrés à partir du début d'entraînement)
                 </div>
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-muted-foreground">Aucun enregistrement trouvé dans les données FIT</p>
+                <p className="text-muted-foreground">Aucun enregistrement d'entraînement trouvé</p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Structure détectée: {parsedFitData.rawDataStructure ? 'Oui' : 'Non'}
+                  Recherche des données à partir d'elapsed_time: 0
                 </p>
               </div>
             )}
