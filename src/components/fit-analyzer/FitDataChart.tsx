@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 
 interface ChartDataPoint {
@@ -15,6 +16,10 @@ interface FitDataChartProps {
 }
 
 const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
+  const [showPower, setShowPower] = useState(true);
+  const [showCadence, setShowCadence] = useState(true);
+  const [showHeartRate, setShowHeartRate] = useState(true);
+
   // Custom tick formatter for 5-minute intervals
   const formatXAxisTick = (value: number) => {
     const minutes = Math.round(value);
@@ -87,6 +92,26 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
     return null;
   };
 
+  // Calculate proper Y axis domains to avoid aberrant values
+  const getYAxisDomain = (dataKey: 'power' | 'cadence' | 'heart_rate') => {
+    const values = data
+      .map(d => d[dataKey])
+      .filter(v => v !== null && v !== undefined && !isNaN(v as number)) as number[];
+    
+    if (values.length === 0) return [0, 100];
+    
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    
+    // Add padding
+    const padding = (max - min) * 0.1;
+    return [Math.max(0, min - padding), max + padding];
+  };
+
+  const powerDomain = getYAxisDomain('power');
+  const cadenceDomain = getYAxisDomain('cadence');
+  const heartRateDomain = getYAxisDomain('heart_rate');
+
   return (
     <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
       <CardHeader className="pb-2">
@@ -95,11 +120,45 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
           Données d'entraînement
         </CardTitle>
         <CardDescription>Évolution de la puissance, cadence et fréquence cardiaque dans le temps</CardDescription>
+        
+        {/* Chart Controls */}
+        <div className="flex items-center gap-6 pt-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="power"
+              checked={showPower}
+              onCheckedChange={setShowPower}
+            />
+            <label htmlFor="power" className="text-sm font-medium text-orange-600 cursor-pointer">
+              Puissance
+            </label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="cadence"
+              checked={showCadence}
+              onCheckedChange={setShowCadence}
+            />
+            <label htmlFor="cadence" className="text-sm font-medium text-purple-600 cursor-pointer">
+              Cadence
+            </label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="heartRate"
+              checked={showHeartRate}
+              onCheckedChange={setShowHeartRate}
+            />
+            <label htmlFor="heartRate" className="text-sm font-medium text-red-600 cursor-pointer">
+              Fréquence Cardiaque
+            </label>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="pt-2">
         <div className="h-[500px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+            <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
               <defs>
                 <linearGradient id="powerGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#f97316" stopOpacity={0.2}/>
@@ -148,7 +207,8 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
                 }}
                 tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
                 axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                domain={[0, 'dataMax + 50']}
+                domain={[0, Math.max(...powerDomain, ...cadenceDomain)]}
+                tickFormatter={(value) => Math.round(value).toString()}
               />
               <YAxis 
                 yAxisId="right"
@@ -163,7 +223,8 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
                 }}
                 tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
                 axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                domain={[0, 'dataMax + 20']}
+                domain={heartRateDomain}
+                tickFormatter={(value) => Math.round(value).toString()}
               />
               <Tooltip 
                 content={<CustomTooltip />}
@@ -179,64 +240,67 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
               />
               
               {/* Power Line */}
-              <Line 
-                yAxisId="left"
-                type="monotone" 
-                dataKey="power" 
-                stroke="#f97316"
-                strokeWidth={2}
-                dot={false}
-                name="Puissance (W)"
-                connectNulls={false}
-                fill="url(#powerGradient)"
-                activeDot={{ 
-                  r: 4, 
-                  stroke: "#f97316", 
-                  strokeWidth: 2, 
-                  fill: '#fff',
-                  filter: 'drop-shadow(0 1px 2px rgba(249, 115, 22, 0.3))'
-                }}
-              />
+              {showPower && (
+                <Line 
+                  yAxisId="left"
+                  type="monotone" 
+                  dataKey="power" 
+                  stroke="#f97316"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Puissance (W)"
+                  connectNulls={false}
+                  fill="url(#powerGradient)"
+                  activeDot={{ 
+                    r: 4, 
+                    stroke: "#f97316", 
+                    strokeWidth: 2, 
+                    fill: '#fff'
+                  }}
+                />
+              )}
               
               {/* Cadence Line */}
-              <Line 
-                yAxisId="left"
-                type="monotone" 
-                dataKey="cadence" 
-                stroke="#a855f7"
-                strokeWidth={2}
-                dot={false}
-                name="Cadence (RPM)"
-                connectNulls={false}
-                fill="url(#cadenceGradient)"
-                activeDot={{ 
-                  r: 4, 
-                  stroke: "#a855f7", 
-                  strokeWidth: 2, 
-                  fill: '#fff',
-                  filter: 'drop-shadow(0 1px 2px rgba(168, 85, 247, 0.3))'
-                }}
-              />
+              {showCadence && (
+                <Line 
+                  yAxisId="left"
+                  type="monotone" 
+                  dataKey="cadence" 
+                  stroke="#a855f7"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Cadence (RPM)"
+                  connectNulls={false}
+                  fill="url(#cadenceGradient)"
+                  activeDot={{ 
+                    r: 4, 
+                    stroke: "#a855f7", 
+                    strokeWidth: 2, 
+                    fill: '#fff'
+                  }}
+                />
+              )}
               
               {/* Heart Rate Line */}
-              <Line 
-                yAxisId="right"
-                type="monotone" 
-                dataKey="heart_rate" 
-                stroke="#ef4444"
-                strokeWidth={2}
-                dot={false}
-                name="Fréquence Cardiaque (BPM)"
-                connectNulls={false}
-                fill="url(#heartRateGradient)"
-                activeDot={{ 
-                  r: 4, 
-                  stroke: "#ef4444", 
-                  strokeWidth: 2, 
-                  fill: '#fff',
-                  filter: 'drop-shadow(0 1px 2px rgba(239, 68, 68, 0.3))'
-                }}
-              />
+              {showHeartRate && (
+                <Line 
+                  yAxisId="right"
+                  type="monotone" 
+                  dataKey="heart_rate" 
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Fréquence Cardiaque (BPM)"
+                  connectNulls={false}
+                  fill="url(#heartRateGradient)"
+                  activeDot={{ 
+                    r: 4, 
+                    stroke: "#ef4444", 
+                    strokeWidth: 2, 
+                    fill: '#fff'
+                  }}
+                />
+              )}
             </LineChart>
           </ResponsiveContainer>
         </div>

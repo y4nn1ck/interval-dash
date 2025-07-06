@@ -10,6 +10,8 @@ interface FitRecord {
   distance?: number;
   altitude?: number;
   temperature?: number;
+  core_temperature?: number;
+  skin_temperature?: number;
   elapsed_time?: number;
   [key: string]: any;
 }
@@ -98,6 +100,8 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                 if (typeof record.distance === 'number') extractedRecord.distance = record.distance;
                 if (typeof record.altitude === 'number') extractedRecord.altitude = record.altitude;
                 if (typeof record.temperature === 'number') extractedRecord.temperature = record.temperature;
+                if (typeof record.core_temperature === 'number') extractedRecord.core_temperature = record.core_temperature;
+                if (typeof record.skin_temperature === 'number') extractedRecord.skin_temperature = record.skin_temperature;
                 if (typeof record.elapsed_time === 'number') extractedRecord.elapsed_time = record.elapsed_time;
                 
                 records.push(extractedRecord);
@@ -109,6 +113,9 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                     power: extractedRecord.power,
                     cadence: extractedRecord.cadence,
                     heart_rate: extractedRecord.heart_rate,
+                    temperature: extractedRecord.temperature,
+                    core_temperature: extractedRecord.core_temperature,
+                    skin_temperature: extractedRecord.skin_temperature,
                     elapsed_time: extractedRecord.elapsed_time,
                     originalRecord: record
                   });
@@ -137,6 +144,8 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                   if (typeof record.distance === 'number') extractedRecord.distance = record.distance;
                   if (typeof record.altitude === 'number') extractedRecord.altitude = record.altitude;
                   if (typeof record.temperature === 'number') extractedRecord.temperature = record.temperature;
+                  if (typeof record.core_temperature === 'number') extractedRecord.core_temperature = record.core_temperature;
+                  if (typeof record.skin_temperature === 'number') extractedRecord.skin_temperature = record.skin_temperature;
                   if (typeof record.elapsed_time === 'number') extractedRecord.elapsed_time = record.elapsed_time;
                   
                   records.push(extractedRecord);
@@ -178,6 +187,9 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           console.log(`Records with power: ${records.filter(r => r.power !== undefined).length}`);
           console.log(`Records with cadence: ${records.filter(r => r.cadence !== undefined).length}`);
           console.log(`Records with heart_rate: ${records.filter(r => r.heart_rate !== undefined).length}`);
+          console.log(`Records with temperature: ${records.filter(r => r.temperature !== undefined).length}`);
+          console.log(`Records with core_temperature: ${records.filter(r => r.core_temperature !== undefined).length}`);
+          console.log(`Records with skin_temperature: ${records.filter(r => r.skin_temperature !== undefined).length}`);
           console.log(`Records with timestamp: ${records.filter(r => r.timestamp !== undefined).length}`);
           console.log(`Sessions: ${sessions.length}`);
           console.log(`Laps: ${laps.length}`);

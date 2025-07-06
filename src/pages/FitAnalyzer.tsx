@@ -4,8 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { parseProperFitFile } from '@/utils/properFitParser';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Calendar, Clock, Zap, RotateCcw, Heart } from 'lucide-react';
+import { Upload, Calendar, Clock, Zap, RotateCcw, Heart, Thermometer } from 'lucide-react';
 import FitDataChart from '@/components/fit-analyzer/FitDataChart';
+import TemperatureChart from '@/components/fit-analyzer/TemperatureChart';
 import { format } from 'date-fns';
 
 interface FitRecord {
@@ -14,6 +15,9 @@ interface FitRecord {
   cadence?: number;
   heart_rate?: number;
   elapsed_time?: number;
+  temperature?: number;
+  core_temperature?: number;
+  skin_temperature?: number;
 }
 
 interface LapData {
@@ -50,9 +54,17 @@ interface ChartDataPoint {
   heart_rate: number | null;
 }
 
+interface TemperatureDataPoint {
+  time: number;
+  temperature: number | null;
+  core_temperature: number | null;
+  skin_temperature: number | null;
+}
+
 const FitAnalyzer = () => {
   const [fileInfo, setFileInfo] = useState<FitFileInfo | null>(null);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [temperatureData, setTemperatureData] = useState<TemperatureDataPoint[]>([]);
   const [lapData, setLapData] = useState<LapData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -263,6 +275,7 @@ const FitAnalyzer = () => {
 
       // Prepare chart data
       const chartPoints: ChartDataPoint[] = [];
+      const tempPoints: TemperatureDataPoint[] = [];
       const firstTimestamp = firstRecordWithTimestamp?.timestamp ? formatTimestamp(firstRecordWithTimestamp.timestamp)?.getTime() : 0;
       
       recordsToUse.forEach((record, index) => {
@@ -282,9 +295,18 @@ const FitAnalyzer = () => {
           cadence: record.cadence || null,
           heart_rate: record.heart_rate || null
         });
+
+        // Prepare temperature data
+        tempPoints.push({
+          time: relativeTime,
+          temperature: record.temperature || null,
+          core_temperature: record.core_temperature || null,
+          skin_temperature: record.skin_temperature || null
+        });
       });
 
       setChartData(chartPoints);
+      setTemperatureData(tempPoints);
       
       toast({
         title: "Fichier analysé avec succès",
@@ -386,7 +408,8 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-600">Puissance</p>
-                  <p className="text-xs font-bold text-orange-700">Moy: {fileInfo.avgPower}W / Max: {fileInfo.maxPower}W</p>
+                  <p className="text-xs font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
+                  <p className="text-xs font-bold text-orange-700">Max: {fileInfo.maxPower}W</p>
                   {fileInfo.normalizedPower && (
                     <p className="text-xs text-orange-600">NP: {fileInfo.normalizedPower}W</p>
                   )}
@@ -400,7 +423,8 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-600">Cadence</p>
-                  <p className="text-xs font-bold text-purple-700">Moy: {fileInfo.avgCadence} / Max: {fileInfo.maxCadence} RPM</p>
+                  <p className="text-xs font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
+                  <p className="text-xs font-bold text-purple-700">Max: {fileInfo.maxCadence} RPM</p>
                 </div>
               </div>
 
@@ -411,12 +435,18 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-600">Fréquence Cardiaque</p>
-                  <p className="text-xs font-bold text-red-700">Moy: {fileInfo.avgHeartRate} / Max: {fileInfo.maxHeartRate} BPM</p>
+                  <p className="text-xs font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
+                  <p className="text-xs font-bold text-red-700">Max: {fileInfo.maxHeartRate} BPM</p>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Temperature Chart */}
+      {temperatureData.length > 0 && temperatureData.some(d => d.temperature || d.core_temperature || d.skin_temperature) && (
+        <TemperatureChart data={temperatureData} />
       )}
 
       {/* Interactive Chart */}

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -45,6 +46,24 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
 
   const xAxisTicks = generateTicks();
 
+  // Calculate proper Y axis domain to avoid aberrant values
+  const getPowerDomain = () => {
+    const powerValues = chartData
+      .flatMap(d => [d.power1, d.power2])
+      .filter(v => v !== null && v !== undefined && !isNaN(v)) as number[];
+    
+    if (powerValues.length === 0) return [0, 500];
+    
+    const min = Math.min(...powerValues);
+    const max = Math.max(...powerValues);
+    
+    // Add padding
+    const padding = (max - min) * 0.1;
+    return [Math.max(0, min - padding), max + padding];
+  };
+
+  const powerDomain = getPowerDomain();
+
   return (
     <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
       <CardHeader className="pb-2">
@@ -57,7 +76,7 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
       <CardContent className="pt-2">
         <div className="h-[450px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
               <defs>
                 <linearGradient id="powerGradient1" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
@@ -69,39 +88,40 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
                 </linearGradient>
               </defs>
               <CartesianGrid 
-                strokeDasharray="3 3" 
+                strokeDasharray="2 2" 
                 stroke="#e2e8f0" 
-                strokeWidth={1}
-                opacity={0.6}
+                strokeWidth={0.5}
+                opacity={0.5}
               />
               <XAxis 
                 dataKey="time" 
                 className="text-gray-600"
-                fontSize={12}
+                fontSize={11}
                 tickFormatter={formatXAxisTick}
                 ticks={xAxisTicks}
                 domain={['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
                 interval={0}
-                angle={-45}
-                textAnchor="end"
-                height={60}
+                angle={0}
+                textAnchor="middle"
+                height={40}
               />
               <YAxis 
                 className="text-gray-600"
-                fontSize={12}
+                fontSize={11}
                 label={{ 
                   value: 'Puissance (W)', 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '12px' }
+                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
-                domain={['dataMin - 20', 'dataMax + 20']}
+                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                domain={powerDomain}
+                tickFormatter={(value) => Math.round(value).toString()}
               />
               <Tooltip 
                 formatter={(value, name) => [
@@ -117,12 +137,12 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
                   backdropFilter: 'blur(10px)',
                   fontSize: '12px'
                 }}
-                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }}
+                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
                 wrapperStyle={{ 
                   paddingTop: '20px',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: '500'
                 }}
                 iconType="line"
@@ -131,34 +151,32 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
                 type="monotone" 
                 dataKey="power1" 
                 stroke="#10b981"
-                strokeWidth={3}
+                strokeWidth={2}
                 dot={false}
                 name={file1Name}
                 connectNulls={false}
                 fill="url(#powerGradient1)"
                 activeDot={{ 
-                  r: 6, 
+                  r: 4, 
                   stroke: "#10b981", 
-                  strokeWidth: 3, 
-                  fill: '#fff',
-                  filter: 'drop-shadow(0 2px 4px rgba(16, 185, 129, 0.3))'
+                  strokeWidth: 2, 
+                  fill: '#fff'
                 }}
               />
               <Line 
                 type="monotone" 
                 dataKey="power2" 
                 stroke="#3b82f6"
-                strokeWidth={3}
+                strokeWidth={2}
                 dot={false}
                 name={file2Name}
                 connectNulls={false}
                 fill="url(#powerGradient2)"
                 activeDot={{ 
-                  r: 6, 
+                  r: 4, 
                   stroke: "#3b82f6", 
-                  strokeWidth: 3, 
-                  fill: '#fff',
-                  filter: 'drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3))'
+                  strokeWidth: 2, 
+                  fill: '#fff'
                 }}
               />
             </LineChart>

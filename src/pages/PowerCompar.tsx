@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -112,12 +113,15 @@ const PowerCompar = () => {
           validRpmData.reduce((sum, point) => sum + (point.rpm || 0), 0) / validRpmData.length
         ) : 0;
 
+        // Calculate actual duration from data
+        const actualDuration = powerData.length > 0 ? Math.max(...powerData.map(p => p.time)) : 0;
+
         return {
           name: file.name,
           avgWatts,
           avgRpm,
           powerData: smoothedData,
-          duration: parsedData.duration / 60 // Convert to minutes
+          duration: actualDuration // Use calculated duration instead of parser duration
         };
       });
 
@@ -215,8 +219,9 @@ const PowerCompar = () => {
                       <FileText className="h-4 w-4 text-green-500" />
                       <p className="text-sm font-medium truncate">{file1.name}</p>
                     </div>
-                    <p className="text-lg font-bold text-green-700">{file1.avgWatts}W</p>
-                    <p className="text-xs text-gray-600">RPM: {file1.avgRpm} | Durée: {Math.round(file1.duration)}min</p>
+                    <p className="text-xs text-gray-600">Durée: {Math.round(file1.duration)}min</p>
+                    <p className="text-lg font-bold text-green-700">Puissance: {file1.avgWatts}W</p>
+                    <p className="text-xs text-gray-600">Cadence: {file1.avgRpm} RPM</p>
                   </div>
                 ) : (
                   <p className="text-sm text-gray-500">Aucun fichier sélectionné</p>
@@ -244,8 +249,9 @@ const PowerCompar = () => {
                       <FileText className="h-4 w-4 text-blue-500" />
                       <p className="text-sm font-medium truncate">{file2.name}</p>
                     </div>
-                    <p className="text-lg font-bold text-blue-700">{file2.avgWatts}W</p>
-                    <p className="text-xs text-gray-600">RPM: {file2.avgRpm} | Durée: {Math.round(file2.duration)}min</p>
+                    <p className="text-xs text-gray-600">Durée: {Math.round(file2.duration)}min</p>
+                    <p className="text-lg font-bold text-blue-700">Puissance: {file2.avgWatts}W</p>
+                    <p className="text-xs text-gray-600">Cadence: {file2.avgRpm} RPM</p>
                     {percentageDiff !== null && (
                       <p className="text-xs font-medium text-blue-700">
                         Différence: {percentageDiff > 0 ? '+' : ''}{percentageDiff}%
