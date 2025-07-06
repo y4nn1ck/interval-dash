@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { parseProperFitFile } from '@/utils/properFitParser';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +16,19 @@ interface FitRecord {
   elapsed_time?: number;
 }
 
+interface LapData {
+  lapNumber: number;
+  startTime: string;
+  duration: string;
+  avgPower: number;
+  maxPower: number;
+  avgCadence: number;
+  maxCadence: number;
+  avgHeartRate: number;
+  maxHeartRate: number;
+  normalizedPower?: number;
+}
+
 interface FitFileInfo {
   fileName: string;
   startDate: string;
@@ -27,7 +40,7 @@ interface FitFileInfo {
   maxCadence: number;
   avgHeartRate: number;
   maxHeartRate: number;
-  recordCount: number;
+  normalizedPower?: number;
 }
 
 interface ChartDataPoint {
@@ -40,6 +53,7 @@ interface ChartDataPoint {
 const FitAnalyzer = () => {
   const [fileInfo, setFileInfo] = useState<FitFileInfo | null>(null);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [lapData, setLapData] = useState<LapData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -92,6 +106,27 @@ const FitAnalyzer = () => {
     }
     
     return null;
+  };
+
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.round(seconds % 60);
+    
+    if (hours > 0) {
+      return `${hours}h${minutes.toString().padStart(2, '0')}m${remainingSeconds.toString().padStart(2, '0')}s`;
+    }
+    return `${minutes}m${remainingSeconds.toString().padStart(2, '0')}s`;
+  };
+
+  const formatDurationMinutes = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = Math.round(minutes % 60);
+    
+    if (hours > 0) {
+      return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
+    }
+    return `${remainingMinutes}min`;
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,6 +212,12 @@ const FitAnalyzer = () => {
         ? Math.max(...heartRateRecords.map(r => r.heart_rate || 0))
         : 0;
 
+      // Get Normalized Power from parsed data if available
+      let normalizedPower: number | undefined;
+      if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.normalized_power) {
+        normalizedPower = Math.round(parsedData.rawDataStructure.activity.sessions[0].normalized_power);
+      }
+
       // Create file info
       const info: FitFileInfo = {
         fileName: file.name,
@@ -189,10 +230,36 @@ const FitAnalyzer = () => {
         maxCadence,
         avgHeartRate,
         maxHeartRate,
-        recordCount: recordsToUse.length
+        normalizedPower
       };
 
       setFileInfo(info);
+
+      // Process lap data
+      const laps: LapData[] = [];
+      if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.laps && Array.isArray(parsedData.rawDataStructure.activity.sessions[0].laps)) {
+        parsedData.rawDataStructure.activity.sessions[0].laps.forEach((lap: any, index: number) => {
+          if (lap.start_time) {
+            const lapStartDate = formatTimestamp(lap.start_time);
+            const lapStartTime = lapStartDate ? format(lapStartDate, 'HH:mm:ss') : 'N/A';
+            
+            laps.push({
+              lapNumber: index + 1,
+              startTime: lapStartTime,
+              duration: formatDuration(lap.total_elapsed_time || 0),
+              avgPower: Math.round(lap.avg_power || 0),
+              maxPower: Math.round(lap.max_power || 0),
+              avgCadence: Math.round(lap.avg_cadence || 0),
+              maxCadence: Math.round(lap.max_cadence || 0),
+              avgHeartRate: Math.round(lap.avg_heart_rate || 0),
+              maxHeartRate: Math.round(lap.max_heart_rate || 0),
+              normalizedPower: lap.normalized_power ? Math.round(lap.normalized_power) : undefined
+            });
+          }
+        });
+      }
+      
+      setLapData(laps);
 
       // Prepare chart data
       const chartPoints: ChartDataPoint[] = [];
@@ -234,16 +301,6 @@ const FitAnalyzer = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const formatDuration = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = Math.round(minutes % 60);
-    
-    if (hours > 0) {
-      return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
-    }
-    return `${remainingMinutes}min`;
   };
 
   return (
@@ -295,7 +352,7 @@ const FitAnalyzer = () => {
               <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></div>
               Informations du fichier
             </CardTitle>
-            <CardDescription>{fileInfo.fileName}</CardDescription>
+            <CardDescription className="text-xs">{fileInfo.fileName}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -306,7 +363,7 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-600">Date & Heure</p>
-                  <p className="text-sm font-bold text-blue-700">{fileInfo.startDate}</p>
+                  <p className="text-xs font-bold text-blue-700">{fileInfo.startDate}</p>
                   <p className="text-xs text-blue-600">{fileInfo.startTime}</p>
                 </div>
               </div>
@@ -318,7 +375,7 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-600">Durée</p>
-                  <p className="text-sm font-bold text-green-700">{formatDuration(fileInfo.duration)}</p>
+                  <p className="text-xs font-bold text-green-700">{formatDurationMinutes(fileInfo.duration)}</p>
                 </div>
               </div>
 
@@ -329,8 +386,10 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-600">Puissance</p>
-                  <p className="text-sm font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
-                  <p className="text-xs text-orange-600">Max: {fileInfo.maxPower}W</p>
+                  <p className="text-xs font-bold text-orange-700">Moy: {fileInfo.avgPower}W / Max: {fileInfo.maxPower}W</p>
+                  {fileInfo.normalizedPower && (
+                    <p className="text-xs text-orange-600">NP: {fileInfo.normalizedPower}W</p>
+                  )}
                 </div>
               </div>
 
@@ -341,8 +400,7 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-600">Cadence</p>
-                  <p className="text-sm font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
-                  <p className="text-xs text-purple-600">Max: {fileInfo.maxCadence} RPM</p>
+                  <p className="text-xs font-bold text-purple-700">Moy: {fileInfo.avgCadence} / Max: {fileInfo.maxCadence} RPM</p>
                 </div>
               </div>
 
@@ -353,8 +411,7 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-xs font-medium text-gray-600">Fréquence Cardiaque</p>
-                  <p className="text-sm font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
-                  <p className="text-xs text-red-600">Max: {fileInfo.maxHeartRate} BPM</p>
+                  <p className="text-xs font-bold text-red-700">Moy: {fileInfo.avgHeartRate} / Max: {fileInfo.maxHeartRate} BPM</p>
                 </div>
               </div>
             </div>
@@ -365,6 +422,53 @@ const FitAnalyzer = () => {
       {/* Interactive Chart */}
       {chartData.length > 0 && (
         <FitDataChart data={chartData} />
+      )}
+
+      {/* Laps Table */}
+      {lapData.length > 0 && (
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-blue-500 rounded-full"></div>
+              Tours / Intervalles
+            </CardTitle>
+            <CardDescription>Détail de chaque tour ou intervalle de l'entraînement</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="text-center">Tour</TableHead>
+                  <TableHead className="text-center">Heure</TableHead>
+                  <TableHead className="text-center">Durée</TableHead>
+                  <TableHead className="text-center">Puissance Moy</TableHead>
+                  <TableHead className="text-center">Puissance Max</TableHead>
+                  <TableHead className="text-center">NP</TableHead>
+                  <TableHead className="text-center">Cadence Moy</TableHead>
+                  <TableHead className="text-center">Cadence Max</TableHead>
+                  <TableHead className="text-center">FC Moy</TableHead>
+                  <TableHead className="text-center">FC Max</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {lapData.map((lap) => (
+                  <TableRow key={lap.lapNumber}>
+                    <TableCell className="text-center font-medium">{lap.lapNumber}</TableCell>
+                    <TableCell className="text-center">{lap.startTime}</TableCell>
+                    <TableCell className="text-center">{lap.duration}</TableCell>
+                    <TableCell className="text-center">{lap.avgPower}W</TableCell>
+                    <TableCell className="text-center">{lap.maxPower}W</TableCell>
+                    <TableCell className="text-center">{lap.normalizedPower ? `${lap.normalizedPower}W` : '-'}</TableCell>
+                    <TableCell className="text-center">{lap.avgCadence} RPM</TableCell>
+                    <TableCell className="text-center">{lap.maxCadence} RPM</TableCell>
+                    <TableCell className="text-center">{lap.avgHeartRate} BPM</TableCell>
+                    <TableCell className="text-center">{lap.maxHeartRate} BPM</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
