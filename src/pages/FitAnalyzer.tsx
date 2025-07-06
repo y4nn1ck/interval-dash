@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { parseProperFitFile } from '@/utils/properFitParser';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Calendar, Clock, Zap, RotateCcw, Heart, TrendingUp } from 'lucide-react';
+import { Upload, Calendar, Clock, Zap, RotateCcw, Heart } from 'lucide-react';
 import FitDataChart from '@/components/fit-analyzer/FitDataChart';
 import { format } from 'date-fns';
 
@@ -42,6 +43,57 @@ const FitAnalyzer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const formatTimestamp = (timestamp: any) => {
+    if (!timestamp) return null;
+    
+    // Handle nested timestamp structure (like timestamp.value.iso)
+    if (timestamp && typeof timestamp === 'object') {
+      if (timestamp.value && timestamp.value.iso) {
+        try {
+          const date = new Date(timestamp.value.iso);
+          if (!isNaN(date.getTime())) {
+            return date;
+          }
+        } catch (e) {
+          console.log('Error parsing nested timestamp:', e);
+        }
+      }
+    }
+    
+    // Handle direct ISO string format (like "2025-07-01T16:03:24.000Z")
+    if (typeof timestamp === 'string') {
+      try {
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (e) {
+        console.log('Error parsing string timestamp:', e);
+      }
+    }
+    
+    // Handle direct Date object
+    if (timestamp instanceof Date) {
+      if (!isNaN(timestamp.getTime())) {
+        return timestamp;
+      }
+    }
+    
+    // Handle direct number (Unix timestamp)
+    if (typeof timestamp === 'number') {
+      try {
+        const date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          return date;
+        }
+      } catch (e) {
+        console.log('Error parsing number timestamp:', e);
+      }
+    }
+    
+    return null;
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -77,11 +129,23 @@ const FitAnalyzer = () => {
       const firstRecordWithTimestamp = recordsToUse.find(r => r.timestamp);
       let startDate = 'N/A';
       let startTime = 'N/A';
+      let calculatedDuration = 0;
       
       if (firstRecordWithTimestamp?.timestamp) {
-        const date = new Date(firstRecordWithTimestamp.timestamp);
-        startDate = format(date, 'dd/MM/yyyy');
-        startTime = format(date, 'HH:mm:ss');
+        const firstDate = formatTimestamp(firstRecordWithTimestamp.timestamp);
+        if (firstDate) {
+          startDate = format(firstDate, 'dd/MM/yyyy');
+          startTime = format(firstDate, 'HH:mm:ss');
+          
+          // Calculate duration from first to last timestamp
+          const lastRecordWithTimestamp = recordsToUse.filter(r => r.timestamp).pop();
+          if (lastRecordWithTimestamp?.timestamp) {
+            const lastDate = formatTimestamp(lastRecordWithTimestamp.timestamp);
+            if (lastDate) {
+              calculatedDuration = (lastDate.getTime() - firstDate.getTime()) / (1000 * 60); // in minutes
+            }
+          }
+        }
       }
 
       // Calculate statistics
@@ -118,7 +182,7 @@ const FitAnalyzer = () => {
         fileName: file.name,
         startDate,
         startTime,
-        duration: parsedData.duration / 60, // Convert to minutes
+        duration: calculatedDuration,
         avgPower,
         maxPower,
         avgCadence,
@@ -132,14 +196,17 @@ const FitAnalyzer = () => {
 
       // Prepare chart data
       const chartPoints: ChartDataPoint[] = [];
-      const firstTimestamp = firstRecordWithTimestamp?.timestamp ? new Date(firstRecordWithTimestamp.timestamp).getTime() : 0;
+      const firstTimestamp = firstRecordWithTimestamp?.timestamp ? formatTimestamp(firstRecordWithTimestamp.timestamp)?.getTime() : 0;
       
       recordsToUse.forEach((record, index) => {
         let relativeTime = index / 60; // fallback to index-based time in minutes
         
         if (record.timestamp && firstTimestamp) {
-          const recordTime = new Date(record.timestamp).getTime();
-          relativeTime = (recordTime - firstTimestamp) / (1000 * 60); // Convert to minutes
+          const recordDate = formatTimestamp(record.timestamp);
+          if (recordDate) {
+            const recordTime = recordDate.getTime();
+            relativeTime = (recordTime - firstTimestamp) / (1000 * 60); // Convert to minutes
+          }
         }
         
         chartPoints.push({
@@ -231,7 +298,7 @@ const FitAnalyzer = () => {
             <CardDescription>{fileInfo.fileName}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               {/* Date & Time */}
               <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
                 <div className="p-2 bg-blue-100 rounded-lg">
@@ -252,7 +319,6 @@ const FitAnalyzer = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Durée</p>
                   <p className="text-lg font-bold text-green-700">{formatDuration(fileInfo.duration)}</p>
-                  <p className="text-sm text-green-600">{fileInfo.recordCount} points</p>
                 </div>
               </div>
 
@@ -263,7 +329,7 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Puissance</p>
-                  <p className="text-lg font-bold text-orange-700">{fileInfo.avgPower}W</p>
+                  <p className="text-lg font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
                   <p className="text-sm text-orange-600">Max: {fileInfo.maxPower}W</p>
                 </div>
               </div>
@@ -275,7 +341,7 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Cadence</p>
-                  <p className="text-lg font-bold text-purple-700">{fileInfo.avgCadence} RPM</p>
+                  <p className="text-lg font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
                   <p className="text-sm text-purple-600">Max: {fileInfo.maxCadence} RPM</p>
                 </div>
               </div>
@@ -287,26 +353,8 @@ const FitAnalyzer = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Fréquence Cardiaque</p>
-                  <p className="text-lg font-bold text-red-700">{fileInfo.avgHeartRate} BPM</p>
+                  <p className="text-lg font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
                   <p className="text-sm text-red-600">Max: {fileInfo.maxHeartRate} BPM</p>
-                </div>
-              </div>
-
-              {/* Performance */}
-              <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg">
-                <div className="p-2 bg-indigo-100 rounded-lg">
-                  <TrendingUp className="h-5 w-5 text-indigo-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Performance</p>
-                  <p className="text-lg font-bold text-indigo-700">
-                    {fileInfo.avgPower > 0 ? 'Excellent' : 'Données limitées'}
-                  </p>
-                  <p className="text-sm text-indigo-600">
-                    {fileInfo.avgPower > 250 ? 'Haute intensité' : 
-                     fileInfo.avgPower > 150 ? 'Intensité modérée' : 
-                     fileInfo.avgPower > 0 ? 'Faible intensité' : 'Pas de données de puissance'}
-                  </p>
                 </div>
               </div>
             </div>
