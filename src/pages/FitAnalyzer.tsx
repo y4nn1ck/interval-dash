@@ -305,9 +305,9 @@ const FitAnalyzer = () => {
                   <Calendar className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Date & Heure</p>
-                  <p className="text-lg font-bold text-blue-700">{fileInfo.startDate}</p>
-                  <p className="text-sm text-blue-600">{fileInfo.startTime}</p>
+                  <p className="text-xs font-medium text-gray-600">Date & Heure</p>
+                  <p className="text-sm font-bold text-blue-700">{fileInfo.startDate}</p>
+                  <p className="text-xs text-blue-600">{fileInfo.startTime}</p>
                 </div>
               </div>
 
@@ -317,8 +317,8 @@ const FitAnalyzer = () => {
                   <Clock className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Durée</p>
-                  <p className="text-lg font-bold text-green-700">{formatDuration(fileInfo.duration)}</p>
+                  <p className="text-xs font-medium text-gray-600">Durée</p>
+                  <p className="text-sm font-bold text-green-700">{formatDuration(fileInfo.duration)}</p>
                 </div>
               </div>
 
@@ -328,9 +328,9 @@ const FitAnalyzer = () => {
                   <Zap className="h-5 w-5 text-orange-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Puissance</p>
-                  <p className="text-lg font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
-                  <p className="text-sm text-orange-600">Max: {fileInfo.maxPower}W</p>
+                  <p className="text-xs font-medium text-gray-600">Puissance</p>
+                  <p className="text-sm font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
+                  <p className="text-xs text-orange-600">Max: {fileInfo.maxPower}W</p>
                 </div>
               </div>
 
@@ -340,9 +340,9 @@ const FitAnalyzer = () => {
                   <RotateCcw className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Cadence</p>
-                  <p className="text-lg font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
-                  <p className="text-sm text-purple-600">Max: {fileInfo.maxCadence} RPM</p>
+                  <p className="text-xs font-medium text-gray-600">Cadence</p>
+                  <p className="text-sm font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
+                  <p className="text-xs text-purple-600">Max: {fileInfo.maxCadence} RPM</p>
                 </div>
               </div>
 
@@ -352,9 +352,9 @@ const FitAnalyzer = () => {
                   <Heart className="h-5 w-5 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Fréquence Cardiaque</p>
-                  <p className="text-lg font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
-                  <p className="text-sm text-red-600">Max: {fileInfo.maxHeartRate} BPM</p>
+                  <p className="text-xs font-medium text-gray-600">Fréquence Cardiaque</p>
+                  <p className="text-sm font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
+                  <p className="text-xs text-red-600">Max: {fileInfo.maxHeartRate} BPM</p>
                 </div>
               </div>
             </div>

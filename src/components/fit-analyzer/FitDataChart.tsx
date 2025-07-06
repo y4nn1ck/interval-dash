@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -101,77 +102,77 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
             <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
               <defs>
                 <linearGradient id="powerGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.2}/>
                   <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="cadenceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
+                  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.2}/>
                   <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="heartRateGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
                   <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid 
-                strokeDasharray="3 3" 
+                strokeDasharray="2 2" 
                 stroke="#e2e8f0" 
-                strokeWidth={1}
-                opacity={0.6}
+                strokeWidth={0.5}
+                opacity={0.5}
               />
               <XAxis 
                 dataKey="time" 
                 className="text-gray-600"
-                fontSize={12}
+                fontSize={11}
                 tickFormatter={formatXAxisTick}
                 ticks={xAxisTicks}
                 domain={['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
                 interval={0}
-                angle={-45}
-                textAnchor="end"
-                height={60}
+                angle={0}
+                textAnchor="middle"
+                height={40}
               />
               <YAxis 
                 yAxisId="left"
                 className="text-gray-600"
-                fontSize={12}
+                fontSize={11}
                 label={{ 
                   value: 'Puissance (W) / Cadence (RPM)', 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '12px' }
+                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
                 domain={[0, 'dataMax + 50']}
               />
               <YAxis 
                 yAxisId="right"
                 orientation="right"
                 className="text-gray-600"
-                fontSize={12}
+                fontSize={11}
                 label={{ 
                   value: 'FC (BPM)', 
                   angle: 90, 
                   position: 'insideRight',
-                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '12px' }
+                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 1 }}
+                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
                 domain={[0, 'dataMax + 20']}
               />
               <Tooltip 
                 content={<CustomTooltip />}
-                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '5 5' }}
+                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
                 wrapperStyle={{ 
                   paddingTop: '20px',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: '500'
                 }}
                 iconType="line"
@@ -183,17 +184,17 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
                 type="monotone" 
                 dataKey="power" 
                 stroke="#f97316"
-                strokeWidth={3}
+                strokeWidth={2}
                 dot={false}
                 name="Puissance (W)"
                 connectNulls={false}
                 fill="url(#powerGradient)"
                 activeDot={{ 
-                  r: 6, 
+                  r: 4, 
                   stroke: "#f97316", 
-                  strokeWidth: 3, 
+                  strokeWidth: 2, 
                   fill: '#fff',
-                  filter: 'drop-shadow(0 2px 4px rgba(249, 115, 22, 0.3))'
+                  filter: 'drop-shadow(0 1px 2px rgba(249, 115, 22, 0.3))'
                 }}
               />
               
@@ -203,17 +204,17 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
                 type="monotone" 
                 dataKey="cadence" 
                 stroke="#a855f7"
-                strokeWidth={3}
+                strokeWidth={2}
                 dot={false}
                 name="Cadence (RPM)"
                 connectNulls={false}
                 fill="url(#cadenceGradient)"
                 activeDot={{ 
-                  r: 6, 
+                  r: 4, 
                   stroke: "#a855f7", 
-                  strokeWidth: 3, 
+                  strokeWidth: 2, 
                   fill: '#fff',
-                  filter: 'drop-shadow(0 2px 4px rgba(168, 85, 247, 0.3))'
+                  filter: 'drop-shadow(0 1px 2px rgba(168, 85, 247, 0.3))'
                 }}
               />
               
@@ -223,17 +224,17 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
                 type="monotone" 
                 dataKey="heart_rate" 
                 stroke="#ef4444"
-                strokeWidth={3}
+                strokeWidth={2}
                 dot={false}
                 name="Fréquence Cardiaque (BPM)"
                 connectNulls={false}
                 fill="url(#heartRateGradient)"
                 activeDot={{ 
-                  r: 6, 
+                  r: 4, 
                   stroke: "#ef4444", 
-                  strokeWidth: 3, 
+                  strokeWidth: 2, 
                   fill: '#fff',
-                  filter: 'drop-shadow(0 2px 4px rgba(239, 68, 68, 0.3))'
+                  filter: 'drop-shadow(0 1px 2px rgba(239, 68, 68, 0.3))'
                 }}
               />
             </LineChart>
