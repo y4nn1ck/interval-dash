@@ -74,21 +74,21 @@ const FitAnalyzer = () => {
   const getSportIcon = (sportType: string) => {
     const lowerType = sportType.toLowerCase();
     if (lowerType.includes('cycling') || lowerType.includes('bike') || lowerType.includes('vélo')) {
-      return Bike;
+      return '🚴‍♂️';
     }
     if (lowerType.includes('running') || lowerType.includes('course') || lowerType.includes('run')) {
-      return PersonStanding;
+      return '🏃‍♂️';
     }
     if (lowerType.includes('swimming') || lowerType.includes('natation') || lowerType.includes('swim')) {
-      return Waves;
+      return '🏊‍♂️';
     }
     if (lowerType.includes('hiking') || lowerType.includes('randonnée') || lowerType.includes('mountain')) {
-      return Mountain;
+      return '🥾';
     }
     if (lowerType.includes('strength') || lowerType.includes('musculation') || lowerType.includes('weight')) {
-      return Dumbbell;
+      return '💪';
     }
-    return PersonStanding; // Default icon
+    return '🏃‍♂️'; // Default icon
   };
 
   const getSportName = (sportType: string) => {
@@ -414,6 +414,20 @@ const FitAnalyzer = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
+            {/* Sport Type Card - Full Width */}
+            <div className="flex justify-center">
+              <div className="flex items-center gap-4 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 shadow-lg max-w-md w-full">
+                <div className="flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-md">
+                  <span className="text-3xl">{getSportIcon(fileInfo.sportType)}</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Type de Sport</p>
+                  <p className="text-2xl font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Other Info Cards */}
             <Input
               type="file"
               accept=".fit"
@@ -449,20 +463,6 @@ const FitAnalyzer = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
-              {/* Sport Type */}
-              <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg">
-                <div className="p-2 bg-white rounded-lg shadow-sm">
-                  <div className={`p-2 rounded-lg bg-gradient-to-br ${getSportColor(fileInfo.sportType)}`}>
-                    {React.createElement(getSportIcon(fileInfo.sportType), {
-                      className: "h-5 w-5 text-white"
-                    })}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Type de Sport</p>
-                  <p className="text-xs font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
-                </div>
-              </div>
               {/* Date & Time */}
               <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
                 <div className="p-2 bg-blue-100 rounded-lg">
