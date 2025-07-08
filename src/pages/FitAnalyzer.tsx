@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { parseProperFitFile } from '@/utils/properFitParser';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Calendar, Clock, Zap, RotateCcw, Heart, Thermometer } from 'lucide-react';
+import { Bike, PersonStanding, Waves, Mountain, Dumbbell } from 'lucide-react';
 import FitDataChart from '@/components/fit-analyzer/FitDataChart';
 import TemperatureChart from '@/components/fit-analyzer/TemperatureChart';
 import { format } from 'date-fns';
@@ -35,6 +36,7 @@ interface LapData {
 
 interface FitFileInfo {
   fileName: string;
+  sportType: string;
   startDate: string;
   startTime: string;
   duration: number; // in minutes
@@ -69,6 +71,65 @@ const FitAnalyzer = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const getSportIcon = (sportType: string) => {
+    const lowerType = sportType.toLowerCase();
+    if (lowerType.includes('cycling') || lowerType.includes('bike') || lowerType.includes('vélo')) {
+      return Bike;
+    }
+    if (lowerType.includes('running') || lowerType.includes('course') || lowerType.includes('run')) {
+      return PersonStanding;
+    }
+    if (lowerType.includes('swimming') || lowerType.includes('natation') || lowerType.includes('swim')) {
+      return Waves;
+    }
+    if (lowerType.includes('hiking') || lowerType.includes('randonnée') || lowerType.includes('mountain')) {
+      return Mountain;
+    }
+    if (lowerType.includes('strength') || lowerType.includes('musculation') || lowerType.includes('weight')) {
+      return Dumbbell;
+    }
+    return PersonStanding; // Default icon
+  };
+
+  const getSportName = (sportType: string) => {
+    const lowerType = sportType.toLowerCase();
+    if (lowerType.includes('cycling') || lowerType.includes('bike') || lowerType.includes('vélo')) {
+      return 'Vélo';
+    }
+    if (lowerType.includes('running') || lowerType.includes('course') || lowerType.includes('run')) {
+      return 'Course à Pied';
+    }
+    if (lowerType.includes('swimming') || lowerType.includes('natation') || lowerType.includes('swim')) {
+      return 'Natation';
+    }
+    if (lowerType.includes('hiking') || lowerType.includes('randonnée') || lowerType.includes('mountain')) {
+      return 'Randonnée';
+    }
+    if (lowerType.includes('strength') || lowerType.includes('musculation') || lowerType.includes('weight')) {
+      return 'Musculation';
+    }
+    return sportType || 'Sport'; // Fallback to original or generic
+  };
+
+  const getSportColor = (sportType: string) => {
+    const lowerType = sportType.toLowerCase();
+    if (lowerType.includes('cycling') || lowerType.includes('bike') || lowerType.includes('vélo')) {
+      return 'from-green-400 to-green-600';
+    }
+    if (lowerType.includes('running') || lowerType.includes('course') || lowerType.includes('run')) {
+      return 'from-orange-400 to-orange-600';
+    }
+    if (lowerType.includes('swimming') || lowerType.includes('natation') || lowerType.includes('swim')) {
+      return 'from-blue-400 to-blue-600';
+    }
+    if (lowerType.includes('hiking') || lowerType.includes('randonnée') || lowerType.includes('mountain')) {
+      return 'from-emerald-400 to-emerald-600';
+    }
+    if (lowerType.includes('strength') || lowerType.includes('musculation') || lowerType.includes('weight')) {
+      return 'from-purple-400 to-purple-600';
+    }
+    return 'from-gray-400 to-gray-600'; // Default color
+  };
   const formatTimestamp = (timestamp: any) => {
     if (!timestamp) return null;
     
@@ -230,9 +291,19 @@ const FitAnalyzer = () => {
         normalizedPower = Math.round(parsedData.rawDataStructure.activity.sessions[0].normalized_power);
       }
 
+      // Extract sport type from parsed data
+      let sportType = 'Sport';
+      if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.sport) {
+        sportType = parsedData.rawDataStructure.activity.sessions[0].sport;
+      } else if (parsedData.rawDataStructure?.activity?.sport) {
+        sportType = parsedData.rawDataStructure.activity.sport;
+      } else if (parsedData.rawDataStructure?.sessions?.[0]?.sport) {
+        sportType = parsedData.rawDataStructure.sessions[0].sport;
+      }
       // Create file info
       const info: FitFileInfo = {
         fileName: file.name,
+        sportType,
         startDate,
         startTime,
         duration: calculatedDuration,
@@ -377,7 +448,21 @@ const FitAnalyzer = () => {
             <CardDescription className="text-xs">{fileInfo.fileName}</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+              {/* Sport Type */}
+              <div className="flex items-center gap-3 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg">
+                <div className="p-2 bg-white rounded-lg shadow-sm">
+                  <div className={`p-2 rounded-lg bg-gradient-to-br ${getSportColor(fileInfo.sportType)}`}>
+                    {React.createElement(getSportIcon(fileInfo.sportType), {
+                      className: "h-5 w-5 text-white"
+                    })}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Type de Sport</p>
+                  <p className="text-xs font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
+                </div>
+              </div>
               {/* Date & Time */}
               <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
                 <div className="p-2 bg-blue-100 rounded-lg">
