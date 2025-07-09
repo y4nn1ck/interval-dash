@@ -415,19 +415,19 @@ const FitAnalyzer = () => {
         <CardContent>
           <div className="flex items-center gap-4">
             {/* Sport Type Card - Full Width */}
-            <div className="flex justify-center">
-              <div className="flex items-center gap-4 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 shadow-lg max-w-md w-full">
-                <div className="flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-md">
-                  <span className="text-3xl">{getSportIcon(fileInfo.sportType)}</span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Type de Sport</p>
-                  <p className="text-2xl font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
+            {fileInfo && (
+              <div className="flex justify-center">
+                <div className="flex items-center gap-4 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 shadow-lg max-w-md w-full">
+                  <div className="flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-md">
+                    <span className="text-3xl">{getSportIcon(fileInfo.sportType)}</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-600 mb-1">Type de Sport</p>
+                    <p className="text-2xl font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Other Info Cards */}
+            )}
             <Input
               type="file"
               accept=".fit"
