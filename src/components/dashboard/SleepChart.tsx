@@ -1,82 +1,130 @@
-
 import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
+import { format, parseISO } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
-const SleepChart = () => {
-  const data = [
-    { date: '12/10', deep: 1.5, light: 4.2, rem: 1.8, awake: 0.3 },
-    { date: '12/11', deep: 1.8, light: 3.9, rem: 2.1, awake: 0.2 },
-    { date: '12/12', deep: 1.2, light: 4.5, rem: 1.5, awake: 0.4 },
-    { date: '12/13', deep: 1.6, light: 4.1, rem: 1.9, awake: 0.2 },
-    { date: '12/14', deep: 1.9, light: 3.8, rem: 2.2, awake: 0.1 },
-    { date: '12/15', deep: 1.4, light: 4.3, rem: 1.7, awake: 0.3 },
-    { date: '12/16', deep: 1.7, light: 4.0, rem: 2.0, awake: 0.2 },
-  ];
+interface SleepData {
+  date: string;
+  sleep_hours: number | null;
+}
+
+interface SleepChartProps {
+  data: SleepData[];
+}
+
+const SleepChart = ({ data }: SleepChartProps) => {
+  const sleepConfig = {
+    sleep_hours: {
+      label: 'Sommeil (heures)',
+      color: '#8b5cf6',
+    },
+  };
+
+  // Get the color for each sleep duration
+  const getSleepColor = (hours: number) => {
+    if (hours >= 8) return '#10b981'; // green for good sleep (8+ hours)
+    if (hours >= 7) return '#3b82f6'; // blue for ok sleep (7-8 hours)
+    if (hours >= 6) return '#f59e0b'; // orange for moderate sleep (6-7 hours)
+    return '#ef4444'; // red for poor sleep (<6 hours)
+  };
+
+  // Get gradient ID for each sleep duration
+  const getGradientId = (hours: number) => {
+    if (hours >= 8) return 'sleepGradient1';
+    if (hours >= 7) return 'sleepGradient2';
+    if (hours >= 6) return 'sleepGradient3';
+    return 'sleepGradient4';
+  };
+
+  // Get French label for sleep quality
+  const getSleepLabel = (hours: number) => {
+    if (hours >= 8) return 'Excellent';
+    if (hours >= 7) return 'Bon';
+    if (hours >= 6) return 'Moyen';
+    return 'Insuffisant';
+  };
+
+  // Only show data that has sleep values
+  const validData = data.filter(item => item.sleep_hours !== null && item.sleep_hours !== undefined);
+
+  if (validData.length === 0) {
+    return (
+      <div className="h-[300px] w-full flex items-center justify-center text-gray-500">
+        <p>Aucune donnée de sommeil disponible</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="h-80">
+    <ChartContainer config={sleepConfig} className="h-[300px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+        <BarChart data={validData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+          <defs>
+            <linearGradient id="sleepGradient1" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0.3}/>
+            </linearGradient>
+            <linearGradient id="sleepGradient2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.3}/>
+            </linearGradient>
+            <linearGradient id="sleepGradient3" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.3}/>
+            </linearGradient>
+            <linearGradient id="sleepGradient4" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#ef4444" stopOpacity={0.3}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" strokeWidth={1} />
           <XAxis 
             dataKey="date" 
-            stroke="#666"
+            tickFormatter={(dateStr) => {
+              const date = parseISO(dateStr);
+              return format(date, 'EEE', { locale: fr });
+            }}
+            className="text-gray-600"
             fontSize={12}
+            tickLine={false}
+            axisLine={false}
           />
           <YAxis 
-            stroke="#666"
+            className="text-gray-600"
+            domain={[0, 10]}
             fontSize={12}
-            label={{ value: 'Hours', angle: -90, position: 'insideLeft' }}
+            tickLine={false}
+            axisLine={false}
+            tickFormatter={(value) => `${value}h`}
           />
-          <Tooltip 
-            formatter={(value, name) => [
-              `${value}h`, 
-              name === 'deep' ? 'Deep Sleep' :
-              name === 'light' ? 'Light Sleep' :
-              name === 'rem' ? 'REM Sleep' : 'Awake'
-            ]}
-            contentStyle={{ 
-              backgroundColor: 'white', 
-              border: '1px solid #e0e0e0',
-              borderRadius: '8px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          <ChartTooltip 
+            content={<ChartTooltipContent 
+              className="bg-white/95 backdrop-blur-sm border-gray-200 shadow-xl"
+              formatter={(value) => [`${value}h (${getSleepLabel(value as number)})`, 'Sommeil']}
+            />}
+            labelFormatter={(value) => {
+              const date = parseISO(value as string);
+              return format(date, 'dd MMMM yyyy', { locale: fr });
             }}
           />
-          <Area
-            type="monotone"
-            dataKey="deep"
-            stackId="1"
-            stroke="#1e40af"
-            fill="#1e40af"
-            fillOpacity={0.8}
-          />
-          <Area
-            type="monotone"
-            dataKey="light"
-            stackId="1"
-            stroke="#3b82f6"
-            fill="#3b82f6"
-            fillOpacity={0.6}
-          />
-          <Area
-            type="monotone"
-            dataKey="rem"
-            stackId="1"
-            stroke="#8b5cf6"
-            fill="#8b5cf6"
-            fillOpacity={0.7}
-          />
-          <Area
-            type="monotone"
-            dataKey="awake"
-            stackId="1"
-            stroke="#ef4444"
-            fill="#ef4444"
-            fillOpacity={0.5}
-          />
-        </AreaChart>
+          <Bar 
+            dataKey="sleep_hours" 
+            name="Sommeil"
+            radius={[6, 6, 0, 0]}
+            strokeWidth={1}
+          >
+            {validData.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={`url(#${getGradientId(entry.sleep_hours || 0)})`}
+                stroke={getSleepColor(entry.sleep_hours || 0)}
+              />
+            ))}
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
-    </div>
+    </ChartContainer>
   );
 };
 

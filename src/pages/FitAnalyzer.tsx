@@ -414,20 +414,6 @@ const FitAnalyzer = () => {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
-            {/* Sport Type Card - Full Width */}
-            {fileInfo && (
-              <div className="flex justify-center">
-                <div className="flex items-center gap-4 p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 shadow-lg max-w-md w-full">
-                  <div className="flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-md">
-                    <span className="text-3xl">{getSportIcon(fileInfo.sportType)}</span>
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-600 mb-1">Type de Sport</p>
-                    <p className="text-2xl font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
-                  </div>
-                </div>
-              </div>
-            )}
             <Input
               type="file"
               accept=".fit"
@@ -453,80 +439,104 @@ const FitAnalyzer = () => {
 
       {/* File Information Card */}
       {fileInfo && (
-        <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></div>
-              Informations du fichier
-            </CardTitle>
-            <CardDescription className="text-xs">{fileInfo.fileName}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
-              {/* Date & Time */}
-              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Calendar className="h-5 w-5 text-blue-600" />
+        <>
+          {/* Sport Type Card */}
+          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></div>
+                Type de Sport
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border border-indigo-100">
+                <div className="flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-md">
+                  <span className="text-2xl">{getSportIcon(fileInfo.sportType)}</span>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Date & Heure</p>
-                  <p className="text-xs font-bold text-blue-700">{fileInfo.startDate}</p>
-                  <p className="text-xs text-blue-600">{fileInfo.startTime}</p>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Sport</p>
+                  <p className="text-xl font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Duration */}
-              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Clock className="h-5 w-5 text-green-600" />
+          {/* File Information Card */}
+          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></div>
+                Informations du fichier
+              </CardTitle>
+              <CardDescription className="text-xs">{fileInfo.fileName}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+                {/* Date & Time */}
+                <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Calendar className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Date & Heure</p>
+                    <p className="text-xs font-bold text-blue-700">{fileInfo.startDate}</p>
+                    <p className="text-xs text-blue-600">{fileInfo.startTime}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Durée</p>
-                  <p className="text-xs font-bold text-green-700">{formatDurationMinutes(fileInfo.duration)}</p>
-                </div>
-              </div>
 
-              {/* Power */}
-              <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-lg">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Zap className="h-5 w-5 text-orange-600" />
+                {/* Duration */}
+                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <Clock className="h-5 w-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Durée</p>
+                    <p className="text-xs font-bold text-green-700">{formatDurationMinutes(fileInfo.duration)}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Puissance</p>
-                  <p className="text-xs font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
-                  <p className="text-xs font-bold text-orange-700">Max: {fileInfo.maxPower}W</p>
-                  {fileInfo.normalizedPower && (
-                    <p className="text-xs text-orange-600">NP: {fileInfo.normalizedPower}W</p>
-                  )}
-                </div>
-              </div>
 
-              {/* Cadence */}
-              <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <RotateCcw className="h-5 w-5 text-purple-600" />
+                {/* Power */}
+                <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-lg">
+                  <div className="p-2 bg-orange-100 rounded-lg">
+                    <Zap className="h-5 w-5 text-orange-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Puissance</p>
+                    <p className="text-xs font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
+                    <p className="text-xs font-bold text-orange-700">Max: {fileInfo.maxPower}W</p>
+                    {fileInfo.normalizedPower && (
+                      <p className="text-xs text-orange-600">NP: {fileInfo.normalizedPower}W</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Cadence</p>
-                  <p className="text-xs font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
-                  <p className="text-xs font-bold text-purple-700">Max: {fileInfo.maxCadence} RPM</p>
-                </div>
-              </div>
 
-              {/* Heart Rate */}
-              <div className="flex items-center gap-3 p-4 bg-red-50 rounded-lg">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <Heart className="h-5 w-5 text-red-600" />
+                {/* Cadence */}
+                <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <RotateCcw className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Cadence</p>
+                    <p className="text-xs font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
+                    <p className="text-xs font-bold text-purple-700">Max: {fileInfo.maxCadence} RPM</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Fréquence Cardiaque</p>
-                  <p className="text-xs font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
-                  <p className="text-xs font-bold text-red-700">Max: {fileInfo.maxHeartRate} BPM</p>
+
+                {/* Heart Rate */}
+                <div className="flex items-center gap-3 p-4 bg-red-50 rounded-lg">
+                  <div className="p-2 bg-red-100 rounded-lg">
+                    <Heart className="h-5 w-5 text-red-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Fréquence Cardiaque</p>
+                    <p className="text-xs font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
+                    <p className="text-xs font-bold text-red-700">Max: {fileInfo.maxHeartRate} BPM</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {/* Temperature Chart */}
