@@ -101,7 +101,7 @@ const SleepChart = ({ data }: SleepChartProps) => {
           <ChartTooltip 
             content={<ChartTooltipContent 
               className="bg-white/95 backdrop-blur-sm border-gray-200 shadow-xl"
-              formatter={(value) => [`${value}h (${getSleepLabel(value as number)})`, 'Sommeil']}
+              formatter={(value) => [`${Math.round(value as number)}h (${getSleepLabel(value as number)})`, 'Sommeil']}
             />}
             labelFormatter={(value) => {
               const date = parseISO(value as string);

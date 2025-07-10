@@ -47,6 +47,10 @@ interface FitFileInfo {
   avgHeartRate: number;
   maxHeartRate: number;
   normalizedPower?: number;
+  avgTemperature?: number;
+  maxTemperature?: number;
+  minTemperature?: number;
+  hasTemperatureData?: boolean;
 }
 
 interface ChartDataPoint {
@@ -285,6 +289,35 @@ const FitAnalyzer = () => {
         ? Math.max(...heartRateRecords.map(r => r.heart_rate || 0))
         : 0;
 
+      // Calculate temperature statistics
+      const temperatureRecords = recordsToUse.filter(r => 
+        (r.temperature && r.temperature > 0) || 
+        (r.core_temperature && r.core_temperature > 0) || 
+        (r.skin_temperature && r.skin_temperature > 0)
+      );
+      
+      let avgTemperature = 0;
+      let maxTemperature = 0;
+      let minTemperature = 0;
+      let hasTemperatureData = false;
+      
+      if (temperatureRecords.length > 0) {
+        // Collect all temperature values
+        const allTemps: number[] = [];
+        temperatureRecords.forEach(r => {
+          if (r.temperature && r.temperature > 0) allTemps.push(r.temperature);
+          if (r.core_temperature && r.core_temperature > 0) allTemps.push(r.core_temperature);
+          if (r.skin_temperature && r.skin_temperature > 0) allTemps.push(r.skin_temperature);
+        });
+        
+        if (allTemps.length > 0) {
+          avgTemperature = Math.round((allTemps.reduce((sum, temp) => sum + temp, 0) / allTemps.length) * 10) / 10;
+          maxTemperature = Math.round(Math.max(...allTemps) * 10) / 10;
+          minTemperature = Math.round(Math.min(...allTemps) * 10) / 10;
+          hasTemperatureData = true;
+        }
+      }
+
       // Get Normalized Power from parsed data if available
       let normalizedPower: number | undefined;
       if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.normalized_power) {
@@ -313,7 +346,11 @@ const FitAnalyzer = () => {
         maxCadence,
         avgHeartRate,
         maxHeartRate,
-        normalizedPower
+        normalizedPower,
+        avgTemperature,
+        maxTemperature,
+        minTemperature,
+        hasTemperatureData
       };
 
       setFileInfo(info);
@@ -533,6 +570,21 @@ const FitAnalyzer = () => {
                     <p className="text-xs font-bold text-red-700">Max: {fileInfo.maxHeartRate} BPM</p>
                   </div>
                 </div>
+
+                {/* Temperature - Only show if temperature data is available */}
+                {fileInfo.hasTemperatureData && (
+                  <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg">
+                    <div className="p-2 bg-yellow-100 rounded-lg">
+                      <Thermometer className="h-5 w-5 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-600">Température</p>
+                      <p className="text-xs font-bold text-yellow-700">Moy: {fileInfo.avgTemperature}°C</p>
+                      <p className="text-xs font-bold text-yellow-700">Max: {fileInfo.maxTemperature}°C</p>
+                      <p className="text-xs text-yellow-600">Min: {fileInfo.minTemperature}°C</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
