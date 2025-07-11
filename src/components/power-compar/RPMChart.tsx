@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
@@ -64,6 +63,50 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
 
   const rpmDomain = getRpmDomain();
 
+  // Custom tooltip component
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const file1Rpm = payload.find((p: any) => p.dataKey === 'rpm1')?.value;
+      const file2Rpm = payload.find((p: any) => p.dataKey === 'rpm2')?.value;
+      
+      let percentageDiff = null;
+      if (file1Rpm && file2Rpm && file1Rpm > 0) {
+        percentageDiff = Math.round(((file2Rpm - file1Rpm) / file1Rpm) * 100 * 10) / 10;
+      }
+      
+      return (
+        <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl p-4 shadow-xl">
+          <p className="font-semibold text-gray-800 mb-2">
+            Temps: {formatXAxisTick(Number(label))}
+          </p>
+          {payload.map((entry: any, index: number) => {
+            if (entry.value === null || entry.value === undefined) return null;
+            
+            const fileName = entry.dataKey === 'rpm1' ? file1Name : file2Name;
+            const color = entry.dataKey === 'rpm1' ? '#f59e0b' : '#ef4444';
+            
+            return (
+              <div key={index} className="flex items-center gap-2 py-1">
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }}></div>
+                <span className="text-sm font-medium text-gray-700">
+                  {fileName}: {Math.round(entry.value)} RPM
+                </span>
+              </div>
+            );
+          })}
+          {percentageDiff !== null && (
+            <div className="mt-2 pt-2 border-t border-gray-200">
+              <span className="text-sm font-medium text-gray-700">
+                Différence: {percentageDiff > 0 ? '+' : ''}{percentageDiff}%
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
       <CardHeader className="pb-2">
@@ -124,19 +167,7 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                 tickFormatter={(value) => Math.round(value).toString()}
               />
               <Tooltip 
-                formatter={(value, name) => [
-                  value ? `${Math.round(Number(value))} RPM` : 'N/A', 
-                  name === 'rpm1' ? file1Name : file2Name
-                ]}
-                labelFormatter={(time) => `Temps: ${formatXAxisTick(Number(time))}`}
-                contentStyle={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-                  backdropFilter: 'blur(10px)',
-                  fontSize: '12px'
-                }}
+                content={<CustomTooltip />}
                 cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
