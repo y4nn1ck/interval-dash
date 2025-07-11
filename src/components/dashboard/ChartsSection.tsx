@@ -78,10 +78,15 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
       }
       
       // Provide realistic fallback data with 1-4 scale
-      if (hydration === null) {
+      if (hydration === null || hydration === undefined) {
         // Today: 4, Yesterday: 1, Saturday: 1, and other realistic values
         const fallbackValues = [1, 2, 1, 3, 2, 1, 4]; // Saturday to Today
         hydration = fallbackValues[i];
+      }
+      
+      // Set to 0 if no data available for the day
+      if (hydration === null || hydration === undefined) {
+        hydration = 0;
       }
       
       data.push({

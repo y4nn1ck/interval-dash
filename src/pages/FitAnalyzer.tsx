@@ -300,14 +300,24 @@ const FitAnalyzer = () => {
       let maxTemperature = 0;
       let minTemperature = 0;
       let hasTemperatureData = false;
+      let hasCoreTemperatureData = false;
+      let avgCoreTemperature = 0;
+      let avgSkinTemperature = 0;
       
       if (temperatureRecords.length > 0) {
         // Collect all temperature values
         const allTemps: number[] = [];
+        const coreTemps: number[] = [];
+        const skinTemps: number[] = [];
+        
         temperatureRecords.forEach(r => {
           if (r.temperature && r.temperature > 0) allTemps.push(r.temperature);
           if (r.core_temperature && r.core_temperature > 0) allTemps.push(r.core_temperature);
           if (r.skin_temperature && r.skin_temperature > 0) allTemps.push(r.skin_temperature);
+          
+          // Separate core and skin temperatures
+          if (r.core_temperature && r.core_temperature > 0) coreTemps.push(r.core_temperature);
+          if (r.skin_temperature && r.skin_temperature > 0) skinTemps.push(r.skin_temperature);
         });
         
         if (allTemps.length > 0) {
@@ -315,6 +325,16 @@ const FitAnalyzer = () => {
           maxTemperature = Math.round(Math.max(...allTemps) * 10) / 10;
           minTemperature = Math.round(Math.min(...allTemps) * 10) / 10;
           hasTemperatureData = true;
+        }
+        
+        if (coreTemps.length > 0 || skinTemps.length > 0) {
+          hasCoreTemperatureData = true;
+          if (coreTemps.length > 0) {
+            avgCoreTemperature = Math.round((coreTemps.reduce((sum, temp) => sum + temp, 0) / coreTemps.length) * 10) / 10;
+          }
+          if (skinTemps.length > 0) {
+            avgSkinTemperature = Math.round((skinTemps.reduce((sum, temp) => sum + temp, 0) / skinTemps.length) * 10) / 10;
+          }
         }
       }
 
@@ -350,7 +370,10 @@ const FitAnalyzer = () => {
         avgTemperature,
         maxTemperature,
         minTemperature,
-        hasTemperatureData
+        hasTemperatureData,
+        hasCoreTemperatureData,
+        avgCoreTemperature,
+        avgSkinTemperature
       };
 
       setFileInfo(info);
@@ -508,7 +531,18 @@ const FitAnalyzer = () => {
               <CardDescription className="text-xs">{fileInfo.fileName}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6">
+                {/* Sport Type */}
+                <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg">
+                  <div className="p-2 bg-indigo-100 rounded-lg">
+                    <span className="text-lg">{getSportIcon(fileInfo.sportType)}</span>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Sport</p>
+                    <p className="text-xs font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
+                  </div>
+                </div>
+
                 {/* Date & Time */}
                 <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
                   <div className="p-2 bg-blue-100 rounded-lg">
@@ -571,17 +605,35 @@ const FitAnalyzer = () => {
                   </div>
                 </div>
 
-                {/* Temperature - Only show if temperature data is available */}
+                {/* Temperature Extérieure - Only show if temperature data is available */}
                 {fileInfo.hasTemperatureData && (
                   <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg">
                     <div className="p-2 bg-yellow-100 rounded-lg">
                       <Thermometer className="h-5 w-5 text-yellow-600" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-gray-600">Température</p>
+                      <p className="text-xs font-medium text-gray-600">Temp. Extérieure</p>
                       <p className="text-xs font-bold text-yellow-700">Moy: {fileInfo.avgTemperature}°C</p>
                       <p className="text-xs font-bold text-yellow-700">Max: {fileInfo.maxTemperature}°C</p>
                       <p className="text-xs text-yellow-600">Min: {fileInfo.minTemperature}°C</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Temperature Corporelle - Only show if core/skin temperature data is available */}
+                {fileInfo.hasCoreTemperatureData && (
+                  <div className="flex items-center gap-3 p-4 bg-pink-50 rounded-lg">
+                    <div className="p-2 bg-pink-100 rounded-lg">
+                      <Thermometer className="h-5 w-5 text-pink-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-gray-600">Temp. Corporelle</p>
+                      {fileInfo.avgCoreTemperature && (
+                        <p className="text-xs font-bold text-pink-700">Core: {fileInfo.avgCoreTemperature}°C</p>
+                      )}
+                      {fileInfo.avgSkinTemperature && (
+                        <p className="text-xs font-bold text-pink-700">Peau: {fileInfo.avgSkinTemperature}°C</p>
+                      )}
                     </div>
                   </div>
                 )}
