@@ -163,7 +163,13 @@ const PowerCompar = () => {
     return Math.round(difference * 10) / 10; // Round to 1 decimal place
   };
 
+  const calculateWattsDifference = (): number | null => {
+    if (!file1 || !file2) return null;
+    return file2.avgWatts - file1.avgWatts;
+  };
+
   const percentageDiff = calculatePercentageDifference();
+  const wattsDiff = calculateWattsDifference();
   const chartData = generateChartData(file1?.powerData || null, file2?.powerData || null);
 
   return (
@@ -253,9 +259,14 @@ const PowerCompar = () => {
                     <p className="text-lg font-bold text-blue-700">Puissance: {file2.avgWatts}W</p>
                     <p className="text-xs text-gray-600">Cadence: {file2.avgRpm} RPM</p>
                     {percentageDiff !== null && (
-                      <p className="text-xs font-medium text-blue-700">
-                        Différence: {percentageDiff > 0 ? '+' : ''}{percentageDiff}%
-                      </p>
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-blue-700">
+                          Différence: {percentageDiff > 0 ? '+' : ''}{percentageDiff}%
+                        </p>
+                        <p className="text-xs font-medium text-blue-700">
+                          Soit: {wattsDiff && wattsDiff > 0 ? '+' : ''}{wattsDiff}W
+                        </p>
+                      </div>
                     )}
                   </div>
                 ) : (
