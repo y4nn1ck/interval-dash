@@ -66,14 +66,6 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, onZoomToLap }) => {
 
   const chartData = getFilteredData();
 
-    const remainingMinutes = minutes % 60;
-    
-    if (hours > 0) {
-      return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
-    }
-    return `${minutes}min`;
-  };
-
   // Generate ticks every 5 minutes
   const generateTicks = () => {
     if (chartData.length === 0) return [];
