@@ -694,6 +694,7 @@ const FitAnalyzer = () => {
       )}
     </div>
   );
+};
 
   // Handle lap click to zoom chart
   const handleLapClick = (lap: LapData) => {
@@ -733,6 +734,5 @@ const FitAnalyzer = () => {
     // This will be handled by the chart component
     console.log(`Zooming to lap: ${startTime} - ${endTime} minutes`);
   };
-};
 
 export default FitAnalyzer;
