@@ -1,8 +1,11 @@
 
 import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { ZoomIn, ZoomOut } from 'lucide-react';
 
 interface ChartDataPoint {
   time: number;
@@ -13,9 +16,12 @@ interface ChartDataPoint {
 
 interface FitDataChartProps {
   data: ChartDataPoint[];
+  onZoomToLap?: (startTime: number, endTime: number) => void;
 }
 
-const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
+const FitDataChart: React.FC<FitDataChartProps> = ({ data, onZoomToLap }) => {
+  const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
+  const [isZoomed, setIsZoomed] = useState(false);
   const [showPower, setShowPower] = useState(true);
   const [showCadence, setShowCadence] = useState(true);
   const [showHeartRate, setShowHeartRate] = useState(true);
@@ -32,14 +38,52 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
     return `${minutes}min`;
   };
 
+  // Handle zoom to lap from parent component
+  useEffect(() => {
+    if (onZoomToLap) {
+      // Store the zoom function to be called from parent
+      window.zoomToLap = (startTime: number, endTime: number) => {
+        setZoomDomain([startTime, endTime]);
+        setIsZoomed(true);
+      };
+    }
+  }, [onZoomToLap]);
+
+  // Reset zoom
+  const resetZoom = () => {
+    setZoomDomain(null);
+    setIsZoomed(false);
+  };
+
+  // Get filtered data based on zoom
+  const getFilteredData = () => {
+    if (!zoomDomain) return data;
+    
+    return data.filter(point => 
+      point.time >= zoomDomain[0] && point.time <= zoomDomain[1]
+    );
+  };
+
+  const chartData = getFilteredData();
+
+    const remainingMinutes = minutes % 60;
+    
+    if (hours > 0) {
+      return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}min`;
+  };
+
   // Generate ticks every 5 minutes
   const generateTicks = () => {
-    if (data.length === 0) return [];
+    if (chartData.length === 0) return [];
     
-    const maxTime = Math.max(...data.map(d => d.time));
+    const minTime = zoomDomain ? zoomDomain[0] : Math.min(...chartData.map(d => d.time));
+    const maxTime = zoomDomain ? zoomDomain[1] : Math.max(...chartData.map(d => d.time));
     const ticks = [];
     
-    for (let i = 0; i <= maxTime; i += 5) {
+    const startTick = Math.floor(minTime / 5) * 5;
+    for (let i = startTick; i <= maxTime; i += 5) {
       ticks.push(i);
     }
     
@@ -94,7 +138,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
 
   // Calculate proper Y axis domains to avoid aberrant values
   const getYAxisDomain = (dataKey: 'power' | 'cadence' | 'heart_rate') => {
-    const values = data
+    const values = chartData
       .map(d => d[dataKey])
       .filter(v => v !== null && v !== undefined && !isNaN(v as number)) as number[];
     
@@ -118,7 +162,21 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
         <CardTitle className="flex items-center gap-2 text-xl">
           <div className="w-1 h-6 bg-gradient-to-b from-orange-500 via-purple-500 to-red-500 rounded-full"></div>
           Données d'entraînement
+          {isZoomed && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={resetZoom}
+              className="ml-auto"
+            >
+              <ZoomOut className="h-4 w-4 mr-2" />
+              Réinitialiser zoom
+            </Button>
+          )}
         </CardTitle>
+        <CardDescription>
+          {isZoomed ? 'Vue zoomée sur l\'intervalle sélectionné' : 'Évolution de la puissance, cadence et fréquence cardiaque dans le temps'}
+        </CardDescription>
         <CardDescription>Évolution de la puissance, cadence et fréquence cardiaque dans le temps</CardDescription>
         
         {/* Chart Controls */}
@@ -158,7 +216,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
       <CardContent className="pt-2">
         <div className="h-[500px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
               <defs>
                 <linearGradient id="powerGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#f97316" stopOpacity={0.2}/>
@@ -185,7 +243,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data }) => {
                 fontSize={11}
                 tickFormatter={formatXAxisTick}
                 ticks={xAxisTicks}
-                domain={['dataMin', 'dataMax']}
+                domain={zoomDomain || ['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
                 tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}

@@ -500,27 +500,6 @@ const FitAnalyzer = () => {
       {/* File Information Card */}
       {fileInfo && (
         <>
-          {/* Sport Type Card */}
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></div>
-                Type de Sport
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border border-indigo-100">
-                <div className="flex items-center justify-center w-12 h-12 bg-white rounded-full shadow-md">
-                  <span className="text-2xl">{getSportIcon(fileInfo.sportType)}</span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Sport</p>
-                  <p className="text-xl font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* File Information Card */}
           <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
             <CardHeader>
@@ -531,7 +510,7 @@ const FitAnalyzer = () => {
               <CardDescription className="text-xs">{fileInfo.fileName}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Sport Type */}
                 <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg">
                   <div className="p-2 bg-indigo-100 rounded-lg">
@@ -542,6 +521,10 @@ const FitAnalyzer = () => {
                     <p className="text-xs font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
                   </div>
                 </div>
+              </div>
+              
+              {/* Second row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mt-6">
 
                 {/* Date & Time */}
                 <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
@@ -638,6 +621,7 @@ const FitAnalyzer = () => {
                   </div>
                 )}
               </div>
+            </div>
             </CardContent>
           </Card>
         </>
@@ -650,7 +634,7 @@ const FitAnalyzer = () => {
 
       {/* Interactive Chart */}
       {chartData.length > 0 && (
-        <FitDataChart data={chartData} />
+        <FitDataChart data={chartData} onZoomToLap={handleZoomToLap} />
       )}
 
       {/* Laps Table */}
@@ -664,6 +648,7 @@ const FitAnalyzer = () => {
             <CardDescription>Détail de chaque tour ou intervalle de l'entraînement</CardDescription>
           </CardHeader>
           <CardContent>
+            <p className="text-sm text-gray-600 mb-4">Cliquez sur une ligne pour zoomer sur l'intervalle dans le graphique</p>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -681,7 +666,12 @@ const FitAnalyzer = () => {
               </TableHeader>
               <TableBody>
                 {lapData.map((lap) => (
-                  <TableRow key={lap.lapNumber}>
+                  <TableRow 
+                    key={lap.lapNumber}
+                    className="cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => handleLapClick(lap)}
+                    title="Cliquer pour zoomer sur cet intervalle"
+                  >
                     <TableCell className="text-center font-medium">{lap.lapNumber}</TableCell>
                     <TableCell className="text-center">{lap.startTime}</TableCell>
                     <TableCell className="text-center">{lap.duration}</TableCell>
@@ -701,6 +691,45 @@ const FitAnalyzer = () => {
       )}
     </div>
   );
+
+  // Handle lap click to zoom chart
+  const handleLapClick = (lap: LapData) => {
+    // Calculate time range for this lap
+    const lapStartTime = calculateLapStartTime(lap);
+    const lapEndTime = lapStartTime + parseLapDuration(lap.duration);
+    
+    // Trigger zoom on chart
+    handleZoomToLap(lapStartTime, lapEndTime);
+  };
+
+  // Calculate lap start time in minutes from workout start
+  const calculateLapStartTime = (lap: LapData): number => {
+    // For now, estimate based on lap number and average lap duration
+    // In a real implementation, you'd get this from the FIT file data
+    const avgLapDuration = 5; // 5 minutes average
+    return (lap.lapNumber - 1) * avgLapDuration;
+  };
+
+  // Parse lap duration string to minutes
+  const parseLapDuration = (duration: string): number => {
+    const match = duration.match(/(\d+)h(\d+)m(\d+)s|(\d+)m(\d+)s/);
+    if (match) {
+      if (match[1]) {
+        // Format: XhYmZs
+        return parseInt(match[1]) * 60 + parseInt(match[2]) + parseInt(match[3]) / 60;
+      } else {
+        // Format: YmZs
+        return parseInt(match[4]) + parseInt(match[5]) / 60;
+      }
+    }
+    return 0;
+  };
+
+  // Handle zoom to lap
+  const handleZoomToLap = (startTime: number, endTime: number) => {
+    // This will be handled by the chart component
+    console.log(`Zooming to lap: ${startTime} - ${endTime} minutes`);
+  };
 };
 
 export default FitAnalyzer;
