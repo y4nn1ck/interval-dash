@@ -345,13 +345,16 @@ const FitAnalyzer = () => {
       }
 
       // Extract sport type from parsed data
-      let sportType = 'Sport';
+      let sportType: string = 'Sport';
       if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.sport) {
-        sportType = parsedData.rawDataStructure.activity.sessions[0].sport;
+        const sport = parsedData.rawDataStructure.activity.sessions[0].sport;
+        sportType = typeof sport === 'string' ? sport : 'Sport';
       } else if (parsedData.rawDataStructure?.activity?.sport) {
-        sportType = parsedData.rawDataStructure.activity.sport;
+        const sport = parsedData.rawDataStructure.activity.sport;
+        sportType = typeof sport === 'string' ? sport : 'Sport';
       } else if (parsedData.rawDataStructure?.sessions?.[0]?.sport) {
-        sportType = parsedData.rawDataStructure.sessions[0].sport;
+        const sport = parsedData.rawDataStructure.sessions[0].sport;
+        sportType = typeof sport === 'string' ? sport : 'Sport';
       }
       // Create file info
       const info: FitFileInfo = {
