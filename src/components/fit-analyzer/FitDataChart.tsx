@@ -16,15 +16,20 @@ interface ChartDataPoint {
 
 interface FitDataChartProps {
   data: ChartDataPoint[];
-  onZoomToLap?: (startTime: number, endTime: number) => void;
+  zoomDomain?: [number, number] | null;
+  onResetZoom?: () => void;
 }
 
-const FitDataChart: React.FC<FitDataChartProps> = ({ data, onZoomToLap }) => {
-  const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
+const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZoom }) => {
   const [isZoomed, setIsZoomed] = useState(false);
   const [showPower, setShowPower] = useState(true);
   const [showCadence, setShowCadence] = useState(true);
   const [showHeartRate, setShowHeartRate] = useState(true);
+
+  // Update isZoomed state when zoomDomain changes
+  useEffect(() => {
+    setIsZoomed(!!zoomDomain);
+  }, [zoomDomain]);
 
   // Custom tick formatter for 5-minute intervals
   const formatXAxisTick = (value: number) => {
@@ -36,23 +41,6 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, onZoomToLap }) => {
       return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
     }
     return `${minutes}min`;
-  };
-
-  // Handle zoom to lap from parent component
-  useEffect(() => {
-    if (onZoomToLap) {
-      // Store the zoom function to be called from parent
-      window.zoomToLap = (startTime: number, endTime: number) => {
-        setZoomDomain([startTime, endTime]);
-        setIsZoomed(true);
-      };
-    }
-  }, [onZoomToLap]);
-
-  // Reset zoom
-  const resetZoom = () => {
-    setZoomDomain(null);
-    setIsZoomed(false);
   };
 
   // Get filtered data based on zoom
@@ -158,7 +146,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, onZoomToLap }) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={resetZoom}
+              onClick={onResetZoom}
               className="ml-auto"
             >
               <ZoomOut className="h-4 w-4 mr-2" />

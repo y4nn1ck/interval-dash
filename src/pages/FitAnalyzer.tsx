@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { parseProperFitFile } from '@/utils/properFitParser';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Calendar, Clock, Zap, RotateCcw, Heart, Thermometer } from 'lucide-react';
-import { Bike, PersonStanding, Waves, Mountain, Dumbbell } from 'lucide-react';
 import FitDataChart from '@/components/fit-analyzer/FitDataChart';
 import TemperatureChart from '@/components/fit-analyzer/TemperatureChart';
 import { format } from 'date-fns';
@@ -32,6 +31,8 @@ interface LapData {
   avgHeartRate: number;
   maxHeartRate: number;
   normalizedPower?: number;
+  startTimeMinutes: number;
+  durationMinutes: number;
 }
 
 interface FitFileInfo {
@@ -51,6 +52,9 @@ interface FitFileInfo {
   maxTemperature?: number;
   minTemperature?: number;
   hasTemperatureData?: boolean;
+  hasCoreTemperatureData?: boolean;
+  avgCoreTemperature?: number;
+  avgSkinTemperature?: number;
 }
 
 interface ChartDataPoint {
@@ -73,10 +77,11 @@ const FitAnalyzer = () => {
   const [temperatureData, setTemperatureData] = useState<TemperatureDataPoint[]>([]);
   const [lapData, setLapData] = useState<LapData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
   const { toast } = useToast();
 
   const getSportIcon = (sportType: string) => {
-    const lowerType = sportType.toLowerCase();
+    const lowerType = (sportType || '').toLowerCase();
     if (lowerType.includes('cycling') || lowerType.includes('bike') || lowerType.includes('vélo')) {
       return '🚴‍♂️';
     }
@@ -96,7 +101,7 @@ const FitAnalyzer = () => {
   };
 
   const getSportName = (sportType: string) => {
-    const lowerType = sportType.toLowerCase();
+    const lowerType = (sportType || '').toLowerCase();
     if (lowerType.includes('cycling') || lowerType.includes('bike') || lowerType.includes('vélo')) {
       return 'Vélo';
     }
@@ -115,25 +120,6 @@ const FitAnalyzer = () => {
     return sportType || 'Sport'; // Fallback to original or generic
   };
 
-  const getSportColor = (sportType: string) => {
-    const lowerType = sportType.toLowerCase();
-    if (lowerType.includes('cycling') || lowerType.includes('bike') || lowerType.includes('vélo')) {
-      return 'from-green-400 to-green-600';
-    }
-    if (lowerType.includes('running') || lowerType.includes('course') || lowerType.includes('run')) {
-      return 'from-orange-400 to-orange-600';
-    }
-    if (lowerType.includes('swimming') || lowerType.includes('natation') || lowerType.includes('swim')) {
-      return 'from-blue-400 to-blue-600';
-    }
-    if (lowerType.includes('hiking') || lowerType.includes('randonnée') || lowerType.includes('mountain')) {
-      return 'from-emerald-400 to-emerald-600';
-    }
-    if (lowerType.includes('strength') || lowerType.includes('musculation') || lowerType.includes('weight')) {
-      return 'from-purple-400 to-purple-600';
-    }
-    return 'from-gray-400 to-gray-600'; // Default color
-  };
   const formatTimestamp = (timestamp: any) => {
     if (!timestamp) return null;
     
@@ -204,6 +190,33 @@ const FitAnalyzer = () => {
       return `${hours}h${remainingMinutes.toString().padStart(2, '0')}`;
     }
     return `${remainingMinutes}min`;
+  };
+
+  // Parse lap duration string to minutes
+  const parseLapDuration = (duration: string): number => {
+    const match = duration.match(/(\d+)h(\d+)m(\d+)s|(\d+)m(\d+)s/);
+    if (match) {
+      if (match[1]) {
+        // Format: XhYmZs
+        return parseInt(match[1]) * 60 + parseInt(match[2]) + parseInt(match[3]) / 60;
+      } else {
+        // Format: YmZs
+        return parseInt(match[4]) + parseInt(match[5]) / 60;
+      }
+    }
+    return 0;
+  };
+
+  // Handle lap click to zoom chart
+  const handleLapClick = (lap: LapData) => {
+    const startTime = lap.startTimeMinutes;
+    const endTime = startTime + lap.durationMinutes;
+    setZoomDomain([startTime, endTime]);
+  };
+
+  // Reset zoom
+  const resetZoom = () => {
+    setZoomDomain(null);
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -356,6 +369,7 @@ const FitAnalyzer = () => {
         const sport = parsedData.rawDataStructure.sessions[0].sport;
         sportType = typeof sport === 'string' ? sport : 'Sport';
       }
+
       // Create file info
       const info: FitFileInfo = {
         fileName: file.name,
@@ -383,24 +397,32 @@ const FitAnalyzer = () => {
 
       // Process lap data
       const laps: LapData[] = [];
+      let cumulativeTime = 0;
+      
       if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.laps && Array.isArray(parsedData.rawDataStructure.activity.sessions[0].laps)) {
         parsedData.rawDataStructure.activity.sessions[0].laps.forEach((lap: any, index: number) => {
           if (lap.start_time) {
             const lapStartDate = formatTimestamp(lap.start_time);
             const lapStartTime = lapStartDate ? format(lapStartDate, 'HH:mm:ss') : 'N/A';
+            const lapDurationSeconds = lap.total_elapsed_time || 0;
+            const lapDurationMinutes = lapDurationSeconds / 60;
             
             laps.push({
               lapNumber: index + 1,
               startTime: lapStartTime,
-              duration: formatDuration(lap.total_elapsed_time || 0),
+              duration: formatDuration(lapDurationSeconds),
               avgPower: Math.round(lap.avg_power || 0),
               maxPower: Math.round(lap.max_power || 0),
               avgCadence: Math.round(lap.avg_cadence || 0),
               maxCadence: Math.round(lap.max_cadence || 0),
               avgHeartRate: Math.round(lap.avg_heart_rate || 0),
               maxHeartRate: Math.round(lap.max_heart_rate || 0),
-              normalizedPower: lap.normalized_power ? Math.round(lap.normalized_power) : undefined
+              normalizedPower: lap.normalized_power ? Math.round(lap.normalized_power) : undefined,
+              startTimeMinutes: cumulativeTime,
+              durationMinutes: lapDurationMinutes
             });
+            
+            cumulativeTime += lapDurationMinutes;
           }
         });
       }
@@ -502,131 +524,108 @@ const FitAnalyzer = () => {
 
       {/* File Information Card */}
       {fileInfo && (
-        <>
-          {/* File Information Card */}
-          <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></div>
-                Informations du fichier
-              </CardTitle>
-              <CardDescription className="text-xs">{fileInfo.fileName}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Sport Type */}
-                <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <span className="text-lg">{getSportIcon(fileInfo.sportType)}</span>
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Sport</p>
-                    <p className="text-xs font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
-                  </div>
+        <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></div>
+              Informations du fichier
+            </CardTitle>
+            <CardDescription className="text-xs">{fileInfo.fileName}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* First row - Sport only */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg">
+                <div className="p-2 bg-indigo-100 rounded-lg">
+                  <span className="text-lg">{getSportIcon(fileInfo.sportType)}</span>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Sport</p>
+                  <p className="text-xs font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
                 </div>
               </div>
-              
-              {/* Second row */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mt-6">
-
-                {/* Date & Time */}
-                <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Calendar className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Date & Heure</p>
-                    <p className="text-xs font-bold text-blue-700">{fileInfo.startDate}</p>
-                    <p className="text-xs text-blue-600">{fileInfo.startTime}</p>
-                  </div>
+            </div>
+            
+            {/* Second row - All other metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+              {/* Date & Time */}
+              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <Calendar className="h-5 w-5 text-blue-600" />
                 </div>
-
-                {/* Duration */}
-                <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <Clock className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Durée</p>
-                    <p className="text-xs font-bold text-green-700">{formatDurationMinutes(fileInfo.duration)}</p>
-                  </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Date & Heure</p>
+                  <p className="text-xs font-bold text-blue-700">{fileInfo.startDate}</p>
+                  <p className="text-xs text-blue-600">{fileInfo.startTime}</p>
                 </div>
-
-                {/* Power */}
-                <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-lg">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <Zap className="h-5 w-5 text-orange-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Puissance</p>
-                    <p className="text-xs font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
-                    <p className="text-xs font-bold text-orange-700">Max: {fileInfo.maxPower}W</p>
-                    {fileInfo.normalizedPower && (
-                      <p className="text-xs text-orange-600">NP: {fileInfo.normalizedPower}W</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Cadence */}
-                <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <RotateCcw className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Cadence</p>
-                    <p className="text-xs font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
-                    <p className="text-xs font-bold text-purple-700">Max: {fileInfo.maxCadence} RPM</p>
-                  </div>
-                </div>
-
-                {/* Heart Rate */}
-                <div className="flex items-center gap-3 p-4 bg-red-50 rounded-lg">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <Heart className="h-5 w-5 text-red-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Fréquence Cardiaque</p>
-                    <p className="text-xs font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
-                    <p className="text-xs font-bold text-red-700">Max: {fileInfo.maxHeartRate} BPM</p>
-                  </div>
-                </div>
-
-                {/* Temperature Extérieure - Only show if temperature data is available */}
-                {fileInfo.hasTemperatureData && (
-                  <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg">
-                    <div className="p-2 bg-yellow-100 rounded-lg">
-                      <Thermometer className="h-5 w-5 text-yellow-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-gray-600">Temp. Extérieure</p>
-                      <p className="text-xs font-bold text-yellow-700">Moy: {fileInfo.avgTemperature}°C</p>
-                      <p className="text-xs font-bold text-yellow-700">Max: {fileInfo.maxTemperature}°C</p>
-                      <p className="text-xs text-yellow-600">Min: {fileInfo.minTemperature}°C</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Temperature Corporelle - Only show if core/skin temperature data is available */}
-                {fileInfo.hasCoreTemperatureData && (
-                  <div className="flex items-center gap-3 p-4 bg-pink-50 rounded-lg">
-                    <div className="p-2 bg-pink-100 rounded-lg">
-                      <Thermometer className="h-5 w-5 text-pink-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-gray-600">Temp. Corporelle</p>
-                      {fileInfo.avgCoreTemperature && (
-                        <p className="text-xs font-bold text-pink-700">Core: {fileInfo.avgCoreTemperature}°C</p>
-                      )}
-                      {fileInfo.avgSkinTemperature && (
-                        <p className="text-xs font-bold text-pink-700">Peau: {fileInfo.avgSkinTemperature}°C</p>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
-            </CardContent>
-          </Card>
-        </>
+
+              {/* Duration */}
+              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <Clock className="h-5 w-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Durée</p>
+                  <p className="text-xs font-bold text-green-700">{formatDurationMinutes(fileInfo.duration)}</p>
+                </div>
+              </div>
+
+              {/* Power */}
+              <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-lg">
+                <div className="p-2 bg-orange-100 rounded-lg">
+                  <Zap className="h-5 w-5 text-orange-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Puissance</p>
+                  <p className="text-xs font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
+                  <p className="text-xs font-bold text-orange-700">Max: {fileInfo.maxPower}W</p>
+                  {fileInfo.normalizedPower && (
+                    <p className="text-xs text-orange-600">NP: {fileInfo.normalizedPower}W</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Cadence */}
+              <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <RotateCcw className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Cadence</p>
+                  <p className="text-xs font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
+                  <p className="text-xs font-bold text-purple-700">Max: {fileInfo.maxCadence} RPM</p>
+                </div>
+              </div>
+
+              {/* Heart Rate */}
+              <div className="flex items-center gap-3 p-4 bg-red-50 rounded-lg">
+                <div className="p-2 bg-red-100 rounded-lg">
+                  <Heart className="h-5 w-5 text-red-600" />
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-gray-600">Fréquence Cardiaque</p>
+                  <p className="text-xs font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
+                  <p className="text-xs font-bold text-red-700">Max: {fileInfo.maxHeartRate} BPM</p>
+                </div>
+              </div>
+
+              {/* Temperature - Only show if temperature data is available */}
+              {fileInfo.hasTemperatureData && (
+                <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg">
+                  <div className="p-2 bg-yellow-100 rounded-lg">
+                    <Thermometer className="h-5 w-5 text-yellow-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-600">Température</p>
+                    <p className="text-xs font-bold text-yellow-700">Moy: {fileInfo.avgTemperature}°C</p>
+                    <p className="text-xs font-bold text-yellow-700">Max: {fileInfo.maxTemperature}°C</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Temperature Chart */}
@@ -636,7 +635,11 @@ const FitAnalyzer = () => {
 
       {/* Interactive Chart */}
       {chartData.length > 0 && (
-        <FitDataChart data={chartData} onZoomToLap={handleZoomToLap} />
+        <FitDataChart 
+          data={chartData} 
+          zoomDomain={zoomDomain}
+          onResetZoom={resetZoom}
+        />
       )}
 
       {/* Laps Table */}
@@ -694,44 +697,5 @@ const FitAnalyzer = () => {
     </div>
   );
 };
-
-  // Handle lap click to zoom chart
-  const handleLapClick = (lap: LapData) => {
-    // Calculate time range for this lap
-    const lapStartTime = calculateLapStartTime(lap);
-    const lapEndTime = lapStartTime + parseLapDuration(lap.duration);
-    
-    // Trigger zoom on chart
-    handleZoomToLap(lapStartTime, lapEndTime);
-  };
-
-  // Calculate lap start time in minutes from workout start
-  const calculateLapStartTime = (lap: LapData): number => {
-    // For now, estimate based on lap number and average lap duration
-    // In a real implementation, you'd get this from the FIT file data
-    const avgLapDuration = 5; // 5 minutes average
-    return (lap.lapNumber - 1) * avgLapDuration;
-  };
-
-  // Parse lap duration string to minutes
-  const parseLapDuration = (duration: string): number => {
-    const match = duration.match(/(\d+)h(\d+)m(\d+)s|(\d+)m(\d+)s/);
-    if (match) {
-      if (match[1]) {
-        // Format: XhYmZs
-        return parseInt(match[1]) * 60 + parseInt(match[2]) + parseInt(match[3]) / 60;
-      } else {
-        // Format: YmZs
-        return parseInt(match[4]) + parseInt(match[5]) / 60;
-      }
-    }
-    return 0;
-  };
-
-  // Handle zoom to lap
-  const handleZoomToLap = (startTime: number, endTime: number) => {
-    // This will be handled by the chart component
-    console.log(`Zooming to lap: ${startTime} - ${endTime} minutes`);
-  };
 
 export default FitAnalyzer;
