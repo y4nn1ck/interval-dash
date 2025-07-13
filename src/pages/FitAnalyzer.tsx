@@ -625,6 +625,7 @@ const FitAnalyzer = () => {
                 )}
               </div>
             </div>
+            </div>
             </CardContent>
           </Card>
         </>
