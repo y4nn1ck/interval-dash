@@ -1,6 +1,5 @@
 
-import React, { useState } from 'react';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -157,7 +156,6 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
         <CardDescription>
           {isZoomed ? 'Vue zoomée sur l\'intervalle sélectionné' : 'Évolution de la puissance, cadence et fréquence cardiaque dans le temps'}
         </CardDescription>
-        <CardDescription>Évolution de la puissance, cadence et fréquence cardiaque dans le temps</CardDescription>
         
         {/* Chart Controls */}
         <div className="flex items-center gap-6 pt-4">
@@ -165,7 +163,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
             <Checkbox
               id="power"
               checked={showPower}
-              onCheckedChange={setShowPower}
+              onCheckedChange={(checked) => setShowPower(checked === true)}
             />
             <label htmlFor="power" className="text-sm font-medium text-orange-600 cursor-pointer">
               Puissance
@@ -175,7 +173,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
             <Checkbox
               id="cadence"
               checked={showCadence}
-              onCheckedChange={setShowCadence}
+              onCheckedChange={(checked) => setShowCadence(checked === true)}
             />
             <label htmlFor="cadence" className="text-sm font-medium text-purple-600 cursor-pointer">
               Cadence
@@ -185,7 +183,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
             <Checkbox
               id="heartRate"
               checked={showHeartRate}
-              onCheckedChange={setShowHeartRate}
+              onCheckedChange={(checked) => setShowHeartRate(checked === true)}
             />
             <label htmlFor="heartRate" className="text-sm font-medium text-red-600 cursor-pointer">
               Fréquence Cardiaque
