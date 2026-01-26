@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { RotateCcw } from 'lucide-react';
 
 interface ChartDataPoint {
   time: number;
@@ -17,7 +18,6 @@ interface RPMChartProps {
 }
 
 const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) => {
-  // Custom tick formatter for 5-minute intervals
   const formatXAxisTick = (value: number) => {
     const minutes = Math.round(value);
     const hours = Math.floor(minutes / 60);
@@ -29,7 +29,6 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
     return `${minutes}min`;
   };
 
-  // Generate ticks every 5 minutes
   const generateTicks = () => {
     if (chartData.length === 0) return [];
     
@@ -45,7 +44,6 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
 
   const xAxisTicks = generateTicks();
 
-  // Calculate proper Y axis domain to avoid aberrant values
   const getRpmDomain = () => {
     const rpmValues = chartData
       .flatMap(d => [d.rpm1, d.rpm2])
@@ -56,14 +54,12 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
     const min = Math.min(...rpmValues);
     const max = Math.max(...rpmValues);
     
-    // Add padding
     const padding = (max - min) * 0.1;
     return [Math.max(0, min - padding), max + padding];
   };
 
   const rpmDomain = getRpmDomain();
 
-  // Custom tooltip component
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const file1Rpm = payload.find((p: any) => p.dataKey === 'rpm1')?.value;
@@ -75,28 +71,28 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
       }
       
       return (
-        <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl p-4 shadow-xl">
-          <p className="font-semibold text-gray-800 mb-2">
+        <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl p-4 shadow-2xl">
+          <p className="font-semibold text-foreground mb-2">
             Temps: {formatXAxisTick(Number(label))}
           </p>
           {payload.map((entry: any, index: number) => {
             if (entry.value === null || entry.value === undefined) return null;
             
             const fileName = entry.dataKey === 'rpm1' ? file1Name : file2Name;
-            const color = entry.dataKey === 'rpm1' ? '#f59e0b' : '#ef4444';
+            const colorClass = entry.dataKey === 'rpm1' ? 'bg-amber-500' : 'bg-purple-500';
             
             return (
               <div key={index} className="flex items-center gap-2 py-1">
-                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: color }}></div>
-                <span className="text-sm font-medium text-gray-700">
+                <div className={`w-3 h-3 rounded-sm ${colorClass}`}></div>
+                <span className="text-sm font-medium text-foreground">
                   {fileName}: {Math.round(entry.value)} RPM
                 </span>
               </div>
             );
           })}
           {percentageDiff !== null && (
-            <div className="mt-2 pt-2 border-t border-gray-200">
-              <span className="text-sm font-medium text-gray-700">
+            <div className="mt-2 pt-2 border-t border-border/50">
+              <span className={`text-sm font-bold ${percentageDiff >= 0 ? 'text-emerald-400' : 'text-destructive'}`}>
                 Différence: {percentageDiff > 0 ? '+' : ''}{percentageDiff}%
               </span>
             </div>
@@ -108,15 +104,19 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
   };
 
   return (
-    <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <div className="w-1 h-6 bg-gradient-to-b from-orange-500 to-red-500 rounded-full"></div>
-          Comparaison des données RPM
+    <Card className="glass-card overflow-hidden">
+      <CardHeader className="pb-2 border-b border-border/50">
+        <CardTitle className="flex items-center gap-3 text-xl">
+          <div className="p-2 rounded-lg bg-purple-500/20">
+            <RotateCcw className="h-5 w-5 text-purple-400" />
+          </div>
+          <span className="gradient-text">Comparaison de cadence</span>
         </CardTitle>
-        <CardDescription>Évolution de la cadence dans le temps pour les deux fichiers (lissage 3 secondes)</CardDescription>
+        <CardDescription className="text-muted-foreground">
+          Évolution de la cadence dans le temps (lissage 3 secondes)
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-2">
+      <CardContent className="pt-6">
         <div className="h-[450px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
@@ -126,49 +126,49 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                   <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="rpmGradient2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid 
-                strokeDasharray="2 2" 
-                stroke="#e2e8f0" 
+                strokeDasharray="3 3" 
+                stroke="hsl(217 33% 22%)" 
                 strokeWidth={0.5}
                 opacity={0.5}
               />
               <XAxis 
                 dataKey="time" 
-                className="text-gray-600"
                 fontSize={11}
                 tickFormatter={formatXAxisTick}
                 ticks={xAxisTicks}
                 domain={['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
                 interval={0}
                 angle={0}
                 textAnchor="middle"
                 height={40}
+                tick={{ fill: 'hsl(215 20% 65%)' }}
               />
               <YAxis 
-                className="text-gray-600"
                 fontSize={11}
                 label={{ 
                   value: 'RPM', 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '11px' }
+                  style: { textAnchor: 'middle', fill: 'hsl(215 20% 65%)', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
                 domain={rpmDomain}
                 tickFormatter={(value) => Math.round(value).toString()}
+                tick={{ fill: 'hsl(215 20% 65%)' }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
-                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }}
+                cursor={{ stroke: 'hsl(262 83% 58%)', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
                 wrapperStyle={{ 
@@ -177,6 +177,7 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                   fontWeight: '500'
                 }}
                 iconType="line"
+                formatter={(value) => <span style={{ color: 'hsl(215 20% 65%)' }}>{value}</span>}
               />
               <Line 
                 type="monotone" 
@@ -187,28 +188,18 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                 name={file1Name}
                 connectNulls={false}
                 fill="url(#rpmGradient1)"
-                activeDot={{ 
-                  r: 4, 
-                  stroke: "#f59e0b", 
-                  strokeWidth: 2, 
-                  fill: '#fff'
-                }}
+                activeDot={{ r: 4, stroke: "#f59e0b", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
               />
               <Line 
                 type="monotone" 
                 dataKey="rpm2" 
-                stroke="#ef4444"
+                stroke="#a855f7"
                 strokeWidth={2}
                 dot={false}
                 name={file2Name}
                 connectNulls={false}
                 fill="url(#rpmGradient2)"
-                activeDot={{ 
-                  r: 4, 
-                  stroke: "#ef4444", 
-                  strokeWidth: 2, 
-                  fill: '#fff'
-                }}
+                activeDot={{ r: 4, stroke: "#a855f7", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
               />
             </LineChart>
           </ResponsiveContainer>
