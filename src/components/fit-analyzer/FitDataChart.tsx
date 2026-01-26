@@ -75,8 +75,8 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl p-4 shadow-xl">
-          <p className="font-semibold text-gray-800 mb-2">
+        <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl p-4 shadow-2xl">
+          <p className="font-semibold text-foreground mb-2">
             Temps: {formatXAxisTick(Number(label))}
           </p>
           {payload.map((entry: any, index: number) => {
@@ -103,7 +103,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
             return (
               <div key={index} className="flex items-center gap-2 py-1">
                 <div className={`w-3 h-3 rounded-sm ${colorClass}`}></div>
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-foreground">
                   {entry.name}: {Math.round(entry.value)}{unit}
                 </span>
               </div>
@@ -136,25 +136,25 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
   const heartRateDomain = getYAxisDomain('heart_rate');
 
   return (
-    <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <div className="w-1 h-6 bg-gradient-to-b from-orange-500 via-purple-500 to-red-500 rounded-full"></div>
-          Données d'entraînement
+    <Card className="glass-card overflow-hidden">
+      <CardHeader className="pb-2 border-b border-border/50">
+        <CardTitle className="flex items-center gap-3 text-xl">
+          <div className="w-1 h-8 bg-gradient-to-b from-orange-500 via-purple-500 to-red-500 rounded-full"></div>
+          <span className="gradient-text">Données d'entraînement</span>
           {isZoomed && (
             <Button
               variant="outline"
               size="sm"
               onClick={onResetZoom}
-              className="ml-auto"
+              className="ml-auto border-border/50 hover:bg-primary/20 hover:text-primary"
             >
               <ZoomOut className="h-4 w-4 mr-2" />
               Réinitialiser zoom
             </Button>
           )}
         </CardTitle>
-        <CardDescription>
-          {isZoomed ? 'Vue zoomée sur l\'intervalle sélectionné' : 'Évolution de la puissance, cadence et fréquence cardiaque dans le temps'}
+        <CardDescription className="text-muted-foreground">
+          {isZoomed ? 'Vue zoomée sur l\'intervalle sélectionné' : 'Évolution de la puissance, cadence et fréquence cardiaque'}
         </CardDescription>
         
         {/* Chart Controls */}
@@ -164,8 +164,9 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
               id="power"
               checked={showPower}
               onCheckedChange={(checked) => setShowPower(checked === true)}
+              className="border-orange-500 data-[state=checked]:bg-orange-500"
             />
-            <label htmlFor="power" className="text-sm font-medium text-orange-600 cursor-pointer">
+            <label htmlFor="power" className="text-sm font-medium text-orange-400 cursor-pointer">
               Puissance
             </label>
           </div>
@@ -174,8 +175,9 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
               id="cadence"
               checked={showCadence}
               onCheckedChange={(checked) => setShowCadence(checked === true)}
+              className="border-purple-500 data-[state=checked]:bg-purple-500"
             />
-            <label htmlFor="cadence" className="text-sm font-medium text-purple-600 cursor-pointer">
+            <label htmlFor="cadence" className="text-sm font-medium text-purple-400 cursor-pointer">
               Cadence
             </label>
           </div>
@@ -184,87 +186,88 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
               id="heartRate"
               checked={showHeartRate}
               onCheckedChange={(checked) => setShowHeartRate(checked === true)}
+              className="border-red-500 data-[state=checked]:bg-red-500"
             />
-            <label htmlFor="heartRate" className="text-sm font-medium text-red-600 cursor-pointer">
+            <label htmlFor="heartRate" className="text-sm font-medium text-red-400 cursor-pointer">
               Fréquence Cardiaque
             </label>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-2">
+      <CardContent className="pt-6">
         <div className="h-[500px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
               <defs>
                 <linearGradient id="powerGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.2}/>
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="cadenceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.2}/>
+                  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
                 </linearGradient>
                 <linearGradient id="heartRateGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid 
-                strokeDasharray="2 2" 
-                stroke="#e2e8f0" 
+                strokeDasharray="3 3" 
+                stroke="hsl(217 33% 22%)" 
                 strokeWidth={0.5}
                 opacity={0.5}
               />
               <XAxis 
                 dataKey="time" 
-                className="text-gray-600"
                 fontSize={11}
                 tickFormatter={formatXAxisTick}
                 ticks={xAxisTicks}
                 domain={zoomDomain || ['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
                 interval={0}
                 angle={0}
                 textAnchor="middle"
                 height={40}
+                tick={{ fill: 'hsl(215 20% 65%)' }}
               />
               <YAxis 
                 yAxisId="left"
-                className="text-gray-600"
                 fontSize={11}
                 label={{ 
                   value: 'Puissance (W) / Cadence (RPM)', 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '11px' }
+                  style: { textAnchor: 'middle', fill: 'hsl(215 20% 65%)', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
                 domain={[0, Math.max(...powerDomain, ...cadenceDomain)]}
                 tickFormatter={(value) => Math.round(value).toString()}
+                tick={{ fill: 'hsl(215 20% 65%)' }}
               />
               <YAxis 
                 yAxisId="right"
                 orientation="right"
-                className="text-gray-600"
                 fontSize={11}
                 label={{ 
                   value: 'FC (BPM)', 
                   angle: 90, 
                   position: 'insideRight',
-                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '11px' }
+                  style: { textAnchor: 'middle', fill: 'hsl(215 20% 65%)', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
                 domain={heartRateDomain}
                 tickFormatter={(value) => Math.round(value).toString()}
+                tick={{ fill: 'hsl(215 20% 65%)' }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
-                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }}
+                cursor={{ stroke: 'hsl(262 83% 58%)', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
                 wrapperStyle={{ 
@@ -273,6 +276,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                   fontWeight: '500'
                 }}
                 iconType="line"
+                formatter={(value) => <span style={{ color: 'hsl(215 20% 65%)' }}>{value}</span>}
               />
               
               {/* Power Line */}

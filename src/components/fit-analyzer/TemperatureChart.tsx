@@ -1,7 +1,8 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { Thermometer } from 'lucide-react';
 
 interface TemperatureDataPoint {
   time: number;
@@ -15,7 +16,16 @@ interface TemperatureChartProps {
 }
 
 const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
-  // Custom tick formatter for 5-minute intervals
+  const [showTemperature, setShowTemperature] = useState(true);
+  const [showCoreTemp, setShowCoreTemp] = useState(true);
+  const [showSkinTemp, setShowSkinTemp] = useState(true);
+
+  // Check which temperature data is available
+  const hasTemperature = data.some(d => d.temperature !== null);
+  const hasCoreTemp = data.some(d => d.core_temperature !== null);
+  const hasSkinTemp = data.some(d => d.skin_temperature !== null);
+
+  // Format X axis tick
   const formatXAxisTick = (value: number) => {
     const minutes = Math.round(value);
     const hours = Math.floor(minutes / 60);
@@ -31,10 +41,12 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
   const generateTicks = () => {
     if (data.length === 0) return [];
     
+    const minTime = Math.min(...data.map(d => d.time));
     const maxTime = Math.max(...data.map(d => d.time));
     const ticks = [];
     
-    for (let i = 0; i <= maxTime; i += 5) {
+    const startTick = Math.floor(minTime / 5) * 5;
+    for (let i = startTick; i <= maxTime; i += 5) {
       ticks.push(i);
     }
     
@@ -43,40 +55,35 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
 
   const xAxisTicks = generateTicks();
 
-  // Custom tooltip component
+  // Custom tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-xl p-4 shadow-xl">
-          <p className="font-semibold text-gray-800 mb-2">
+        <div className="bg-card/95 backdrop-blur-xl border border-border/50 rounded-xl p-4 shadow-2xl">
+          <p className="font-semibold text-foreground mb-2">
             Temps: {formatXAxisTick(Number(label))}
           </p>
           {payload.map((entry: any, index: number) => {
             if (entry.value === null || entry.value === undefined) return null;
             
             let colorClass = '';
-            let name = '';
-            
             switch (entry.dataKey) {
               case 'temperature':
                 colorClass = 'bg-yellow-500';
-                name = 'Température';
                 break;
               case 'core_temperature':
-                colorClass = 'bg-red-500';
-                name = 'Température Corporelle';
+                colorClass = 'bg-orange-500';
                 break;
               case 'skin_temperature':
-                colorClass = 'bg-orange-500';
-                name = 'Température Peau';
+                colorClass = 'bg-cyan-500';
                 break;
             }
             
             return (
               <div key={index} className="flex items-center gap-2 py-1">
                 <div className={`w-3 h-3 rounded-sm ${colorClass}`}></div>
-                <span className="text-sm font-medium text-gray-700">
-                  {name}: {Math.round(entry.value * 10) / 10}°C
+                <span className="text-sm font-medium text-foreground">
+                  {entry.name}: {(entry.value as number).toFixed(1)}°C
                 </span>
               </div>
             );
@@ -87,72 +94,137 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
     return null;
   };
 
+  // Calculate Y axis domain
+  const getYAxisDomain = () => {
+    const allTemps: number[] = [];
+    data.forEach(d => {
+      if (d.temperature) allTemps.push(d.temperature);
+      if (d.core_temperature) allTemps.push(d.core_temperature);
+      if (d.skin_temperature) allTemps.push(d.skin_temperature);
+    });
+    
+    if (allTemps.length === 0) return [35, 42];
+    
+    const min = Math.min(...allTemps);
+    const max = Math.max(...allTemps);
+    const padding = (max - min) * 0.1;
+    
+    return [Math.max(30, Math.floor(min - padding)), Math.ceil(max + padding)];
+  };
+
+  const yDomain = getYAxisDomain();
+
   return (
-    <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
-      <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-xl">
-          <div className="w-1 h-6 bg-gradient-to-b from-yellow-500 via-orange-500 to-red-500 rounded-full"></div>
-          Données de température
+    <Card className="glass-card overflow-hidden">
+      <CardHeader className="pb-2 border-b border-border/50">
+        <CardTitle className="flex items-center gap-3 text-xl">
+          <div className="p-2 rounded-lg bg-yellow-500/20">
+            <Thermometer className="h-5 w-5 text-yellow-400" />
+          </div>
+          <span className="gradient-text">Données de température</span>
         </CardTitle>
-        <CardDescription>Évolution de la température dans le temps</CardDescription>
+        <CardDescription className="text-muted-foreground">
+          Évolution de la température pendant l'entraînement
+        </CardDescription>
+        
+        {/* Chart Controls */}
+        <div className="flex items-center gap-6 pt-4">
+          {hasTemperature && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="temperature"
+                checked={showTemperature}
+                onCheckedChange={(checked) => setShowTemperature(checked === true)}
+                className="border-yellow-500 data-[state=checked]:bg-yellow-500"
+              />
+              <label htmlFor="temperature" className="text-sm font-medium text-yellow-400 cursor-pointer">
+                Température
+              </label>
+            </div>
+          )}
+          {hasCoreTemp && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="coreTemp"
+                checked={showCoreTemp}
+                onCheckedChange={(checked) => setShowCoreTemp(checked === true)}
+                className="border-orange-500 data-[state=checked]:bg-orange-500"
+              />
+              <label htmlFor="coreTemp" className="text-sm font-medium text-orange-400 cursor-pointer">
+                Température Core
+              </label>
+            </div>
+          )}
+          {hasSkinTemp && (
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="skinTemp"
+                checked={showSkinTemp}
+                onCheckedChange={(checked) => setShowSkinTemp(checked === true)}
+                className="border-cyan-500 data-[state=checked]:bg-cyan-500"
+              />
+              <label htmlFor="skinTemp" className="text-sm font-medium text-cyan-400 cursor-pointer">
+                Température Peau
+              </label>
+            </div>
+          )}
+        </div>
       </CardHeader>
-      <CardContent className="pt-2">
-        <div className="h-[400px] w-full">
+      <CardContent className="pt-6">
+        <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
               <defs>
                 <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#eab308" stopOpacity={0.2}/>
+                  <stop offset="5%" stopColor="#eab308" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#eab308" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="coreGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="skinGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.2}/>
+                <linearGradient id="coreTempGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
                   <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="skinTempGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid 
-                strokeDasharray="2 2" 
-                stroke="#e2e8f0" 
+                strokeDasharray="3 3" 
+                stroke="hsl(217 33% 22%)" 
                 strokeWidth={0.5}
                 opacity={0.5}
               />
               <XAxis 
                 dataKey="time" 
-                className="text-gray-600"
                 fontSize={11}
                 tickFormatter={formatXAxisTick}
                 ticks={xAxisTicks}
                 domain={['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
                 interval={0}
-                angle={0}
-                textAnchor="middle"
                 height={40}
+                tick={{ fill: 'hsl(215 20% 65%)' }}
               />
               <YAxis 
-                className="text-gray-600"
                 fontSize={11}
                 label={{ 
                   value: 'Température (°C)', 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: '#64748b', fontSize: '11px' }
+                  style: { textAnchor: 'middle', fill: 'hsl(215 20% 65%)', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                axisLine={{ stroke: '#94a3b8', strokeWidth: 0.5 }}
-                tickFormatter={(value) => `${Math.round(value)}°C`}
-                domain={['dataMin - 2', 'dataMax + 2']}
+                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                domain={yDomain}
+                tickFormatter={(value) => value.toFixed(1)}
+                tick={{ fill: 'hsl(215 20% 65%)' }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
-                cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '3 3' }}
+                cursor={{ stroke: 'hsl(262 83% 58%)', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
                 wrapperStyle={{ 
@@ -161,61 +233,53 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                   fontWeight: '500'
                 }}
                 iconType="line"
+                formatter={(value) => <span style={{ color: 'hsl(215 20% 65%)' }}>{value}</span>}
               />
               
               {/* Temperature Line */}
-              <Line 
-                type="monotone" 
-                dataKey="temperature" 
-                stroke="#eab308"
-                strokeWidth={2}
-                dot={false}
-                name="Température"
-                connectNulls={false}
-                fill="url(#tempGradient)"
-                activeDot={{ 
-                  r: 4, 
-                  stroke: "#eab308", 
-                  strokeWidth: 2, 
-                  fill: '#fff'
-                }}
-              />
+              {hasTemperature && showTemperature && (
+                <Line 
+                  type="monotone" 
+                  dataKey="temperature" 
+                  stroke="#eab308"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Température"
+                  connectNulls={false}
+                  fill="url(#tempGradient)"
+                  activeDot={{ r: 4, stroke: "#eab308", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
+                />
+              )}
               
               {/* Core Temperature Line */}
-              <Line 
-                type="monotone" 
-                dataKey="core_temperature" 
-                stroke="#ef4444"
-                strokeWidth={2}
-                dot={false}
-                name="Température Corporelle"
-                connectNulls={false}
-                fill="url(#coreGradient)"
-                activeDot={{ 
-                  r: 4, 
-                  stroke: "#ef4444", 
-                  strokeWidth: 2, 
-                  fill: '#fff'
-                }}
-              />
+              {hasCoreTemp && showCoreTemp && (
+                <Line 
+                  type="monotone" 
+                  dataKey="core_temperature" 
+                  stroke="#f97316"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Température Core"
+                  connectNulls={false}
+                  fill="url(#coreTempGradient)"
+                  activeDot={{ r: 4, stroke: "#f97316", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
+                />
+              )}
               
               {/* Skin Temperature Line */}
-              <Line 
-                type="monotone" 
-                dataKey="skin_temperature" 
-                stroke="#f97316"
-                strokeWidth={2}
-                dot={false}
-                name="Température Peau"
-                connectNulls={false}
-                fill="url(#skinGradient)"
-                activeDot={{ 
-                  r: 4, 
-                  stroke: "#f97316", 
-                  strokeWidth: 2, 
-                  fill: '#fff'
-                }}
-              />
+              {hasSkinTemp && showSkinTemp && (
+                <Line 
+                  type="monotone" 
+                  dataKey="skin_temperature" 
+                  stroke="#06b6d4"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Température Peau"
+                  connectNulls={false}
+                  fill="url(#skinTempGradient)"
+                  activeDot={{ r: 4, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
+                />
+              )}
             </LineChart>
           </ResponsiveContainer>
         </div>

@@ -482,20 +482,25 @@ const FitAnalyzer = () => {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">FIT Analyzer</h1>
-        <p className="text-muted-foreground">Analysez en détail vos fichiers FIT avec des graphiques interactifs</p>
+    <div className="min-h-screen p-6 md:p-8 space-y-8">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-4xl font-bold gradient-text">FIT Analyzer</h1>
+        <p className="text-muted-foreground text-lg">Analysez en détail vos fichiers FIT avec des graphiques interactifs</p>
       </div>
 
       {/* File Upload Section */}
-      <Card className="shadow-lg border-0 bg-gradient-to-br from-purple-50 to-indigo-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5 text-purple-500" />
+      <Card className="glass-card glow border-primary/20">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-3 text-xl">
+            <div className="p-2 rounded-lg bg-primary/20">
+              <Upload className="h-5 w-5 text-primary" />
+            </div>
             Télécharger un fichier FIT
           </CardTitle>
-          <CardDescription>Sélectionnez un fichier FIT pour une analyse détaillée avec graphiques interactifs</CardDescription>
+          <CardDescription className="text-muted-foreground">
+            Sélectionnez un fichier FIT pour une analyse détaillée avec graphiques interactifs
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
@@ -503,20 +508,21 @@ const FitAnalyzer = () => {
               type="file"
               accept=".fit"
               onChange={handleFileUpload}
-              className="flex-1"
+              className="flex-1 bg-secondary/50 border-border/50 file:bg-primary file:text-primary-foreground file:border-0 file:rounded-md file:px-4 file:py-2 file:mr-4 file:cursor-pointer hover:file:bg-primary/80 transition-all"
               disabled={isLoading}
             />
-            <Upload className="h-5 w-5 text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
 
       {isLoading && (
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="flex items-center justify-center gap-2">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-500"></div>
-              <p>Analyse du fichier FIT en cours...</p>
+        <Card className="glass-card">
+          <CardContent className="p-8 text-center">
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary"></div>
+              </div>
+              <p className="text-muted-foreground">Analyse du fichier FIT en cours...</p>
             </div>
           </CardContent>
         </Card>
@@ -524,102 +530,98 @@ const FitAnalyzer = () => {
 
       {/* File Information Card */}
       {fileInfo && (
-        <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-1 h-6 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></div>
-              Informations du fichier
+        <Card className="glass-card overflow-hidden">
+          <CardHeader className="border-b border-border/50 pb-4">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="h-8 w-1 rounded-full bg-gradient-to-b from-primary to-cyan-400"></div>
+              Informations de l'entraînement
             </CardTitle>
-            <CardDescription className="text-xs">{fileInfo.fileName}</CardDescription>
+            <CardDescription className="text-xs text-muted-foreground font-mono">
+              {fileInfo.fileName}
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            {/* First row - Sport only */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              <div className="flex items-center gap-3 p-4 bg-indigo-50 rounded-lg">
-                <div className="p-2 bg-indigo-100 rounded-lg">
-                  <span className="text-lg">{getSportIcon(fileInfo.sportType)}</span>
-                </div>
+          <CardContent className="pt-6">
+            {/* Sport Badge */}
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-primary/20 to-cyan-500/20 border border-primary/30">
+                <span className="text-2xl">{getSportIcon(fileInfo.sportType)}</span>
                 <div>
-                  <p className="text-xs font-medium text-gray-600">Sport</p>
-                  <p className="text-xs font-bold text-indigo-700">{getSportName(fileInfo.sportType)}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Sport</p>
+                  <p className="text-lg font-bold text-foreground">{getSportName(fileInfo.sportType)}</p>
                 </div>
               </div>
             </div>
             
-            {/* Second row - All other metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {/* Date & Time */}
-              <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Calendar className="h-5 w-5 text-blue-600" />
+              <div className="metric-card rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-cyan-400" />
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Date</span>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Date & Heure</p>
-                  <p className="text-xs font-bold text-blue-700">{fileInfo.startDate}</p>
-                  <p className="text-xs text-blue-600">{fileInfo.startTime}</p>
-                </div>
+                <p className="text-lg font-bold text-foreground">{fileInfo.startDate}</p>
+                <p className="text-sm text-muted-foreground">{fileInfo.startTime}</p>
               </div>
 
               {/* Duration */}
-              <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Clock className="h-5 w-5 text-green-600" />
+              <div className="metric-card rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-emerald-400" />
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Durée</span>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Durée</p>
-                  <p className="text-xs font-bold text-green-700">{formatDurationMinutes(fileInfo.duration)}</p>
-                </div>
+                <p className="text-lg font-bold text-foreground">{formatDurationMinutes(fileInfo.duration)}</p>
               </div>
 
               {/* Power */}
-              <div className="flex items-center gap-3 p-4 bg-orange-50 rounded-lg">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Zap className="h-5 w-5 text-orange-600" />
+              <div className="metric-card rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-orange-400" />
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Puissance</span>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Puissance</p>
-                  <p className="text-xs font-bold text-orange-700">Moy: {fileInfo.avgPower}W</p>
-                  <p className="text-xs font-bold text-orange-700">Max: {fileInfo.maxPower}W</p>
+                <div className="space-y-1">
+                  <p className="text-lg font-bold text-orange-400">{fileInfo.avgPower}W <span className="text-xs text-muted-foreground font-normal">moy</span></p>
+                  <p className="text-sm text-foreground">{fileInfo.maxPower}W <span className="text-xs text-muted-foreground">max</span></p>
                   {fileInfo.normalizedPower && (
-                    <p className="text-xs text-orange-600">NP: {fileInfo.normalizedPower}W</p>
+                    <p className="text-sm text-muted-foreground">{fileInfo.normalizedPower}W <span className="text-xs">NP</span></p>
                   )}
                 </div>
               </div>
 
               {/* Cadence */}
-              <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <RotateCcw className="h-5 w-5 text-purple-600" />
+              <div className="metric-card rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <RotateCcw className="h-4 w-4 text-purple-400" />
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">Cadence</span>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Cadence</p>
-                  <p className="text-xs font-bold text-purple-700">Moy: {fileInfo.avgCadence} RPM</p>
-                  <p className="text-xs font-bold text-purple-700">Max: {fileInfo.maxCadence} RPM</p>
+                <div className="space-y-1">
+                  <p className="text-lg font-bold text-purple-400">{fileInfo.avgCadence} <span className="text-xs text-muted-foreground font-normal">moy</span></p>
+                  <p className="text-sm text-foreground">{fileInfo.maxCadence} <span className="text-xs text-muted-foreground">max</span></p>
                 </div>
               </div>
 
               {/* Heart Rate */}
-              <div className="flex items-center gap-3 p-4 bg-red-50 rounded-lg">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <Heart className="h-5 w-5 text-red-600" />
+              <div className="metric-card rounded-xl p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-red-400" />
+                  <span className="text-xs text-muted-foreground uppercase tracking-wider">FC</span>
                 </div>
-                <div>
-                  <p className="text-xs font-medium text-gray-600">Fréquence Cardiaque</p>
-                  <p className="text-xs font-bold text-red-700">Moy: {fileInfo.avgHeartRate} BPM</p>
-                  <p className="text-xs font-bold text-red-700">Max: {fileInfo.maxHeartRate} BPM</p>
+                <div className="space-y-1">
+                  <p className="text-lg font-bold text-red-400">{fileInfo.avgHeartRate} <span className="text-xs text-muted-foreground font-normal">moy</span></p>
+                  <p className="text-sm text-foreground">{fileInfo.maxHeartRate} <span className="text-xs text-muted-foreground">max</span></p>
                 </div>
               </div>
 
-              {/* Temperature - Only show if temperature data is available */}
+              {/* Temperature */}
               {fileInfo.hasTemperatureData && (
-                <div className="flex items-center gap-3 p-4 bg-yellow-50 rounded-lg">
-                  <div className="p-2 bg-yellow-100 rounded-lg">
-                    <Thermometer className="h-5 w-5 text-yellow-600" />
+                <div className="metric-card rounded-xl p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Thermometer className="h-4 w-4 text-yellow-400" />
+                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Temp</span>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-gray-600">Température</p>
-                    <p className="text-xs font-bold text-yellow-700">Moy: {fileInfo.avgTemperature}°C</p>
-                    <p className="text-xs font-bold text-yellow-700">Max: {fileInfo.maxTemperature}°C</p>
+                  <div className="space-y-1">
+                    <p className="text-lg font-bold text-yellow-400">{fileInfo.avgTemperature}°C <span className="text-xs text-muted-foreground font-normal">moy</span></p>
+                    <p className="text-sm text-foreground">{fileInfo.maxTemperature}°C <span className="text-xs text-muted-foreground">max</span></p>
                   </div>
                 </div>
               )}
@@ -644,49 +646,50 @@ const FitAnalyzer = () => {
 
       {/* Laps Table */}
       {lapData.length > 0 && (
-        <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-gray-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-blue-500 rounded-full"></div>
+        <Card className="glass-card overflow-hidden">
+          <CardHeader className="border-b border-border/50 pb-4">
+            <CardTitle className="flex items-center gap-3 text-xl">
+              <div className="h-8 w-1 rounded-full bg-gradient-to-b from-emerald-400 to-cyan-400"></div>
               Tours / Intervalles
             </CardTitle>
-            <CardDescription>Détail de chaque tour ou intervalle de l'entraînement</CardDescription>
+            <CardDescription className="text-muted-foreground">
+              Cliquez sur une ligne pour zoomer sur l'intervalle dans le graphique
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-gray-600 mb-4">Cliquez sur une ligne pour zoomer sur l'intervalle dans le graphique</p>
+          <CardContent className="pt-6 overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead className="text-center">Tour</TableHead>
-                  <TableHead className="text-center">Heure</TableHead>
-                  <TableHead className="text-center">Durée</TableHead>
-                  <TableHead className="text-center">Puissance Moy</TableHead>
-                  <TableHead className="text-center">Puissance Max</TableHead>
-                  <TableHead className="text-center">NP</TableHead>
-                  <TableHead className="text-center">Cadence Moy</TableHead>
-                  <TableHead className="text-center">Cadence Max</TableHead>
-                  <TableHead className="text-center">FC Moy</TableHead>
-                  <TableHead className="text-center">FC Max</TableHead>
+                <TableRow className="border-border/50 hover:bg-transparent">
+                  <TableHead className="text-center text-muted-foreground">Tour</TableHead>
+                  <TableHead className="text-center text-muted-foreground">Heure</TableHead>
+                  <TableHead className="text-center text-muted-foreground">Durée</TableHead>
+                  <TableHead className="text-center text-orange-400">Pwr Moy</TableHead>
+                  <TableHead className="text-center text-orange-400">Pwr Max</TableHead>
+                  <TableHead className="text-center text-orange-400/70">NP</TableHead>
+                  <TableHead className="text-center text-purple-400">Cad Moy</TableHead>
+                  <TableHead className="text-center text-purple-400">Cad Max</TableHead>
+                  <TableHead className="text-center text-red-400">FC Moy</TableHead>
+                  <TableHead className="text-center text-red-400">FC Max</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {lapData.map((lap) => (
                   <TableRow 
                     key={lap.lapNumber}
-                    className="cursor-pointer hover:bg-gray-50 transition-colors"
+                    className="cursor-pointer border-border/30 hover:bg-primary/10 transition-colors"
                     onClick={() => handleLapClick(lap)}
                     title="Cliquer pour zoomer sur cet intervalle"
                   >
-                    <TableCell className="text-center font-medium">{lap.lapNumber}</TableCell>
-                    <TableCell className="text-center">{lap.startTime}</TableCell>
-                    <TableCell className="text-center">{lap.duration}</TableCell>
-                    <TableCell className="text-center">{lap.avgPower}W</TableCell>
-                    <TableCell className="text-center">{lap.maxPower}W</TableCell>
-                    <TableCell className="text-center">{lap.normalizedPower ? `${lap.normalizedPower}W` : '-'}</TableCell>
-                    <TableCell className="text-center">{lap.avgCadence} RPM</TableCell>
-                    <TableCell className="text-center">{lap.maxCadence} RPM</TableCell>
-                    <TableCell className="text-center">{lap.avgHeartRate} BPM</TableCell>
-                    <TableCell className="text-center">{lap.maxHeartRate} BPM</TableCell>
+                    <TableCell className="text-center font-bold text-primary">{lap.lapNumber}</TableCell>
+                    <TableCell className="text-center text-muted-foreground">{lap.startTime}</TableCell>
+                    <TableCell className="text-center font-medium">{lap.duration}</TableCell>
+                    <TableCell className="text-center font-medium text-orange-400">{lap.avgPower}W</TableCell>
+                    <TableCell className="text-center text-foreground">{lap.maxPower}W</TableCell>
+                    <TableCell className="text-center text-muted-foreground">{lap.normalizedPower ? `${lap.normalizedPower}W` : '-'}</TableCell>
+                    <TableCell className="text-center font-medium text-purple-400">{lap.avgCadence}</TableCell>
+                    <TableCell className="text-center text-foreground">{lap.maxCadence}</TableCell>
+                    <TableCell className="text-center font-medium text-red-400">{lap.avgHeartRate}</TableCell>
+                    <TableCell className="text-center text-foreground">{lap.maxHeartRate}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
