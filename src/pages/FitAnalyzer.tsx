@@ -484,13 +484,13 @@ const FitAnalyzer = () => {
   return (
     <div className="min-h-screen p-6 md:p-8 space-y-8">
       {/* Header */}
-      <div className="space-y-2">
+      <div className="space-y-2 opacity-0 animate-fade-in-up">
         <h1 className="text-4xl font-bold gradient-text">FIT Analyzer</h1>
         <p className="text-muted-foreground text-lg">Analysez en détail vos fichiers FIT avec des graphiques interactifs</p>
       </div>
 
       {/* File Upload Section */}
-      <Card className="glass-card glow border-primary/20">
+      <Card className="glass-card glow border-primary/20 opacity-0 animate-fade-in-up-delay-1">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-3 text-xl">
             <div className="p-2 rounded-lg bg-primary/20">
@@ -516,7 +516,7 @@ const FitAnalyzer = () => {
       </Card>
 
       {isLoading && (
-        <Card className="glass-card">
+        <Card className="glass-card animate-fade-in-scale">
           <CardContent className="p-8 text-center">
             <div className="flex flex-col items-center justify-center gap-4">
               <div className="relative">
@@ -530,7 +530,7 @@ const FitAnalyzer = () => {
 
       {/* File Information Card */}
       {fileInfo && (
-        <Card className="glass-card overflow-hidden">
+        <Card className="glass-card overflow-hidden opacity-0 animate-fade-in-up-delay-1">
           <CardHeader className="border-b border-border/50 pb-4">
             <CardTitle className="flex items-center gap-3 text-xl">
               <div className="h-8 w-1 rounded-full bg-gradient-to-b from-primary to-cyan-400"></div>
@@ -632,21 +632,25 @@ const FitAnalyzer = () => {
 
       {/* Temperature Chart */}
       {temperatureData.length > 0 && temperatureData.some(d => d.temperature || d.core_temperature || d.skin_temperature) && (
-        <TemperatureChart data={temperatureData} />
+        <div className="opacity-0 animate-fade-in-up-delay-2">
+          <TemperatureChart data={temperatureData} />
+        </div>
       )}
 
       {/* Interactive Chart */}
       {chartData.length > 0 && (
-        <FitDataChart 
-          data={chartData} 
-          zoomDomain={zoomDomain}
-          onResetZoom={resetZoom}
-        />
+        <div className="opacity-0 animate-fade-in-up-delay-3">
+          <FitDataChart 
+            data={chartData} 
+            zoomDomain={zoomDomain}
+            onResetZoom={resetZoom}
+          />
+        </div>
       )}
 
       {/* Laps Table */}
       {lapData.length > 0 && (
-        <Card className="glass-card overflow-hidden">
+        <Card className="glass-card overflow-hidden opacity-0 animate-fade-in-up-delay-4">
           <CardHeader className="border-b border-border/50 pb-4">
             <CardTitle className="flex items-center gap-3 text-xl">
               <div className="h-8 w-1 rounded-full bg-gradient-to-b from-emerald-400 to-cyan-400"></div>
@@ -673,12 +677,13 @@ const FitAnalyzer = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {lapData.map((lap) => (
+                {lapData.map((lap, index) => (
                   <TableRow 
                     key={lap.lapNumber}
-                    className="cursor-pointer border-border/30 hover:bg-primary/10 transition-colors"
+                    className="cursor-pointer border-border/30 hover:bg-primary/10 transition-all duration-200"
                     onClick={() => handleLapClick(lap)}
                     title="Cliquer pour zoomer sur cet intervalle"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <TableCell className="text-center font-bold text-primary">{lap.lapNumber}</TableCell>
                     <TableCell className="text-center text-muted-foreground">{lap.startTime}</TableCell>
