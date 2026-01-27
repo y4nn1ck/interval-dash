@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
@@ -36,22 +35,22 @@ const MetricCard = ({ title, value, unit, goal, icon: Icon, color, progress, tre
   const getIconBackgroundClass = (color: string) => {
     switch (color) {
       case 'bg-red-500':
-        return 'bg-red-50 border-red-100';
+        return 'bg-red-500/20 border-red-500/30';
       case 'bg-green-500':
-        return 'bg-green-50 border-green-100';
+        return 'bg-green-500/20 border-green-500/30';
       case 'bg-orange-500':
-        return 'bg-orange-50 border-orange-100';
+        return 'bg-orange-500/20 border-orange-500/30';
       case 'bg-blue-500':
-        return 'bg-blue-50 border-blue-100';
+        return 'bg-blue-500/20 border-blue-500/30';
       case 'bg-purple-500':
-        return 'bg-purple-50 border-purple-100';
+        return 'bg-purple-500/20 border-purple-500/30';
       default:
-        return 'bg-gray-50 border-gray-100';
+        return 'bg-muted border-border';
     }
   };
 
   return (
-    <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+    <Card className="glass-card hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-primary/30">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className={`p-4 rounded-2xl border-2 ${getIconBackgroundClass(color)} shadow-lg`}>
@@ -60,27 +59,27 @@ const MetricCard = ({ title, value, unit, goal, icon: Icon, color, progress, tre
             </div>
           </div>
           {trend && (
-            <span className="text-sm font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200">
+            <span className="text-sm font-semibold text-green-400 bg-green-500/20 px-3 py-1 rounded-full border border-green-500/30">
               {trend}
             </span>
           )}
         </div>
         
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{title}</p>
+          <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{title}</p>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-gray-900 tracking-tight">{value}</span>
-            {unit && <span className="text-lg font-medium text-gray-500">{unit}</span>}
+            <span className="text-3xl font-bold text-foreground tracking-tight">{value}</span>
+            {unit && <span className="text-lg font-medium text-muted-foreground">{unit}</span>}
           </div>
           
           {goal && (
-            <p className="text-sm text-gray-500 font-medium">Objectif: {goal}</p>
+            <p className="text-sm text-muted-foreground font-medium">Objectif: {goal}</p>
           )}
           
           {progress !== undefined && (
             <div className="pt-3">
               <Progress value={progress} className="h-3 rounded-full" />
-              <p className="text-xs text-gray-500 mt-2 font-medium">{Math.round(progress)}% de l'objectif</p>
+              <p className="text-xs text-muted-foreground mt-2 font-medium">{Math.round(progress)}% de l'objectif</p>
             </div>
           )}
         </div>

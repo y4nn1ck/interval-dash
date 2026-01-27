@@ -16,7 +16,6 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
   // Generate CTL/ATL/TSB data for 7 days
   const generateCTLATLData = () => {
     if (weeklyStats && weeklyStats.length > 0) {
-      // Take only the last 7 days
       const last7Days = weeklyStats.slice(-7);
       return last7Days.map(stat => ({
         date: stat.date,
@@ -26,7 +25,6 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
       }));
     }
 
-    // Fallback data for 7 days
     const data = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date();
@@ -59,7 +57,6 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
     return data;
   };
 
-  // Generate 7 days of hydration data with 1-4 scale
   const generateHydrationData = () => {
     const data = [];
     for (let i = 0; i < 7; i++) {
@@ -69,7 +66,6 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
       
       let hydration = null;
       
-      // Find matching data from API
       if (weeklyStats && weeklyStats.length > 0) {
         const apiData = weeklyStats.find(stat => stat.date === dateStr);
         if (apiData && apiData.hydration !== null && apiData.hydration !== undefined) {
@@ -77,14 +73,11 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
         }
       }
       
-      // Provide realistic fallback data with 1-4 scale
       if (hydration === null || hydration === undefined) {
-        // Today: 4, Yesterday: 1, Saturday: 1, and other realistic values
-        const fallbackValues = [1, 2, 1, 3, 2, 1, 4]; // Saturday to Today
+        const fallbackValues = [1, 2, 1, 3, 2, 1, 4];
         hydration = fallbackValues[i];
       }
       
-      // Set to 0 if no data available for the day
       if (hydration === null || hydration === undefined) {
         hydration = 0;
       }
@@ -98,7 +91,6 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
     return data;
   };
 
-  // Generate 7 days of sleep data
   const generateSleepData = () => {
     const data = [];
     for (let i = 0; i < 7; i++) {
@@ -108,18 +100,15 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
       
       let sleepHours = null;
       
-      // Find matching data from API
       if (weeklyStats && weeklyStats.length > 0) {
         const apiData = weeklyStats.find(stat => stat.date === dateStr);
         if (apiData && apiData.sleep_secs !== null && apiData.sleep_secs !== undefined) {
-          sleepHours = apiData.sleep_secs / 3600; // Convert seconds to hours
+          sleepHours = apiData.sleep_secs / 3600;
         }
       }
       
-      // Provide realistic fallback data
       if (sleepHours === null) {
-        // Realistic sleep hours between 6-9 hours
-        const fallbackValues = [7.5, 8.2, 6.8, 7.9, 8.1, 6.5, 8.5]; // Saturday to Today
+        const fallbackValues = [7.5, 8.2, 6.8, 7.9, 8.1, 6.5, 8.5];
         sleepHours = fallbackValues[i];
       }
       
@@ -134,11 +123,12 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
 
   return (
     <div className="space-y-6 mb-8">
-      {/* CTL/ATL/TSB Chart - 7 days only */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      {/* CTL/ATL/TSB Chart */}
+      <Card className="glass-card opacity-0 animate-fade-in-up" style={{ animationDelay: '0.35s', animationFillMode: 'forwards' }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold text-gray-800">
-            Évolution CTL, ATL et TSB (7 jours)
+          <CardTitle className="text-lg font-semibold">
+            <span className="gradient-text">Évolution CTL, ATL et TSB</span>
+            <span className="text-muted-foreground text-sm font-normal ml-2">(7 jours)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
@@ -149,11 +139,12 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
         </CardContent>
       </Card>
 
-      {/* Sleep Chart - 7 days only */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      {/* Sleep Chart */}
+      <Card className="glass-card opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold text-gray-800">
-            Sommeil quotidien (7 jours)
+          <CardTitle className="text-lg font-semibold">
+            <span className="gradient-text">Sommeil quotidien</span>
+            <span className="text-muted-foreground text-sm font-normal ml-2">(7 jours)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
@@ -161,11 +152,12 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
         </CardContent>
       </Card>
 
-      {/* Hydration Chart - 7 days only */}
-      <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+      {/* Hydration Chart */}
+      <Card className="glass-card opacity-0 animate-fade-in-up" style={{ animationDelay: '0.45s', animationFillMode: 'forwards' }}>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg font-semibold text-gray-800">
-            Hydratation quotidienne (7 jours)
+          <CardTitle className="text-lg font-semibold">
+            <span className="gradient-text">Hydratation quotidienne</span>
+            <span className="text-muted-foreground text-sm font-normal ml-2">(7 jours)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
