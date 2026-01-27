@@ -1,4 +1,3 @@
-
 import React from 'react';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
@@ -45,14 +44,14 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <DashboardHeader athleteName={athleteName} athleteId={athleteId} />
 
         {/* Intervals.icu Auth Card */}
         {!isAuthenticated && (
-          <div className="mb-8">
+          <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
             <IntervalsAuth />
           </div>
         )}

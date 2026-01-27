@@ -90,7 +90,7 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
       <Dialog open={isRestingHRDialogOpen} onOpenChange={setIsRestingHRDialogOpen}>
         <DialogTrigger asChild>
-          <div className="cursor-pointer transition-all duration-200 hover:scale-105 relative group">
+          <div className="cursor-pointer transition-all duration-200 hover:scale-105 relative group opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
             <MetricCard
               title="FC Repos"
               value={`${todayMetrics.resting_hr || 58}`}
@@ -98,17 +98,16 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
               icon={Heart}
               color="bg-red-500"
             />
-            {/* More visible clickable indicator */}
             <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:scale-110">
-              <div className="flex items-center justify-center w-6 h-6 bg-white/90 rounded-full shadow-md">
-                <ChevronRight className="w-3 h-3 text-red-500" />
+              <div className="flex items-center justify-center w-6 h-6 bg-card/90 rounded-full shadow-md border border-border">
+                <ChevronRight className="w-3 h-3 text-red-400" />
               </div>
             </div>
           </div>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl glass-card border-border">
           <DialogHeader>
-            <DialogTitle>Fréquence cardiaque de repos - 7 derniers jours</DialogTitle>
+            <DialogTitle className="gradient-text">Fréquence cardiaque de repos - 7 derniers jours</DialogTitle>
           </DialogHeader>
           <RestingHRChart data={generateRestingHRData()} />
         </DialogContent>
@@ -116,48 +115,53 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
       
       <Dialog open={isCTLDialogOpen} onOpenChange={setIsCTLDialogOpen}>
         <DialogTrigger asChild>
-          <div className="cursor-pointer transition-all duration-200 hover:scale-105 relative group">
+          <div className="cursor-pointer transition-all duration-200 hover:scale-105 relative group opacity-0 animate-fade-in-up" style={{ animationDelay: '0.15s', animationFillMode: 'forwards' }}>
             <MetricCard
               title="Fitness (CTL)"
               value={`${ctl}`}
               icon={Target}
               color="bg-green-500"
             />
-            {/* More visible clickable indicator */}
             <div className="absolute top-3 right-3 opacity-60 group-hover:opacity-100 transition-all duration-200 group-hover:scale-110">
-              <div className="flex items-center justify-center w-6 h-6 bg-white/90 rounded-full shadow-md">
-                <ChevronRight className="w-3 h-3 text-green-500" />
+              <div className="flex items-center justify-center w-6 h-6 bg-card/90 rounded-full shadow-md border border-border">
+                <ChevronRight className="w-3 h-3 text-green-400" />
               </div>
             </div>
           </div>
         </DialogTrigger>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl glass-card border-border">
           <DialogHeader>
-            <DialogTitle>Fitness (CTL) - 7 derniers jours</DialogTitle>
+            <DialogTitle className="gradient-text">Fitness (CTL) - 7 derniers jours</DialogTitle>
           </DialogHeader>
           <CTLChart data={generateCTLData()} />
         </DialogContent>
       </Dialog>
       
-      <MetricCard
-        title="Fatigue (ATL)"
-        value={`${atl}`}
-        icon={Zap}
-        color="bg-orange-500"
-      />
-      <MetricCard
-        title="Forme (TSB)"
-        value={`${tsb}`}
-        icon={TrendUp}
-        color="bg-blue-500"
-      />
-      <MetricCard
-        title="Sommeil"
-        value={formatSleepDuration(todayMetrics.sleep_secs || 28800)}
-        unit="h"
-        icon={Moon}
-        color="bg-purple-500"
-      />
+      <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
+        <MetricCard
+          title="Fatigue (ATL)"
+          value={`${atl}`}
+          icon={Zap}
+          color="bg-orange-500"
+        />
+      </div>
+      <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.25s', animationFillMode: 'forwards' }}>
+        <MetricCard
+          title="Forme (TSB)"
+          value={`${tsb}`}
+          icon={TrendUp}
+          color="bg-blue-500"
+        />
+      </div>
+      <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
+        <MetricCard
+          title="Sommeil"
+          value={formatSleepDuration(todayMetrics.sleep_secs || 28800)}
+          unit="h"
+          icon={Moon}
+          color="bg-purple-500"
+        />
+      </div>
     </div>
   );
 };

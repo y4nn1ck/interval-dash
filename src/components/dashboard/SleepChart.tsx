@@ -21,15 +21,13 @@ const SleepChart = ({ data }: SleepChartProps) => {
     },
   };
 
-  // Get the color for each sleep duration
   const getSleepColor = (hours: number) => {
-    if (hours >= 8) return '#10b981'; // green for good sleep (8+ hours)
-    if (hours >= 7) return '#3b82f6'; // blue for ok sleep (7-8 hours)
-    if (hours >= 6) return '#f59e0b'; // orange for moderate sleep (6-7 hours)
-    return '#ef4444'; // red for poor sleep (<6 hours)
+    if (hours >= 8) return '#10b981';
+    if (hours >= 7) return '#3b82f6';
+    if (hours >= 6) return '#f59e0b';
+    return '#ef4444';
   };
 
-  // Get gradient ID for each sleep duration
   const getGradientId = (hours: number) => {
     if (hours >= 8) return 'sleepGradient1';
     if (hours >= 7) return 'sleepGradient2';
@@ -37,7 +35,6 @@ const SleepChart = ({ data }: SleepChartProps) => {
     return 'sleepGradient4';
   };
 
-  // Get French label for sleep quality
   const getSleepLabel = (hours: number) => {
     if (hours >= 8) return 'Excellent';
     if (hours >= 7) return 'Bon';
@@ -45,12 +42,11 @@ const SleepChart = ({ data }: SleepChartProps) => {
     return 'Insuffisant';
   };
 
-  // Only show data that has sleep values
   const validData = data.filter(item => item.sleep_hours !== null && item.sleep_hours !== undefined);
 
   if (validData.length === 0) {
     return (
-      <div className="h-[300px] w-full flex items-center justify-center text-gray-500">
+      <div className="h-[300px] w-full flex items-center justify-center text-muted-foreground">
         <p>Aucune donnée de sommeil disponible</p>
       </div>
     );
@@ -78,29 +74,29 @@ const SleepChart = ({ data }: SleepChartProps) => {
               <stop offset="95%" stopColor="#ef4444" stopOpacity={0.3}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" strokeWidth={1} />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
           <XAxis 
             dataKey="date" 
             tickFormatter={(dateStr) => {
               const date = parseISO(dateStr);
               return format(date, 'EEE', { locale: fr });
             }}
-            className="text-gray-600"
             fontSize={12}
             tickLine={false}
             axisLine={false}
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
           />
           <YAxis 
-            className="text-gray-600"
             domain={[0, 10]}
             fontSize={12}
             tickLine={false}
             axisLine={false}
             tickFormatter={(value) => `${value}h`}
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
           />
           <ChartTooltip 
             content={<ChartTooltipContent 
-              className="bg-white/95 backdrop-blur-sm border-gray-200 shadow-xl"
+              className="bg-card/95 backdrop-blur-xl border-border shadow-xl"
               formatter={(value) => [`${Math.round(value as number)}h (${getSleepLabel(value as number)})`, 'Sommeil']}
             />}
             labelFormatter={(value) => {

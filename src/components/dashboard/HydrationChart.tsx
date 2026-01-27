@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
@@ -22,18 +21,16 @@ const HydrationChart = ({ data }: HydrationChartProps) => {
     },
   };
 
-  // Get the color for each hydration level (reversed)
   const getHydrationColor = (value: number) => {
     switch (value) {
-      case 1: return '#3b82f6'; // blue for "Bien"
-      case 2: return '#22c55e'; // green for "Ok"
-      case 3: return '#f97316'; // orange for "Moyen"
-      case 4: return '#ef4444'; // red for "Mauvais"
-      default: return '#9ca3af'; // gray
+      case 1: return '#3b82f6';
+      case 2: return '#22c55e';
+      case 3: return '#f97316';
+      case 4: return '#ef4444';
+      default: return '#9ca3af';
     }
   };
 
-  // Get gradient ID for each hydration level
   const getGradientId = (value: number) => {
     switch (value) {
       case 1: return 'hydrationGradient1';
@@ -44,7 +41,6 @@ const HydrationChart = ({ data }: HydrationChartProps) => {
     }
   };
 
-  // Get French label for hydration level
   const getHydrationLabel = (value: number) => {
     switch (value) {
       case 1: return 'Bien';
@@ -55,12 +51,11 @@ const HydrationChart = ({ data }: HydrationChartProps) => {
     }
   };
 
-  // Only show data that has hydration values
   const validData = data.filter(item => item.hydration !== null && item.hydration !== undefined);
 
   if (validData.length === 0) {
     return (
-      <div className="h-[300px] w-full flex items-center justify-center text-gray-500">
+      <div className="h-[300px] w-full flex items-center justify-center text-muted-foreground">
         <p>Aucune donnée d'hydratation disponible</p>
       </div>
     );
@@ -92,28 +87,28 @@ const HydrationChart = ({ data }: HydrationChartProps) => {
               <stop offset="95%" stopColor="#9ca3af" stopOpacity={0.3}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" strokeWidth={1} />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
           <XAxis 
             dataKey="date" 
             tickFormatter={(dateStr) => {
               const date = parseISO(dateStr);
               return format(date, 'EEE', { locale: fr });
             }}
-            className="text-gray-600"
             fontSize={12}
             tickLine={false}
             axisLine={false}
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
           />
           <YAxis 
-            className="text-gray-600"
             domain={[0, 4]}
             fontSize={12}
             tickLine={false}
             axisLine={false}
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
           />
           <ChartTooltip 
             content={<ChartTooltipContent 
-              className="bg-white/95 backdrop-blur-sm border-gray-200 shadow-xl"
+              className="bg-card/95 backdrop-blur-xl border-border shadow-xl"
               formatter={(value) => [getHydrationLabel(value as number), 'Hydratation']}
             />}
             labelFormatter={(value) => {
