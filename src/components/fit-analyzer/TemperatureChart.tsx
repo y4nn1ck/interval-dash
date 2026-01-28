@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Thermometer } from 'lucide-react';
 
 interface TemperatureDataPoint {
@@ -173,26 +173,51 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
       <CardContent className="pt-6">
         <div className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+            <ComposedChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
               <defs>
-                <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#eab308" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#eab308" stopOpacity={0}/>
+                <linearGradient id="tempGradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#eab308" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#eab308" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#eab308" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="coreTempGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                <linearGradient id="coreTempGradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f97316" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#f97316" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#f97316" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="skinTempGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                <linearGradient id="skinTempGradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#06b6d4" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#06b6d4" stopOpacity={0}/>
                 </linearGradient>
+                <linearGradient id="tempStroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#fde047"/>
+                  <stop offset="50%" stopColor="#eab308"/>
+                  <stop offset="100%" stopColor="#ca8a04"/>
+                </linearGradient>
+                <linearGradient id="coreTempStroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#fb923c"/>
+                  <stop offset="50%" stopColor="#f97316"/>
+                  <stop offset="100%" stopColor="#ea580c"/>
+                </linearGradient>
+                <linearGradient id="skinTempStroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#22d3ee"/>
+                  <stop offset="50%" stopColor="#06b6d4"/>
+                  <stop offset="100%" stopColor="#0891b2"/>
+                </linearGradient>
+                <filter id="glowTemp">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
               <CartesianGrid 
                 strokeDasharray="3 3" 
-                stroke="hsl(217 33% 22%)" 
+                stroke="hsl(var(--border))" 
                 strokeWidth={0.5}
-                opacity={0.5}
+                opacity={0.3}
               />
               <XAxis 
                 dataKey="time" 
@@ -202,11 +227,11 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                 domain={['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
-                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
-                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
                 interval={0}
                 height={40}
-                tick={{ fill: 'hsl(215 20% 65%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <YAxis 
                 fontSize={11}
@@ -214,17 +239,17 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                   value: 'Température (°C)', 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: 'hsl(215 20% 65%)', fontSize: '11px' }
+                  style: { textAnchor: 'middle', fill: 'hsl(var(--muted-foreground))', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
-                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
                 domain={yDomain}
                 tickFormatter={(value) => value.toFixed(1)}
-                tick={{ fill: 'hsl(215 20% 65%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
-                cursor={{ stroke: 'hsl(262 83% 58%)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
                 wrapperStyle={{ 
@@ -233,54 +258,93 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                   fontWeight: '500'
                 }}
                 iconType="line"
-                formatter={(value) => <span style={{ color: 'hsl(215 20% 65%)' }}>{value}</span>}
+                formatter={(value) => <span className="text-muted-foreground">{value}</span>}
               />
               
-              {/* Temperature Line */}
+              {/* Temperature Area + Line */}
               {hasTemperature && showTemperature && (
-                <Line 
-                  type="monotone" 
-                  dataKey="temperature" 
-                  stroke="#eab308"
-                  strokeWidth={2}
-                  dot={false}
-                  name="Température"
-                  connectNulls={false}
-                  fill="url(#tempGradient)"
-                  activeDot={{ r: 4, stroke: "#eab308", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
-                />
+                <>
+                  <Area 
+                    type="natural" 
+                    dataKey="temperature" 
+                    stroke="none"
+                    fill="url(#tempGradientFill)"
+                    connectNulls={false}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                  />
+                  <Line 
+                    type="natural" 
+                    dataKey="temperature" 
+                    stroke="url(#tempStroke)"
+                    strokeWidth={2.5}
+                    dot={false}
+                    name="Température"
+                    connectNulls={false}
+                    filter="url(#glowTemp)"
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    activeDot={{ r: 6, stroke: "#eab308", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #eab308)' }}
+                  />
+                </>
               )}
               
-              {/* Core Temperature Line */}
+              {/* Core Temperature Area + Line */}
               {hasCoreTemp && showCoreTemp && (
-                <Line 
-                  type="monotone" 
-                  dataKey="core_temperature" 
-                  stroke="#f97316"
-                  strokeWidth={2}
-                  dot={false}
-                  name="Température Core"
-                  connectNulls={false}
-                  fill="url(#coreTempGradient)"
-                  activeDot={{ r: 4, stroke: "#f97316", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
-                />
+                <>
+                  <Area 
+                    type="natural" 
+                    dataKey="core_temperature" 
+                    stroke="none"
+                    fill="url(#coreTempGradientFill)"
+                    connectNulls={false}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                  />
+                  <Line 
+                    type="natural" 
+                    dataKey="core_temperature" 
+                    stroke="url(#coreTempStroke)"
+                    strokeWidth={2.5}
+                    dot={false}
+                    name="Température Core"
+                    connectNulls={false}
+                    filter="url(#glowTemp)"
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    activeDot={{ r: 6, stroke: "#f97316", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #f97316)' }}
+                  />
+                </>
               )}
               
-              {/* Skin Temperature Line */}
+              {/* Skin Temperature Area + Line */}
               {hasSkinTemp && showSkinTemp && (
-                <Line 
-                  type="monotone" 
-                  dataKey="skin_temperature" 
-                  stroke="#06b6d4"
-                  strokeWidth={2}
-                  dot={false}
-                  name="Température Peau"
-                  connectNulls={false}
-                  fill="url(#skinTempGradient)"
-                  activeDot={{ r: 4, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
-                />
+                <>
+                  <Area 
+                    type="natural" 
+                    dataKey="skin_temperature" 
+                    stroke="none"
+                    fill="url(#skinTempGradientFill)"
+                    connectNulls={false}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                  />
+                  <Line 
+                    type="natural" 
+                    dataKey="skin_temperature" 
+                    stroke="url(#skinTempStroke)"
+                    strokeWidth={2.5}
+                    dot={false}
+                    name="Température Peau"
+                    connectNulls={false}
+                    filter="url(#glowTemp)"
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    activeDot={{ r: 6, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #06b6d4)' }}
+                  />
+                </>
               )}
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

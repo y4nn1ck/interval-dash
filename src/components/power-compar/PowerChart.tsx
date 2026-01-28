@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Zap } from 'lucide-react';
 
 interface ChartDataPoint {
@@ -119,22 +119,41 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
       <CardContent className="pt-6">
         <div className="h-[450px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+            <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
               <defs>
-                <linearGradient id="powerGradient1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                <linearGradient id="power1GradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#10b981" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#10b981" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="powerGradient2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+                <linearGradient id="power2GradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#06b6d4" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#06b6d4" stopOpacity={0}/>
                 </linearGradient>
+                <linearGradient id="power1Stroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#34d399"/>
+                  <stop offset="50%" stopColor="#10b981"/>
+                  <stop offset="100%" stopColor="#059669"/>
+                </linearGradient>
+                <linearGradient id="power2Stroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#22d3ee"/>
+                  <stop offset="50%" stopColor="#06b6d4"/>
+                  <stop offset="100%" stopColor="#0891b2"/>
+                </linearGradient>
+                <filter id="glowPower">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
               <CartesianGrid 
                 strokeDasharray="3 3" 
-                stroke="hsl(217 33% 22%)" 
+                stroke="hsl(var(--border))" 
                 strokeWidth={0.5}
-                opacity={0.5}
+                opacity={0.3}
               />
               <XAxis 
                 dataKey="time" 
@@ -144,13 +163,13 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
                 domain={['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
-                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
-                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
                 interval={0}
                 angle={0}
                 textAnchor="middle"
                 height={40}
-                tick={{ fill: 'hsl(215 20% 65%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <YAxis 
                 fontSize={11}
@@ -158,17 +177,17 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
                   value: 'Puissance (W)', 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: 'hsl(215 20% 65%)', fontSize: '11px' }
+                  style: { textAnchor: 'middle', fill: 'hsl(var(--muted-foreground))', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
-                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
                 domain={powerDomain}
                 tickFormatter={(value) => Math.round(value).toString()}
-                tick={{ fill: 'hsl(215 20% 65%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
-                cursor={{ stroke: 'hsl(262 83% 58%)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
                 wrapperStyle={{ 
@@ -177,31 +196,57 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
                   fontWeight: '500'
                 }}
                 iconType="line"
-                formatter={(value) => <span style={{ color: 'hsl(215 20% 65%)' }}>{value}</span>}
+                formatter={(value) => <span className="text-muted-foreground">{value}</span>}
+              />
+              
+              {/* Power 1 Area + Line */}
+              <Area 
+                type="natural" 
+                dataKey="power1" 
+                stroke="none"
+                fill="url(#power1GradientFill)"
+                connectNulls={false}
+                animationDuration={1000}
+                animationEasing="ease-out"
               />
               <Line 
-                type="monotone" 
+                type="natural" 
                 dataKey="power1" 
-                stroke="#10b981"
-                strokeWidth={2}
+                stroke="url(#power1Stroke)"
+                strokeWidth={2.5}
                 dot={false}
                 name={file1Name}
                 connectNulls={false}
-                fill="url(#powerGradient1)"
-                activeDot={{ r: 4, stroke: "#10b981", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
+                filter="url(#glowPower)"
+                animationDuration={1000}
+                animationEasing="ease-out"
+                activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #10b981)' }}
+              />
+              
+              {/* Power 2 Area + Line */}
+              <Area 
+                type="natural" 
+                dataKey="power2" 
+                stroke="none"
+                fill="url(#power2GradientFill)"
+                connectNulls={false}
+                animationDuration={1000}
+                animationEasing="ease-out"
               />
               <Line 
-                type="monotone" 
+                type="natural" 
                 dataKey="power2" 
-                stroke="#06b6d4"
-                strokeWidth={2}
+                stroke="url(#power2Stroke)"
+                strokeWidth={2.5}
                 dot={false}
                 name={file2Name}
                 connectNulls={false}
-                fill="url(#powerGradient2)"
-                activeDot={{ r: 4, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
+                filter="url(#glowPower)"
+                animationDuration={1000}
+                animationEasing="ease-out"
+                activeDot={{ r: 6, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #06b6d4)' }}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

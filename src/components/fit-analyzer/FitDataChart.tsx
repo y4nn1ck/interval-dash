@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { ZoomIn, ZoomOut } from 'lucide-react';
 
 interface ChartDataPoint {
@@ -197,26 +196,51 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
       <CardContent className="pt-6">
         <div className="h-[500px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+            <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
               <defs>
-                <linearGradient id="powerGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#f97316" stopOpacity={0}/>
+                <linearGradient id="powerGradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f97316" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#f97316" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#f97316" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="cadenceGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                <linearGradient id="cadenceGradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#a855f7" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#a855f7" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#a855f7" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="heartRateGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                <linearGradient id="heartRateGradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ef4444" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#ef4444" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#ef4444" stopOpacity={0}/>
                 </linearGradient>
+                <linearGradient id="powerStroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#fb923c"/>
+                  <stop offset="50%" stopColor="#f97316"/>
+                  <stop offset="100%" stopColor="#ea580c"/>
+                </linearGradient>
+                <linearGradient id="cadenceStroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#c084fc"/>
+                  <stop offset="50%" stopColor="#a855f7"/>
+                  <stop offset="100%" stopColor="#9333ea"/>
+                </linearGradient>
+                <linearGradient id="heartRateStroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#f87171"/>
+                  <stop offset="50%" stopColor="#ef4444"/>
+                  <stop offset="100%" stopColor="#dc2626"/>
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
               <CartesianGrid 
                 strokeDasharray="3 3" 
-                stroke="hsl(217 33% 22%)" 
+                stroke="hsl(var(--border))" 
                 strokeWidth={0.5}
-                opacity={0.5}
+                opacity={0.3}
               />
               <XAxis 
                 dataKey="time" 
@@ -226,13 +250,13 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                 domain={zoomDomain || ['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
-                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
-                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
                 interval={0}
                 angle={0}
                 textAnchor="middle"
                 height={40}
-                tick={{ fill: 'hsl(215 20% 65%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <YAxis 
                 yAxisId="left"
@@ -241,13 +265,13 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                   value: 'Puissance (W) / Cadence (RPM)', 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: 'hsl(215 20% 65%)', fontSize: '11px' }
+                  style: { textAnchor: 'middle', fill: 'hsl(var(--muted-foreground))', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
-                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
                 domain={[0, Math.max(...powerDomain, ...cadenceDomain)]}
                 tickFormatter={(value) => Math.round(value).toString()}
-                tick={{ fill: 'hsl(215 20% 65%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <YAxis 
                 yAxisId="right"
@@ -257,17 +281,17 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                   value: 'FC (BPM)', 
                   angle: 90, 
                   position: 'insideRight',
-                  style: { textAnchor: 'middle', fill: 'hsl(215 20% 65%)', fontSize: '11px' }
+                  style: { textAnchor: 'middle', fill: 'hsl(var(--muted-foreground))', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
-                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
                 domain={heartRateDomain}
                 tickFormatter={(value) => Math.round(value).toString()}
-                tick={{ fill: 'hsl(215 20% 65%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
-                cursor={{ stroke: 'hsl(262 83% 58%)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
                 wrapperStyle={{ 
@@ -276,72 +300,117 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                   fontWeight: '500'
                 }}
                 iconType="line"
-                formatter={(value) => <span style={{ color: 'hsl(215 20% 65%)' }}>{value}</span>}
+                formatter={(value) => <span className="text-muted-foreground">{value}</span>}
               />
               
-              {/* Power Line */}
+              {/* Power Area + Line */}
               {showPower && (
-                <Line 
-                  yAxisId="left"
-                  type="monotone" 
-                  dataKey="power" 
-                  stroke="#f97316"
-                  strokeWidth={2}
-                  dot={false}
-                  name="Puissance (W)"
-                  connectNulls={false}
-                  fill="url(#powerGradient)"
-                  activeDot={{ 
-                    r: 4, 
-                    stroke: "#f97316", 
-                    strokeWidth: 2, 
-                    fill: '#fff'
-                  }}
-                />
+                <>
+                  <Area 
+                    yAxisId="left"
+                    type="natural" 
+                    dataKey="power" 
+                    stroke="none"
+                    fill="url(#powerGradientFill)"
+                    connectNulls={false}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                  />
+                  <Line 
+                    yAxisId="left"
+                    type="natural" 
+                    dataKey="power" 
+                    stroke="url(#powerStroke)"
+                    strokeWidth={2.5}
+                    dot={false}
+                    name="Puissance (W)"
+                    connectNulls={false}
+                    filter="url(#glow)"
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    activeDot={{ 
+                      r: 6, 
+                      stroke: "#f97316", 
+                      strokeWidth: 2, 
+                      fill: 'hsl(var(--card))',
+                      filter: 'drop-shadow(0 0 4px #f97316)'
+                    }}
+                  />
+                </>
               )}
               
-              {/* Cadence Line */}
+              {/* Cadence Area + Line */}
               {showCadence && (
-                <Line 
-                  yAxisId="left"
-                  type="monotone" 
-                  dataKey="cadence" 
-                  stroke="#a855f7"
-                  strokeWidth={2}
-                  dot={false}
-                  name="Cadence (RPM)"
-                  connectNulls={false}
-                  fill="url(#cadenceGradient)"
-                  activeDot={{ 
-                    r: 4, 
-                    stroke: "#a855f7", 
-                    strokeWidth: 2, 
-                    fill: '#fff'
-                  }}
-                />
+                <>
+                  <Area 
+                    yAxisId="left"
+                    type="natural" 
+                    dataKey="cadence" 
+                    stroke="none"
+                    fill="url(#cadenceGradientFill)"
+                    connectNulls={false}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                  />
+                  <Line 
+                    yAxisId="left"
+                    type="natural" 
+                    dataKey="cadence" 
+                    stroke="url(#cadenceStroke)"
+                    strokeWidth={2.5}
+                    dot={false}
+                    name="Cadence (RPM)"
+                    connectNulls={false}
+                    filter="url(#glow)"
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    activeDot={{ 
+                      r: 6, 
+                      stroke: "#a855f7", 
+                      strokeWidth: 2, 
+                      fill: 'hsl(var(--card))',
+                      filter: 'drop-shadow(0 0 4px #a855f7)'
+                    }}
+                  />
+                </>
               )}
               
-              {/* Heart Rate Line */}
+              {/* Heart Rate Area + Line */}
               {showHeartRate && (
-                <Line 
-                  yAxisId="right"
-                  type="monotone" 
-                  dataKey="heart_rate" 
-                  stroke="#ef4444"
-                  strokeWidth={2}
-                  dot={false}
-                  name="Fréquence Cardiaque (BPM)"
-                  connectNulls={false}
-                  fill="url(#heartRateGradient)"
-                  activeDot={{ 
-                    r: 4, 
-                    stroke: "#ef4444", 
-                    strokeWidth: 2, 
-                    fill: '#fff'
-                  }}
-                />
+                <>
+                  <Area 
+                    yAxisId="right"
+                    type="natural" 
+                    dataKey="heart_rate" 
+                    stroke="none"
+                    fill="url(#heartRateGradientFill)"
+                    connectNulls={false}
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                  />
+                  <Line 
+                    yAxisId="right"
+                    type="natural" 
+                    dataKey="heart_rate" 
+                    stroke="url(#heartRateStroke)"
+                    strokeWidth={2.5}
+                    dot={false}
+                    name="Fréquence Cardiaque (BPM)"
+                    connectNulls={false}
+                    filter="url(#glow)"
+                    animationDuration={1000}
+                    animationEasing="ease-out"
+                    activeDot={{ 
+                      r: 6, 
+                      stroke: "#ef4444", 
+                      strokeWidth: 2, 
+                      fill: 'hsl(var(--card))',
+                      filter: 'drop-shadow(0 0 4px #ef4444)'
+                    }}
+                  />
+                </>
               )}
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
