@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { RotateCcw } from 'lucide-react';
 
 interface ChartDataPoint {
@@ -119,22 +119,41 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
       <CardContent className="pt-6">
         <div className="h-[450px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
+            <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 40 }}>
               <defs>
-                <linearGradient id="rpmGradient1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                <linearGradient id="rpm1GradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#f59e0b" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#f59e0b" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="rpmGradient2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#a855f7" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                <linearGradient id="rpm2GradientFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#a855f7" stopOpacity={0.4}/>
+                  <stop offset="50%" stopColor="#a855f7" stopOpacity={0.15}/>
+                  <stop offset="100%" stopColor="#a855f7" stopOpacity={0}/>
                 </linearGradient>
+                <linearGradient id="rpm1Stroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#fbbf24"/>
+                  <stop offset="50%" stopColor="#f59e0b"/>
+                  <stop offset="100%" stopColor="#d97706"/>
+                </linearGradient>
+                <linearGradient id="rpm2Stroke" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#c084fc"/>
+                  <stop offset="50%" stopColor="#a855f7"/>
+                  <stop offset="100%" stopColor="#9333ea"/>
+                </linearGradient>
+                <filter id="glowRpm">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
               <CartesianGrid 
                 strokeDasharray="3 3" 
-                stroke="hsl(217 33% 22%)" 
+                stroke="hsl(var(--border))" 
                 strokeWidth={0.5}
-                opacity={0.5}
+                opacity={0.3}
               />
               <XAxis 
                 dataKey="time" 
@@ -144,13 +163,13 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                 domain={['dataMin', 'dataMax']}
                 type="number"
                 scale="linear"
-                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
-                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
                 interval={0}
                 angle={0}
                 textAnchor="middle"
                 height={40}
-                tick={{ fill: 'hsl(215 20% 65%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <YAxis 
                 fontSize={11}
@@ -158,17 +177,17 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                   value: 'RPM', 
                   angle: -90, 
                   position: 'insideLeft',
-                  style: { textAnchor: 'middle', fill: 'hsl(215 20% 65%)', fontSize: '11px' }
+                  style: { textAnchor: 'middle', fill: 'hsl(var(--muted-foreground))', fontSize: '11px' }
                 }}
-                tickLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
-                axisLine={{ stroke: 'hsl(215 20% 40%)', strokeWidth: 0.5 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 0.5 }}
                 domain={rpmDomain}
                 tickFormatter={(value) => Math.round(value).toString()}
-                tick={{ fill: 'hsl(215 20% 65%)' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
               />
               <Tooltip 
                 content={<CustomTooltip />}
-                cursor={{ stroke: 'hsl(262 83% 58%)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }}
               />
               <Legend 
                 wrapperStyle={{ 
@@ -177,31 +196,57 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                   fontWeight: '500'
                 }}
                 iconType="line"
-                formatter={(value) => <span style={{ color: 'hsl(215 20% 65%)' }}>{value}</span>}
+                formatter={(value) => <span className="text-muted-foreground">{value}</span>}
+              />
+              
+              {/* RPM 1 Area + Line */}
+              <Area 
+                type="natural" 
+                dataKey="rpm1" 
+                stroke="none"
+                fill="url(#rpm1GradientFill)"
+                connectNulls={false}
+                animationDuration={1000}
+                animationEasing="ease-out"
               />
               <Line 
-                type="monotone" 
+                type="natural" 
                 dataKey="rpm1" 
-                stroke="#f59e0b"
-                strokeWidth={2}
+                stroke="url(#rpm1Stroke)"
+                strokeWidth={2.5}
                 dot={false}
                 name={file1Name}
                 connectNulls={false}
-                fill="url(#rpmGradient1)"
-                activeDot={{ r: 4, stroke: "#f59e0b", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
+                filter="url(#glowRpm)"
+                animationDuration={1000}
+                animationEasing="ease-out"
+                activeDot={{ r: 6, stroke: "#f59e0b", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #f59e0b)' }}
+              />
+              
+              {/* RPM 2 Area + Line */}
+              <Area 
+                type="natural" 
+                dataKey="rpm2" 
+                stroke="none"
+                fill="url(#rpm2GradientFill)"
+                connectNulls={false}
+                animationDuration={1000}
+                animationEasing="ease-out"
               />
               <Line 
-                type="monotone" 
+                type="natural" 
                 dataKey="rpm2" 
-                stroke="#a855f7"
-                strokeWidth={2}
+                stroke="url(#rpm2Stroke)"
+                strokeWidth={2.5}
                 dot={false}
                 name={file2Name}
                 connectNulls={false}
-                fill="url(#rpmGradient2)"
-                activeDot={{ r: 4, stroke: "#a855f7", strokeWidth: 2, fill: 'hsl(222 47% 13%)' }}
+                filter="url(#glowRpm)"
+                animationDuration={1000}
+                animationEasing="ease-out"
+                activeDot={{ r: 6, stroke: "#a855f7", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #a855f7)' }}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </CardContent>
