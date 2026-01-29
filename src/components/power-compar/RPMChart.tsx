@@ -142,7 +142,7 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                   <stop offset="100%" stopColor="#9333ea"/>
                 </linearGradient>
                 <filter id="glowRpm">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
                   <feMerge>
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
@@ -201,50 +201,48 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
               
               {/* RPM 1 Area + Line */}
               <Area 
-                type="natural" 
+                type="monotone" 
                 dataKey="rpm1" 
                 stroke="none"
                 fill="url(#rpm1GradientFill)"
                 connectNulls={false}
-                animationDuration={1000}
+                animationDuration={800}
                 animationEasing="ease-out"
               />
               <Line 
-                type="natural" 
+                type="monotone" 
                 dataKey="rpm1" 
                 stroke="url(#rpm1Stroke)"
-                strokeWidth={2.5}
+                strokeWidth={1.5}
                 dot={false}
                 name={file1Name}
                 connectNulls={false}
-                filter="url(#glowRpm)"
-                animationDuration={1000}
+                animationDuration={800}
                 animationEasing="ease-out"
-                activeDot={{ r: 6, stroke: "#f59e0b", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #f59e0b)' }}
+                activeDot={{ r: 5, stroke: "#f59e0b", strokeWidth: 2, fill: 'hsl(var(--card))' }}
               />
               
               {/* RPM 2 Area + Line */}
               <Area 
-                type="natural" 
+                type="monotone" 
                 dataKey="rpm2" 
                 stroke="none"
                 fill="url(#rpm2GradientFill)"
                 connectNulls={false}
-                animationDuration={1000}
+                animationDuration={800}
                 animationEasing="ease-out"
               />
               <Line 
-                type="natural" 
+                type="monotone" 
                 dataKey="rpm2" 
                 stroke="url(#rpm2Stroke)"
-                strokeWidth={2.5}
+                strokeWidth={1.5}
                 dot={false}
                 name={file2Name}
                 connectNulls={false}
-                filter="url(#glowRpm)"
-                animationDuration={1000}
+                animationDuration={800}
                 animationEasing="ease-out"
-                activeDot={{ r: 6, stroke: "#a855f7", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #a855f7)' }}
+                activeDot={{ r: 5, stroke: "#a855f7", strokeWidth: 2, fill: 'hsl(var(--card))' }}
               />
             </ComposedChart>
           </ResponsiveContainer>

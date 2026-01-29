@@ -206,7 +206,7 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                   <stop offset="100%" stopColor="#0891b2"/>
                 </linearGradient>
                 <filter id="glowTemp">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
                   <feMerge>
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
@@ -265,26 +265,25 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
               {hasTemperature && showTemperature && (
                 <>
                   <Area 
-                    type="natural" 
+                    type="monotone" 
                     dataKey="temperature" 
                     stroke="none"
                     fill="url(#tempGradientFill)"
                     connectNulls={false}
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
                   />
                   <Line 
-                    type="natural" 
+                    type="monotone" 
                     dataKey="temperature" 
                     stroke="url(#tempStroke)"
-                    strokeWidth={2.5}
+                    strokeWidth={1.5}
                     dot={false}
                     name="Température"
                     connectNulls={false}
-                    filter="url(#glowTemp)"
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
-                    activeDot={{ r: 6, stroke: "#eab308", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #eab308)' }}
+                    activeDot={{ r: 5, stroke: "#eab308", strokeWidth: 2, fill: 'hsl(var(--card))' }}
                   />
                 </>
               )}
@@ -293,26 +292,25 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
               {hasCoreTemp && showCoreTemp && (
                 <>
                   <Area 
-                    type="natural" 
+                    type="monotone" 
                     dataKey="core_temperature" 
                     stroke="none"
                     fill="url(#coreTempGradientFill)"
                     connectNulls={false}
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
                   />
                   <Line 
-                    type="natural" 
+                    type="monotone" 
                     dataKey="core_temperature" 
                     stroke="url(#coreTempStroke)"
-                    strokeWidth={2.5}
+                    strokeWidth={1.5}
                     dot={false}
                     name="Température Core"
                     connectNulls={false}
-                    filter="url(#glowTemp)"
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
-                    activeDot={{ r: 6, stroke: "#f97316", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #f97316)' }}
+                    activeDot={{ r: 5, stroke: "#f97316", strokeWidth: 2, fill: 'hsl(var(--card))' }}
                   />
                 </>
               )}
@@ -321,26 +319,25 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
               {hasSkinTemp && showSkinTemp && (
                 <>
                   <Area 
-                    type="natural" 
+                    type="monotone" 
                     dataKey="skin_temperature" 
                     stroke="none"
                     fill="url(#skinTempGradientFill)"
                     connectNulls={false}
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
                   />
                   <Line 
-                    type="natural" 
+                    type="monotone" 
                     dataKey="skin_temperature" 
                     stroke="url(#skinTempStroke)"
-                    strokeWidth={2.5}
+                    strokeWidth={1.5}
                     dot={false}
                     name="Température Peau"
                     connectNulls={false}
-                    filter="url(#glowTemp)"
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
-                    activeDot={{ r: 6, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #06b6d4)' }}
+                    activeDot={{ r: 5, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(var(--card))' }}
                   />
                 </>
               )}
