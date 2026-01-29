@@ -142,7 +142,7 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
                   <stop offset="100%" stopColor="#0891b2"/>
                 </linearGradient>
                 <filter id="glowPower">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
                   <feMerge>
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
@@ -201,50 +201,48 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
               
               {/* Power 1 Area + Line */}
               <Area 
-                type="natural" 
+                type="monotone" 
                 dataKey="power1" 
                 stroke="none"
                 fill="url(#power1GradientFill)"
                 connectNulls={false}
-                animationDuration={1000}
+                animationDuration={800}
                 animationEasing="ease-out"
               />
               <Line 
-                type="natural" 
+                type="monotone" 
                 dataKey="power1" 
                 stroke="url(#power1Stroke)"
-                strokeWidth={2.5}
+                strokeWidth={1.5}
                 dot={false}
                 name={file1Name}
                 connectNulls={false}
-                filter="url(#glowPower)"
-                animationDuration={1000}
+                animationDuration={800}
                 animationEasing="ease-out"
-                activeDot={{ r: 6, stroke: "#10b981", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #10b981)' }}
+                activeDot={{ r: 5, stroke: "#10b981", strokeWidth: 2, fill: 'hsl(var(--card))' }}
               />
               
               {/* Power 2 Area + Line */}
               <Area 
-                type="natural" 
+                type="monotone" 
                 dataKey="power2" 
                 stroke="none"
                 fill="url(#power2GradientFill)"
                 connectNulls={false}
-                animationDuration={1000}
+                animationDuration={800}
                 animationEasing="ease-out"
               />
               <Line 
-                type="natural" 
+                type="monotone" 
                 dataKey="power2" 
                 stroke="url(#power2Stroke)"
-                strokeWidth={2.5}
+                strokeWidth={1.5}
                 dot={false}
                 name={file2Name}
                 connectNulls={false}
-                filter="url(#glowPower)"
-                animationDuration={1000}
+                animationDuration={800}
                 animationEasing="ease-out"
-                activeDot={{ r: 6, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(var(--card))', filter: 'drop-shadow(0 0 4px #06b6d4)' }}
+                activeDot={{ r: 5, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(var(--card))' }}
               />
             </ComposedChart>
           </ResponsiveContainer>

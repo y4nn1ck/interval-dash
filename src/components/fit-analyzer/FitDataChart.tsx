@@ -229,7 +229,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                   <stop offset="100%" stopColor="#dc2626"/>
                 </linearGradient>
                 <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
                   <feMerge>
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
@@ -308,32 +308,30 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                 <>
                   <Area 
                     yAxisId="left"
-                    type="natural" 
+                    type="monotone" 
                     dataKey="power" 
                     stroke="none"
                     fill="url(#powerGradientFill)"
                     connectNulls={false}
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
                   />
                   <Line 
                     yAxisId="left"
-                    type="natural" 
+                    type="monotone" 
                     dataKey="power" 
                     stroke="url(#powerStroke)"
-                    strokeWidth={2.5}
+                    strokeWidth={1.5}
                     dot={false}
                     name="Puissance (W)"
                     connectNulls={false}
-                    filter="url(#glow)"
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
                     activeDot={{ 
-                      r: 6, 
+                      r: 5, 
                       stroke: "#f97316", 
                       strokeWidth: 2, 
-                      fill: 'hsl(var(--card))',
-                      filter: 'drop-shadow(0 0 4px #f97316)'
+                      fill: 'hsl(var(--card))'
                     }}
                   />
                 </>
@@ -344,32 +342,30 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                 <>
                   <Area 
                     yAxisId="left"
-                    type="natural" 
+                    type="monotone" 
                     dataKey="cadence" 
                     stroke="none"
                     fill="url(#cadenceGradientFill)"
                     connectNulls={false}
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
                   />
                   <Line 
                     yAxisId="left"
-                    type="natural" 
+                    type="monotone" 
                     dataKey="cadence" 
                     stroke="url(#cadenceStroke)"
-                    strokeWidth={2.5}
+                    strokeWidth={1.5}
                     dot={false}
                     name="Cadence (RPM)"
                     connectNulls={false}
-                    filter="url(#glow)"
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
                     activeDot={{ 
-                      r: 6, 
+                      r: 5, 
                       stroke: "#a855f7", 
                       strokeWidth: 2, 
-                      fill: 'hsl(var(--card))',
-                      filter: 'drop-shadow(0 0 4px #a855f7)'
+                      fill: 'hsl(var(--card))'
                     }}
                   />
                 </>
@@ -380,32 +376,30 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                 <>
                   <Area 
                     yAxisId="right"
-                    type="natural" 
+                    type="monotone" 
                     dataKey="heart_rate" 
                     stroke="none"
                     fill="url(#heartRateGradientFill)"
                     connectNulls={false}
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
                   />
                   <Line 
                     yAxisId="right"
-                    type="natural" 
+                    type="monotone" 
                     dataKey="heart_rate" 
                     stroke="url(#heartRateStroke)"
-                    strokeWidth={2.5}
+                    strokeWidth={1.5}
                     dot={false}
                     name="Fréquence Cardiaque (BPM)"
                     connectNulls={false}
-                    filter="url(#glow)"
-                    animationDuration={1000}
+                    animationDuration={800}
                     animationEasing="ease-out"
                     activeDot={{ 
-                      r: 6, 
+                      r: 5, 
                       stroke: "#ef4444", 
                       strokeWidth: 2, 
-                      fill: 'hsl(var(--card))',
-                      filter: 'drop-shadow(0 0 4px #ef4444)'
+                      fill: 'hsl(var(--card))'
                     }}
                   />
                 </>
