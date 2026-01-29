@@ -201,7 +201,7 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
               
               {/* RPM 1 Area + Line */}
               <Area 
-                type="monotone" 
+                type="basis" 
                 dataKey="rpm1" 
                 stroke="none"
                 fill="url(#rpm1GradientFill)"
@@ -210,7 +210,7 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                 animationEasing="ease-out"
               />
               <Line 
-                type="monotone" 
+                type="basis" 
                 dataKey="rpm1" 
                 stroke="url(#rpm1Stroke)"
                 strokeWidth={1.5}
@@ -224,7 +224,7 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
               
               {/* RPM 2 Area + Line */}
               <Area 
-                type="monotone" 
+                type="basis" 
                 dataKey="rpm2" 
                 stroke="none"
                 fill="url(#rpm2GradientFill)"
@@ -233,7 +233,7 @@ const RPMChart: React.FC<RPMChartProps> = ({ chartData, file1Name, file2Name }) 
                 animationEasing="ease-out"
               />
               <Line 
-                type="monotone" 
+                type="basis" 
                 dataKey="rpm2" 
                 stroke="url(#rpm2Stroke)"
                 strokeWidth={1.5}
