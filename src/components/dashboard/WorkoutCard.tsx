@@ -14,9 +14,9 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
   const conformityScore = Math.round(workout.compliance || 85);
 
   return (
-    <div className="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+    <div className="p-4 bg-secondary/50 rounded-lg hover:bg-secondary/70 transition-colors border border-border/50">
       <div className="flex justify-between items-start mb-3">
-        <h3 className="font-semibold text-gray-900">{workout.name || workout.type}</h3>
+        <h3 className="font-semibold text-foreground">{workout.name || workout.type}</h3>
         <div className="flex gap-2">
           <Badge className={getConformityColor(conformityScore)}>
             <CheckCircle className="h-3 w-3 mr-1" />
@@ -28,34 +28,34 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
             </Badge>
           )}
           {workout.icu_training_load && (
-            <div className="flex items-center gap-1 bg-white/50 px-2 py-1 rounded-full">
-              <Zap className="h-3 w-3 text-blue-500" />
-              <span className="text-xs font-medium">{workout.icu_training_load}</span>
+            <div className="flex items-center gap-1 bg-primary/10 px-2 py-1 rounded-full">
+              <Zap className="h-3 w-3 text-primary" />
+              <span className="text-xs font-medium text-foreground">{workout.icu_training_load}</span>
             </div>
           )}
         </div>
       </div>
       
-      <p className="text-sm text-gray-600 mb-3">Aujourd'hui</p>
+      <p className="text-sm text-muted-foreground mb-3">Aujourd'hui</p>
       
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm text-foreground">
         <div className="flex items-center gap-1">
-          <Clock className="h-4 w-4 text-gray-500" />
+          <Clock className="h-4 w-4 text-muted-foreground" />
           <span>{formatDuration(workout.moving_time)}</span>
         </div>
         <div className="flex items-center gap-1">
-          <Zap className="h-4 w-4 text-gray-500" />
+          <Zap className="h-4 w-4 text-muted-foreground" />
           <span>{workout.calories || 'N/A'} cal</span>
         </div>
         {workout.distance && (
           <div className="flex items-center gap-1">
-            <MapPin className="h-4 w-4 text-gray-500" />
+            <MapPin className="h-4 w-4 text-muted-foreground" />
             <span>{formatDistance(workout.distance)}</span>
           </div>
         )}
         {workout.icu_training_load && (
           <div className="flex items-center gap-1">
-            <Activity className="h-4 w-4 text-gray-500" />
+            <Activity className="h-4 w-4 text-muted-foreground" />
             <span>Load {workout.icu_training_load}</span>
           </div>
         )}
@@ -73,7 +73,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
         )}
         {workout.feel && (
           <div className="flex items-center gap-1">
-            <Smile className="h-4 w-4 text-gray-500" />
+            <Smile className="h-4 w-4 text-muted-foreground" />
             <span className="flex items-center gap-1">
               Ressenti {getFeelingEmoji(workout.feel)} {workout.feel}/5
             </span>
@@ -81,7 +81,7 @@ const WorkoutCard: React.FC<WorkoutCardProps> = ({ workout }) => {
         )}
         {workout.carbs_ingested && (
           <div className="flex items-center gap-1">
-            <Utensils className="h-4 w-4 text-gray-500" />
+            <Utensils className="h-4 w-4 text-muted-foreground" />
             <span>CHO {workout.carbs_ingested}g</span>
           </div>
         )}
