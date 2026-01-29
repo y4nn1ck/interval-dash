@@ -201,7 +201,7 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
               
               {/* Power 1 Area + Line */}
               <Area 
-                type="monotone" 
+                type="basis" 
                 dataKey="power1" 
                 stroke="none"
                 fill="url(#power1GradientFill)"
@@ -210,7 +210,7 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
                 animationEasing="ease-out"
               />
               <Line 
-                type="monotone" 
+                type="basis" 
                 dataKey="power1" 
                 stroke="url(#power1Stroke)"
                 strokeWidth={1.5}
@@ -224,7 +224,7 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
               
               {/* Power 2 Area + Line */}
               <Area 
-                type="monotone" 
+                type="basis" 
                 dataKey="power2" 
                 stroke="none"
                 fill="url(#power2GradientFill)"
@@ -233,7 +233,7 @@ const PowerChart: React.FC<PowerChartProps> = ({ chartData, file1Name, file2Name
                 animationEasing="ease-out"
               />
               <Line 
-                type="monotone" 
+                type="basis" 
                 dataKey="power2" 
                 stroke="url(#power2Stroke)"
                 strokeWidth={1.5}

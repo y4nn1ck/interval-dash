@@ -265,7 +265,7 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
               {hasTemperature && showTemperature && (
                 <>
                   <Area 
-                    type="monotone" 
+                    type="basis" 
                     dataKey="temperature" 
                     stroke="none"
                     fill="url(#tempGradientFill)"
@@ -274,7 +274,7 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                     animationEasing="ease-out"
                   />
                   <Line 
-                    type="monotone" 
+                    type="basis" 
                     dataKey="temperature" 
                     stroke="url(#tempStroke)"
                     strokeWidth={1.5}
@@ -292,7 +292,7 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
               {hasCoreTemp && showCoreTemp && (
                 <>
                   <Area 
-                    type="monotone" 
+                    type="basis" 
                     dataKey="core_temperature" 
                     stroke="none"
                     fill="url(#coreTempGradientFill)"
@@ -301,7 +301,7 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                     animationEasing="ease-out"
                   />
                   <Line 
-                    type="monotone" 
+                    type="basis" 
                     dataKey="core_temperature" 
                     stroke="url(#coreTempStroke)"
                     strokeWidth={1.5}
@@ -319,7 +319,7 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
               {hasSkinTemp && showSkinTemp && (
                 <>
                   <Area 
-                    type="monotone" 
+                    type="basis" 
                     dataKey="skin_temperature" 
                     stroke="none"
                     fill="url(#skinTempGradientFill)"
@@ -328,7 +328,7 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                     animationEasing="ease-out"
                   />
                   <Line 
-                    type="monotone" 
+                    type="basis" 
                     dataKey="skin_temperature" 
                     stroke="url(#skinTempStroke)"
                     strokeWidth={1.5}

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { ZoomIn, ZoomOut } from 'lucide-react';
-
+import { ZoomOut } from 'lucide-react';
+import { smoothChartData } from '@/utils/dataSmoothing';
 interface ChartDataPoint {
   time: number;
   power: number | null;
@@ -41,16 +41,17 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
     return `${minutes}min`;
   };
 
-  // Get filtered data based on zoom
-  const getFilteredData = () => {
-    if (!zoomDomain) return data;
-    
-    return data.filter(point => 
-      point.time >= zoomDomain[0] && point.time <= zoomDomain[1]
-    );
-  };
-
-  const chartData = getFilteredData();
+  // Get filtered and smoothed data based on zoom
+  const chartData = useMemo(() => {
+    let filtered = data;
+    if (zoomDomain) {
+      filtered = data.filter(point => 
+        point.time >= zoomDomain[0] && point.time <= zoomDomain[1]
+      );
+    }
+    // Apply smoothing for cleaner curves
+    return smoothChartData(filtered, 9);
+  }, [data, zoomDomain]);
 
   // Generate ticks every 5 minutes
   const generateTicks = () => {
@@ -308,7 +309,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                 <>
                   <Area 
                     yAxisId="left"
-                    type="monotone" 
+                    type="basis" 
                     dataKey="power" 
                     stroke="none"
                     fill="url(#powerGradientFill)"
@@ -318,7 +319,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                   />
                   <Line 
                     yAxisId="left"
-                    type="monotone" 
+                    type="basis" 
                     dataKey="power" 
                     stroke="url(#powerStroke)"
                     strokeWidth={1.5}
@@ -342,7 +343,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                 <>
                   <Area 
                     yAxisId="left"
-                    type="monotone" 
+                    type="basis" 
                     dataKey="cadence" 
                     stroke="none"
                     fill="url(#cadenceGradientFill)"
@@ -352,7 +353,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                   />
                   <Line 
                     yAxisId="left"
-                    type="monotone" 
+                    type="basis" 
                     dataKey="cadence" 
                     stroke="url(#cadenceStroke)"
                     strokeWidth={1.5}
@@ -376,7 +377,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                 <>
                   <Area 
                     yAxisId="right"
-                    type="monotone" 
+                    type="basis" 
                     dataKey="heart_rate" 
                     stroke="none"
                     fill="url(#heartRateGradientFill)"
@@ -386,7 +387,7 @@ const FitDataChart: React.FC<FitDataChartProps> = ({ data, zoomDomain, onResetZo
                   />
                   <Line 
                     yAxisId="right"
-                    type="monotone" 
+                    type="basis" 
                     dataKey="heart_rate" 
                     stroke="url(#heartRateStroke)"
                     strokeWidth={1.5}
