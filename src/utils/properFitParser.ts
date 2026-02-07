@@ -132,6 +132,9 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                     core_temperature: extractedRecord.core_temperature,
                     skin_temperature: extractedRecord.skin_temperature,
                     elapsed_time: extractedRecord.elapsed_time,
+                    altitude: extractedRecord.altitude,
+                    position_lat: extractedRecord.position_lat,
+                    position_long: extractedRecord.position_long,
                     originalRecord: record
                   });
                 }
@@ -217,6 +220,8 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           console.log(`Records with temperature: ${records.filter(r => r.temperature !== undefined).length}`);
           console.log(`Records with core_temperature: ${records.filter(r => r.core_temperature !== undefined).length}`);
           console.log(`Records with skin_temperature: ${records.filter(r => r.skin_temperature !== undefined).length}`);
+          console.log(`Records with altitude: ${records.filter(r => r.altitude !== undefined).length}`);
+          console.log(`Records with GPS: ${records.filter(r => r.position_lat !== undefined && r.position_long !== undefined).length}`);
           console.log(`Records with timestamp: ${records.filter(r => r.timestamp !== undefined).length}`);
           console.log(`Sessions: ${sessions.length}`);
           console.log(`Laps: ${laps.length}`);

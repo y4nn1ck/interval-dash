@@ -8,6 +8,7 @@ import { Upload, Calendar, Clock, Zap, RotateCcw, Heart, Thermometer } from 'luc
 import FitDataChart from '@/components/fit-analyzer/FitDataChart';
 import TemperatureChart from '@/components/fit-analyzer/TemperatureChart';
 import RouteMap from '@/components/fit-analyzer/RouteMap';
+import ElevationChart from '@/components/fit-analyzer/ElevationChart';
 import { format } from 'date-fns';
 
 interface FitRecord {
@@ -21,6 +22,7 @@ interface FitRecord {
   skin_temperature?: number;
   position_lat?: number;
   position_long?: number;
+  altitude?: number;
 }
 
 interface LapData {
@@ -78,6 +80,12 @@ interface GpsPoint {
   lat: number;
   lng: number;
   time?: number;
+  altitude?: number;
+}
+
+interface ElevationPoint {
+  distance: number;
+  altitude: number;
 }
 
 const FitAnalyzer = () => {
@@ -86,6 +94,7 @@ const FitAnalyzer = () => {
   const [temperatureData, setTemperatureData] = useState<TemperatureDataPoint[]>([]);
   const [lapData, setLapData] = useState<LapData[]>([]);
   const [gpsData, setGpsData] = useState<GpsPoint[]>([]);
+  const [elevationData, setElevationData] = useState<ElevationPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
   const { toast } = useToast();
@@ -474,19 +483,48 @@ const FitAnalyzer = () => {
       setChartData(chartPoints);
       setTemperatureData(tempPoints);
 
-      // Extract GPS data
+      // Extract GPS data and calculate elevation profile
       const gpsPoints: GpsPoint[] = [];
-      recordsToUse.forEach((record: FitRecord) => {
+      const elevPoints: ElevationPoint[] = [];
+      let cumulativeDistance = 0;
+      
+      recordsToUse.forEach((record: FitRecord, index: number) => {
         if (record.position_lat && record.position_long) {
+          // Calculate distance from previous point
+          if (gpsPoints.length > 0) {
+            const prevPoint = gpsPoints[gpsPoints.length - 1];
+            const lat1 = prevPoint.lat * Math.PI / 180;
+            const lat2 = record.position_lat * Math.PI / 180;
+            const deltaLat = (record.position_lat - prevPoint.lat) * Math.PI / 180;
+            const deltaLng = (record.position_long - prevPoint.lng) * Math.PI / 180;
+            
+            const a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+                      Math.cos(lat1) * Math.cos(lat2) *
+                      Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            cumulativeDistance += 6371 * c; // Earth's radius in km
+          }
+          
           gpsPoints.push({
             lat: record.position_lat,
             lng: record.position_long,
-            time: record.elapsed_time
+            time: record.elapsed_time,
+            altitude: record.altitude
           });
+          
+          // Add elevation point if altitude is available
+          if (record.altitude && record.altitude > 0) {
+            elevPoints.push({
+              distance: cumulativeDistance,
+              altitude: record.altitude
+            });
+          }
         }
       });
+      
       setGpsData(gpsPoints);
-      console.log(`Extracted ${gpsPoints.length} GPS points`);
+      setElevationData(elevPoints);
+      console.log(`Extracted ${gpsPoints.length} GPS points, ${elevPoints.length} elevation points`);
       
       toast({
         title: "Fichier analysé avec succès",
@@ -658,6 +696,13 @@ const FitAnalyzer = () => {
       {gpsData.length > 0 && (
         <div className="opacity-0 animate-fade-in-up-delay-2">
           <RouteMap gpsData={gpsData} />
+        </div>
+      )}
+
+      {/* Elevation Profile */}
+      {elevationData.length > 0 && (
+        <div className="opacity-0 animate-fade-in-up-delay-2">
+          <ElevationChart data={elevationData} />
         </div>
       )}
 
