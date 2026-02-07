@@ -13,6 +13,8 @@ interface FitRecord {
   core_temperature?: number;
   skin_temperature?: number;
   elapsed_time?: number;
+  position_lat?: number;
+  position_long?: number;
   [key: string]: any;
 }
 
@@ -104,6 +106,19 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                 if (typeof record.skin_temperature === 'number') extractedRecord.skin_temperature = record.skin_temperature;
                 if (typeof record.elapsed_time === 'number') extractedRecord.elapsed_time = record.elapsed_time;
                 
+                // Extract GPS coordinates (may be in semicircles or degrees)
+                if (typeof record.position_lat === 'number') {
+                  // Convert from semicircles to degrees if needed (semicircles are large numbers)
+                  extractedRecord.position_lat = Math.abs(record.position_lat) > 180 
+                    ? record.position_lat * (180 / Math.pow(2, 31))
+                    : record.position_lat;
+                }
+                if (typeof record.position_long === 'number') {
+                  extractedRecord.position_long = Math.abs(record.position_long) > 180 
+                    ? record.position_long * (180 / Math.pow(2, 31))
+                    : record.position_long;
+                }
+                
                 records.push(extractedRecord);
                 
                 // Log first few records for debugging
@@ -147,6 +162,18 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
                   if (typeof record.core_temperature === 'number') extractedRecord.core_temperature = record.core_temperature;
                   if (typeof record.skin_temperature === 'number') extractedRecord.skin_temperature = record.skin_temperature;
                   if (typeof record.elapsed_time === 'number') extractedRecord.elapsed_time = record.elapsed_time;
+                  
+                  // Extract GPS coordinates for fallback path
+                  if (typeof record.position_lat === 'number') {
+                    extractedRecord.position_lat = Math.abs(record.position_lat) > 180 
+                      ? record.position_lat * (180 / Math.pow(2, 31))
+                      : record.position_lat;
+                  }
+                  if (typeof record.position_long === 'number') {
+                    extractedRecord.position_long = Math.abs(record.position_long) > 180 
+                      ? record.position_long * (180 / Math.pow(2, 31))
+                      : record.position_long;
+                  }
                   
                   records.push(extractedRecord);
                 }
