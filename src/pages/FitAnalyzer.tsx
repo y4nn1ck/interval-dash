@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Upload, Calendar, Clock, Zap, RotateCcw, Heart, Thermometer } from 'lucide-react';
 import FitDataChart from '@/components/fit-analyzer/FitDataChart';
 import TemperatureChart from '@/components/fit-analyzer/TemperatureChart';
+import RouteMap from '@/components/fit-analyzer/RouteMap';
 import { format } from 'date-fns';
 
 interface FitRecord {
@@ -18,6 +19,8 @@ interface FitRecord {
   temperature?: number;
   core_temperature?: number;
   skin_temperature?: number;
+  position_lat?: number;
+  position_long?: number;
 }
 
 interface LapData {
@@ -71,11 +74,18 @@ interface TemperatureDataPoint {
   skin_temperature: number | null;
 }
 
+interface GpsPoint {
+  lat: number;
+  lng: number;
+  time?: number;
+}
+
 const FitAnalyzer = () => {
   const [fileInfo, setFileInfo] = useState<FitFileInfo | null>(null);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [temperatureData, setTemperatureData] = useState<TemperatureDataPoint[]>([]);
   const [lapData, setLapData] = useState<LapData[]>([]);
+  const [gpsData, setGpsData] = useState<GpsPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
   const { toast } = useToast();
@@ -463,6 +473,20 @@ const FitAnalyzer = () => {
 
       setChartData(chartPoints);
       setTemperatureData(tempPoints);
+
+      // Extract GPS data
+      const gpsPoints: GpsPoint[] = [];
+      recordsToUse.forEach((record: FitRecord) => {
+        if (record.position_lat && record.position_long) {
+          gpsPoints.push({
+            lat: record.position_lat,
+            lng: record.position_long,
+            time: record.elapsed_time
+          });
+        }
+      });
+      setGpsData(gpsPoints);
+      console.log(`Extracted ${gpsPoints.length} GPS points`);
       
       toast({
         title: "Fichier analysé avec succès",
@@ -630,16 +654,23 @@ const FitAnalyzer = () => {
         </Card>
       )}
 
+      {/* Route Map */}
+      {gpsData.length > 0 && (
+        <div className="opacity-0 animate-fade-in-up-delay-2">
+          <RouteMap gpsData={gpsData} />
+        </div>
+      )}
+
       {/* Temperature Chart */}
       {temperatureData.length > 0 && temperatureData.some(d => d.temperature || d.core_temperature || d.skin_temperature) && (
-        <div className="opacity-0 animate-fade-in-up-delay-2">
+        <div className="opacity-0 animate-fade-in-up-delay-3">
           <TemperatureChart data={temperatureData} />
         </div>
       )}
 
       {/* Interactive Chart */}
       {chartData.length > 0 && (
-        <div className="opacity-0 animate-fade-in-up-delay-3">
+        <div className="opacity-0 animate-fade-in-up-delay-4">
           <FitDataChart 
             data={chartData} 
             zoomDomain={zoomDomain}
@@ -650,7 +681,7 @@ const FitAnalyzer = () => {
 
       {/* Laps Table */}
       {lapData.length > 0 && (
-        <Card className="glass-card overflow-hidden opacity-0 animate-fade-in-up-delay-4">
+        <Card className="glass-card overflow-hidden opacity-0 animate-fade-in-up-delay-5">
           <CardHeader className="border-b border-border/50 pb-4">
             <CardTitle className="flex items-center gap-3 text-xl">
               <div className="h-8 w-1 rounded-full bg-gradient-to-b from-emerald-400 to-cyan-400"></div>
