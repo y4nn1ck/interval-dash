@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import PowerCompar from "./pages/PowerCompar";
 import FitAnalyzer from "./pages/FitAnalyzer";
 import FitRawReader from "./pages/FitRawReader";
+import TrainingCalendar from "./pages/TrainingCalendar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
                     <Route path="/power-compar" element={<PowerCompar />} />
                     <Route path="/fit-analyzer" element={<FitAnalyzer />} />
                     <Route path="/fit-raw-reader" element={<FitRawReader />} />
+                    <Route path="/training-calendar" element={<TrainingCalendar />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

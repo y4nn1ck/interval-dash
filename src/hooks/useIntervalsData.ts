@@ -81,3 +81,22 @@ export const useIntervalsMonthlyStats = () => {
     queryFn: () => intervalsService.getMonthlyStats(),
   });
 };
+
+export const useIntervalsActivities = (startDate: string, endDate: string) => {
+  return useQuery({
+    queryKey: ['intervals-activities', startDate, endDate],
+    queryFn: () => intervalsService.getActivities(startDate, endDate),
+    enabled: !!startDate && !!endDate,
+  });
+};
+
+export const useIntervalsActivityFitFile = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (activityId: string) => intervalsService.getActivityFitFile(activityId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['intervals-activity-fit'] });
+    },
+  });
+};
