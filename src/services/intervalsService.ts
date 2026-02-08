@@ -232,6 +232,61 @@ class IntervalsService {
     }
   }
 
+  async getActivities(startDate: string, endDate: string): Promise<IntervalsActivity[]> {
+    try {
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      if (!athleteId) return [];
+
+      console.log(`Fetching activities from ${startDate} to ${endDate}...`);
+      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/activities?oldest=${startDate}&newest=${endDate}`);
+      console.log('Activities received:', data);
+      
+      return data.map((activity: any) => ({
+        id: activity.id,
+        start_date_local: activity.start_date_local,
+        name: activity.name || 'Sans nom',
+        type: activity.type || 'Unknown',
+        distance: activity.distance || 0,
+        moving_time: activity.moving_time || 0,
+        total_elevation_gain: activity.total_elevation_gain || 0,
+        calories: activity.calories || 0,
+        icu_rpe: activity.icu_rpe,
+        feel: activity.feel,
+        carbs_ingested: activity.carbs_ingested,
+        icu_training_load: activity.icu_training_load,
+        icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
+        icu_average_watts: activity.icu_average_watts,
+      }));
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+      return [];
+    }
+  }
+
+  async getActivityFitFile(activityId: string): Promise<ArrayBuffer | null> {
+    try {
+      const apiKey = localStorage.getItem('intervals_api_key');
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      if (!apiKey || !athleteId) return null;
+
+      console.log(`Fetching FIT file for activity ${activityId}...`);
+      const response = await fetch(`${this.baseUrl}/activity/${activityId}/fit-file`, {
+        headers: {
+          'Authorization': `Basic ${btoa(`API_KEY:${apiKey}`)}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch FIT file: ${response.statusText}`);
+      }
+
+      return await response.arrayBuffer();
+    } catch (error) {
+      console.error('Error fetching activity FIT file:', error);
+      return null;
+    }
+  }
+
   async syncData(): Promise<void> {
     // For now, this is a no-op since we're fetching data directly
     console.log('Data sync completed');
