@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mountain, TrendingUp, TrendingDown } from 'lucide-react';
 import {
@@ -13,13 +13,17 @@ import {
 interface ElevationPoint {
   distance: number;
   altitude: number;
+  lat?: number;
+  lng?: number;
+  index?: number;
 }
 
 interface ElevationChartProps {
   data: ElevationPoint[];
+  onHover?: (point: { lat: number; lng: number } | null) => void;
 }
 
-const ElevationChart: React.FC<ElevationChartProps> = ({ data }) => {
+const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
   const stats = useMemo(() => {
     if (data.length === 0) return null;
 
@@ -50,7 +54,7 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data }) => {
     };
   }, [data]);
 
-  // Smooth the data for display
+  // Smooth the data for display while preserving GPS coordinates
   const smoothedData = useMemo(() => {
     if (data.length === 0) return [];
     
@@ -60,14 +64,35 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data }) => {
     for (let i = 0; i < data.length; i += windowSize) {
       const window = data.slice(i, Math.min(i + windowSize, data.length));
       const avgAltitude = window.reduce((sum, p) => sum + p.altitude, 0) / window.length;
+      const midIndex = Math.min(i + Math.floor(windowSize / 2), data.length - 1);
+      const midPoint = data[midIndex];
+      
       result.push({
-        distance: data[Math.min(i + Math.floor(windowSize / 2), data.length - 1)].distance,
+        distance: midPoint.distance,
         altitude: avgAltitude,
+        lat: midPoint.lat,
+        lng: midPoint.lng,
+        index: midPoint.index
       });
     }
     
     return result;
   }, [data]);
+
+  const handleMouseMove = useCallback((state: any) => {
+    if (state && state.activePayload && state.activePayload.length > 0) {
+      const point = state.activePayload[0].payload;
+      if (point.lat && point.lng && onHover) {
+        onHover({ lat: point.lat, lng: point.lng });
+      }
+    }
+  }, [onHover]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (onHover) {
+      onHover(null);
+    }
+  }, [onHover]);
 
   if (!stats || smoothedData.length === 0) {
     return null;
@@ -76,12 +101,12 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data }) => {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-background/95 border border-border rounded-lg p-3 shadow-lg backdrop-blur-sm">
+        <div className="bg-background/95 border border-border rounded-lg p-3 shadow-xl backdrop-blur-sm">
           <p className="text-sm text-muted-foreground">
-            Distance: <span className="font-medium text-foreground">{payload[0].payload.distance.toFixed(2)} km</span>
+            Distance: <span className="font-semibold text-foreground">{payload[0].payload.distance.toFixed(2)} km</span>
           </p>
-          <p className="text-sm text-emerald-400">
-            Altitude: <span className="font-medium">{Math.round(payload[0].value)} m</span>
+          <p className="text-sm text-emerald-400 font-medium">
+            Altitude: <span className="font-bold">{Math.round(payload[0].value)} m</span>
           </p>
         </div>
       );
@@ -90,76 +115,109 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data }) => {
   };
 
   return (
-    <Card className="glass-card overflow-hidden">
-      <CardHeader className="border-b border-border/50 pb-4">
+    <Card className="glass-card overflow-hidden border-emerald-500/20">
+      <CardHeader className="border-b border-border/50 pb-4 bg-gradient-to-r from-emerald-500/5 to-transparent">
         <CardTitle className="flex items-center gap-3 text-xl">
-          <div className="p-2 rounded-lg bg-emerald-500/20">
+          <div className="p-2 rounded-lg bg-emerald-500/20 shadow-lg shadow-emerald-500/10">
             <Mountain className="h-5 w-5 text-emerald-400" />
           </div>
           Profil d'altitude
           <div className="ml-auto flex items-center gap-4 text-sm font-normal">
-            <span className="flex items-center gap-1 text-emerald-400">
+            <span className="flex items-center gap-1.5 text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md">
               <TrendingUp className="h-4 w-4" />
-              +{stats.elevationGain}m
+              <span className="font-semibold">+{stats.elevationGain}m</span>
             </span>
-            <span className="flex items-center gap-1 text-red-400">
+            <span className="flex items-center gap-1.5 text-red-400 bg-red-500/10 px-2 py-1 rounded-md">
               <TrendingDown className="h-4 w-4" />
-              -{stats.elevationLoss}m
+              <span className="font-semibold">-{stats.elevationLoss}m</span>
             </span>
-            <span className="text-muted-foreground">
+            <span className="text-muted-foreground bg-secondary/50 px-2 py-1 rounded-md">
               {stats.minAltitude}m - {stats.maxAltitude}m
             </span>
           </div>
         </CardTitle>
+        <p className="text-xs text-muted-foreground mt-1">
+          Survolez le graphique pour voir la position sur la carte
+        </p>
       </CardHeader>
-      <CardContent className="pt-6">
-        <div className="h-[200px] w-full">
+      <CardContent className="pt-6 pb-4">
+        <div className="h-[250px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={smoothedData}
-              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+              margin={{ top: 10, right: 20, left: 10, bottom: 10 }}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
             >
               <defs>
                 <linearGradient id="elevationGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--chart-2))" stopOpacity={0.6} />
-                  <stop offset="50%" stopColor="hsl(var(--chart-2))" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="hsl(var(--chart-2))" stopOpacity={0.05} />
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.7} />
+                  <stop offset="30%" stopColor="#10b981" stopOpacity={0.4} />
+                  <stop offset="70%" stopColor="#059669" stopOpacity={0.2} />
+                  <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
                 </linearGradient>
+                <filter id="elevationGlow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
               <XAxis
                 dataKey="distance"
                 tickFormatter={(value) => `${value.toFixed(1)}`}
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={11}
+                fontSize={12}
                 tickLine={false}
-                axisLine={false}
+                axisLine={{ stroke: 'hsl(var(--border))', strokeOpacity: 0.5 }}
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                label={{ 
+                  value: 'Distance (km)', 
+                  position: 'insideBottom', 
+                  offset: -5,
+                  fill: 'hsl(var(--muted-foreground))',
+                  fontSize: 11
+                }}
               />
               <YAxis
-                domain={['dataMin - 20', 'dataMax + 20']}
+                domain={['dataMin - 30', 'dataMax + 30']}
                 tickFormatter={(value) => `${Math.round(value)}m`}
                 stroke="hsl(var(--muted-foreground))"
-                fontSize={11}
+                fontSize={12}
                 tickLine={false}
-                axisLine={false}
+                axisLine={{ stroke: 'hsl(var(--border))', strokeOpacity: 0.5 }}
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                width={50}
+                width={55}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip 
+                content={<CustomTooltip />} 
+                cursor={{ 
+                  stroke: '#10b981', 
+                  strokeWidth: 2, 
+                  strokeDasharray: '4 4',
+                  strokeOpacity: 0.6
+                }}
+              />
               <Area
                 type="basis"
                 dataKey="altitude"
-                stroke="hsl(var(--chart-2))"
-                strokeWidth={1.5}
+                stroke="#10b981"
+                strokeWidth={2.5}
                 fill="url(#elevationGradient)"
                 isAnimationActive={false}
+                filter="url(#elevationGlow)"
+                activeDot={{
+                  r: 6,
+                  fill: '#f59e0b',
+                  stroke: '#fff',
+                  strokeWidth: 2,
+                  filter: 'drop-shadow(0 0 6px rgba(245, 158, 11, 0.6))'
+                }}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <p className="text-xs text-center text-muted-foreground mt-2">
-          Distance (km)
-        </p>
       </CardContent>
     </Card>
   );
