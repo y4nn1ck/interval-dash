@@ -12,11 +12,13 @@ interface GpsPoint {
 
 interface RouteMapProps {
   gpsData: GpsPoint[];
+  hoveredPoint?: { lat: number; lng: number } | null;
 }
 
-const RouteMap: React.FC<RouteMapProps> = ({ gpsData }) => {
+const RouteMap: React.FC<RouteMapProps> = ({ gpsData, hoveredPoint }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const hoverMarkerRef = useRef<L.Marker | null>(null);
 
   useEffect(() => {
     if (!mapRef.current || gpsData.length === 0) return;
@@ -125,6 +127,40 @@ const RouteMap: React.FC<RouteMapProps> = ({ gpsData }) => {
     };
   }, [gpsData]);
 
+  // Handle hovered point marker
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    // Remove existing hover marker
+    if (hoverMarkerRef.current) {
+      hoverMarkerRef.current.remove();
+      hoverMarkerRef.current = null;
+    }
+
+    // Add new hover marker if point is valid
+    if (hoveredPoint && hoveredPoint.lat && hoveredPoint.lng) {
+      const hoverIcon = L.divIcon({
+        className: 'hover-marker',
+        html: `<div style="
+          width: 16px;
+          height: 16px;
+          background: #f59e0b;
+          border: 3px solid white;
+          border-radius: 50%;
+          box-shadow: 0 0 12px rgba(245, 158, 11, 0.8), 0 2px 8px rgba(0,0,0,0.3);
+          animation: pulse 1s ease-in-out infinite;
+        "></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
+      });
+
+      hoverMarkerRef.current = L.marker([hoveredPoint.lat, hoveredPoint.lng], { 
+        icon: hoverIcon,
+        zIndexOffset: 1000 
+      }).addTo(mapInstanceRef.current);
+    }
+  }, [hoveredPoint]);
+
   if (gpsData.length === 0) {
     return null;
   }
@@ -175,6 +211,12 @@ const RouteMap: React.FC<RouteMapProps> = ({ gpsData }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.8; }
+          }
+        `}</style>
         <div 
           ref={mapRef} 
           className="h-[400px] w-full"

@@ -86,6 +86,9 @@ interface GpsPoint {
 interface ElevationPoint {
   distance: number;
   altitude: number;
+  lat?: number;
+  lng?: number;
+  index?: number;
 }
 
 const FitAnalyzer = () => {
@@ -97,6 +100,7 @@ const FitAnalyzer = () => {
   const [elevationData, setElevationData] = useState<ElevationPoint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
+  const [hoveredPoint, setHoveredPoint] = useState<{ lat: number; lng: number } | null>(null);
   const { toast } = useToast();
 
   const getSportIcon = (sportType: string) => {
@@ -516,7 +520,10 @@ const FitAnalyzer = () => {
           if (record.altitude && record.altitude > 0) {
             elevPoints.push({
               distance: cumulativeDistance,
-              altitude: record.altitude
+              altitude: record.altitude,
+              lat: record.position_lat,
+              lng: record.position_long,
+              index: gpsPoints.length - 1
             });
           }
         }
@@ -692,17 +699,21 @@ const FitAnalyzer = () => {
         </Card>
       )}
 
-      {/* Route Map */}
-      {gpsData.length > 0 && (
-        <div className="opacity-0 animate-fade-in-up-delay-2">
-          <RouteMap gpsData={gpsData} />
+      {/* Route Map & Elevation Profile */}
+      {gpsData.length > 0 && elevationData.length > 0 && (
+        <div className="opacity-0 animate-fade-in-up-delay-2 space-y-6">
+          <RouteMap gpsData={gpsData} hoveredPoint={hoveredPoint} />
+          <ElevationChart 
+            data={elevationData} 
+            onHover={(point) => setHoveredPoint(point)}
+          />
         </div>
       )}
 
-      {/* Elevation Profile */}
-      {elevationData.length > 0 && (
+      {/* Route Map only (no elevation data) */}
+      {gpsData.length > 0 && elevationData.length === 0 && (
         <div className="opacity-0 animate-fade-in-up-delay-2">
-          <ElevationChart data={elevationData} />
+          <RouteMap gpsData={gpsData} hoveredPoint={null} />
         </div>
       )}
 
