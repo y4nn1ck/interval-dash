@@ -12,6 +12,7 @@ import { parseProperFitFile } from '@/utils/properFitParser';
 import { Loader2, Download, Calendar, Clock, Zap, Mountain, RotateCcw, Heart, Activity } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import FitDataChart from '@/components/fit-analyzer/FitDataChart';
 import TemperatureChart from '@/components/fit-analyzer/TemperatureChart';
 import RouteMap from '@/components/fit-analyzer/RouteMap';
