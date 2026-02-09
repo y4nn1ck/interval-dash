@@ -52,6 +52,19 @@ interface ElevationPoint {
   lng?: number;
 }
 
+interface LapData {
+  lapNumber: number;
+  startTime: string;
+  duration: string;
+  avgPower: number;
+  maxPower: number;
+  avgCadence: number;
+  maxCadence: number;
+  avgHeartRate: number;
+  maxHeartRate: number;
+  normalizedPower?: number;
+}
+
 const getSportIcon = (type: string) => {
   const lowerType = (type || '').toLowerCase();
   if (lowerType.includes('ride') || lowerType.includes('cycling') || lowerType.includes('bike')) {
