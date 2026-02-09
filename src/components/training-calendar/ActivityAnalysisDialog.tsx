@@ -245,6 +245,43 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
       setTemperatureData(tempPoints);
       setGpsData(gpsPoints);
       setElevationData(elevPoints);
+
+      // Extract lap data
+      const laps: LapData[] = [];
+      if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.laps && Array.isArray(parsedData.rawDataStructure.activity.sessions[0].laps)) {
+        parsedData.rawDataStructure.activity.sessions[0].laps.forEach((lap: any, index: number) => {
+          const lapDurationSeconds = lap.total_elapsed_time || 0;
+          let lapStartTime = 'N/A';
+          if (lap.start_time) {
+            try {
+              const d = new Date(lap.start_time);
+              if (!isNaN(d.getTime())) {
+                lapStartTime = format(d, 'HH:mm:ss');
+              }
+            } catch {}
+          }
+          const formatDur = (s: number) => {
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const sec = Math.round(s % 60);
+            return h > 0 ? `${h}h${m.toString().padStart(2,'0')}m${sec.toString().padStart(2,'0')}s` : `${m}m${sec.toString().padStart(2,'0')}s`;
+          };
+          laps.push({
+            lapNumber: index + 1,
+            startTime: lapStartTime,
+            duration: formatDur(lapDurationSeconds),
+            avgPower: Math.round(lap.avg_power || 0),
+            maxPower: Math.round(lap.max_power || 0),
+            avgCadence: Math.round(lap.avg_cadence || 0),
+            maxCadence: Math.round(lap.max_cadence || 0),
+            avgHeartRate: Math.round(lap.avg_heart_rate || 0),
+            maxHeartRate: Math.round(lap.max_heart_rate || 0),
+            normalizedPower: lap.normalized_power ? Math.round(lap.normalized_power) : undefined,
+          });
+        });
+      }
+      setLapData(laps);
+
       setIsAnalyzed(true);
 
       toast({
