@@ -323,7 +323,7 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                     dataKey="skin_temperature" 
                     stroke="none"
                     fill="url(#skinTempGradientFill)"
-                    connectNulls={false}
+                    connectNulls={true}
                     animationDuration={800}
                     animationEasing="ease-out"
                   />
@@ -331,10 +331,10 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                     type="basis" 
                     dataKey="skin_temperature" 
                     stroke="url(#skinTempStroke)"
-                    strokeWidth={1.5}
+                    strokeWidth={2.5}
                     dot={false}
                     name="Température Peau"
-                    connectNulls={false}
+                    connectNulls={true}
                     animationDuration={800}
                     animationEasing="ease-out"
                     activeDot={{ r: 5, stroke: "#06b6d4", strokeWidth: 2, fill: 'hsl(var(--card))' }}

@@ -484,6 +484,49 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
                 onResetZoom={() => {}}
               />
             )}
+
+            {/* Laps Table */}
+            {lapData.length > 0 && (
+              <Card className="overflow-hidden">
+                <CardHeader className="border-b border-border/50 pb-4">
+                  <CardTitle className="text-lg">Tours / Intervalles</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4 overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-center">Tour</TableHead>
+                        <TableHead className="text-center">Heure</TableHead>
+                        <TableHead className="text-center">Durée</TableHead>
+                        <TableHead className="text-center text-orange-400">Pwr Moy</TableHead>
+                        <TableHead className="text-center text-orange-400">Pwr Max</TableHead>
+                        <TableHead className="text-center text-orange-400/70">NP</TableHead>
+                        <TableHead className="text-center text-purple-400">Cad Moy</TableHead>
+                        <TableHead className="text-center text-purple-400">Cad Max</TableHead>
+                        <TableHead className="text-center text-red-400">FC Moy</TableHead>
+                        <TableHead className="text-center text-red-400">FC Max</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {lapData.map((lap) => (
+                        <TableRow key={lap.lapNumber}>
+                          <TableCell className="text-center font-bold text-primary">{lap.lapNumber}</TableCell>
+                          <TableCell className="text-center text-muted-foreground">{lap.startTime}</TableCell>
+                          <TableCell className="text-center font-medium">{lap.duration}</TableCell>
+                          <TableCell className="text-center font-medium text-orange-400">{lap.avgPower}W</TableCell>
+                          <TableCell className="text-center">{lap.maxPower}W</TableCell>
+                          <TableCell className="text-center text-muted-foreground">{lap.normalizedPower ? `${lap.normalizedPower}W` : '-'}</TableCell>
+                          <TableCell className="text-center font-medium text-purple-400">{lap.avgCadence}</TableCell>
+                          <TableCell className="text-center">{lap.maxCadence}</TableCell>
+                          <TableCell className="text-center font-medium text-red-400">{lap.avgHeartRate}</TableCell>
+                          <TableCell className="text-center">{lap.maxHeartRate}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
       </DialogContent>
