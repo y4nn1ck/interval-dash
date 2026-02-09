@@ -296,7 +296,7 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                     dataKey="core_temperature" 
                     stroke="none"
                     fill="url(#coreTempGradientFill)"
-                    connectNulls={false}
+                    connectNulls={true}
                     animationDuration={800}
                     animationEasing="ease-out"
                   />
@@ -304,10 +304,10 @@ const TemperatureChart: React.FC<TemperatureChartProps> = ({ data }) => {
                     type="basis" 
                     dataKey="core_temperature" 
                     stroke="url(#coreTempStroke)"
-                    strokeWidth={1.5}
+                    strokeWidth={2.5}
                     dot={false}
                     name="Température Core"
-                    connectNulls={false}
+                    connectNulls={true}
                     animationDuration={800}
                     animationEasing="ease-out"
                     activeDot={{ r: 5, stroke: "#f97316", strokeWidth: 2, fill: 'hsl(var(--card))' }}
