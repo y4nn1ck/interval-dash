@@ -179,11 +179,15 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
               onMouseLeave={handleMouseLeave}
             >
               <defs>
-                <linearGradient id="elevationGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.7} />
-                  <stop offset="30%" stopColor="#10b981" stopOpacity={0.4} />
-                  <stop offset="70%" stopColor="#059669" stopOpacity={0.2} />
+                <linearGradient id="elevationFillGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.5} />
+                  <stop offset="50%" stopColor="#10b981" stopOpacity={0.2} />
                   <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+                </linearGradient>
+                <linearGradient id="elevationSlopeStroke" x1="0" y1="0" x2="1" y2="0">
+                  {slopeGradientStops.map((stop, i) => (
+                    <stop key={i} offset={stop.offset} stopColor={stop.color} />
+                  ))}
                 </linearGradient>
                 <filter id="elevationGlow">
                   <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
@@ -231,9 +235,9 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
               <Area
                 type="basis"
                 dataKey="altitude"
-                stroke="#10b981"
-                strokeWidth={1.5}
-                fill="url(#elevationGradient)"
+                stroke="url(#elevationSlopeStroke)"
+                strokeWidth={2}
+                fill="url(#elevationFillGradient)"
                 isAnimationActive={false}
                 filter="url(#elevationGlow)"
                 activeDot={{
