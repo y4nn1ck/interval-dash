@@ -33,7 +33,6 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
     const minAltitude = Math.min(...altitudes);
     const maxAltitude = Math.max(...altitudes);
     
-    // Calculate elevation gain and loss
     let elevationGain = 0;
     let elevationLoss = 0;
     
