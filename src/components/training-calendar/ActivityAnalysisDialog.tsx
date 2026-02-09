@@ -110,6 +110,7 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
   const [temperatureData, setTemperatureData] = useState<TemperatureDataPoint[]>([]);
   const [gpsData, setGpsData] = useState<GpsPoint[]>([]);
   const [elevationData, setElevationData] = useState<ElevationPoint[]>([]);
+  const [lapData, setLapData] = useState<LapData[]>([]);
   const [hoveredPoint, setHoveredPoint] = useState<{ lat: number; lng: number } | null>(null);
   const [analysisStats, setAnalysisStats] = useState<{
     avgPower?: number;
