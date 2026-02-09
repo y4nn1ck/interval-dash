@@ -203,7 +203,7 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
                 type="basis"
                 dataKey="altitude"
                 stroke="#10b981"
-                strokeWidth={2.5}
+                strokeWidth={1.5}
                 fill="url(#elevationGradient)"
                 isAnimationActive={false}
                 filter="url(#elevationGlow)"
