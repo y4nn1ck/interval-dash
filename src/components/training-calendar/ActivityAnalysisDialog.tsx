@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { IntervalsActivity, intervalsService } from '@/services/intervalsService';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { parseProperFitFile } from '@/utils/properFitParser';
 import { Loader2, Download, Calendar, Clock, Zap, Mountain, RotateCcw, Heart, Activity } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
