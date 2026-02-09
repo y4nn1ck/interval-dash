@@ -156,8 +156,8 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
                   <stop offset="70%" stopColor="#059669" stopOpacity={0.2} />
                   <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
                 </linearGradient>
-                <filter id="elevationGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <filter id="elevationGlow">
+                  <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
                   <feMerge>
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
@@ -203,7 +203,7 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
                 type="basis"
                 dataKey="altitude"
                 stroke="#10b981"
-                strokeWidth={2.5}
+                strokeWidth={1.5}
                 fill="url(#elevationGradient)"
                 isAnimationActive={false}
                 filter="url(#elevationGlow)"
