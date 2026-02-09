@@ -58,7 +58,7 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
     if (data.length === 0) return [];
     
     const windowSize = Math.max(1, Math.floor(data.length / 200));
-    const result: ElevationPoint[] = [];
+    const result: (ElevationPoint & { slope?: number })[] = [];
     
     for (let i = 0; i < data.length; i += windowSize) {
       const window = data.slice(i, Math.min(i + windowSize, data.length));
@@ -74,9 +74,39 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
         index: midPoint.index
       });
     }
+
+    // Calculate slope for each point
+    for (let i = 0; i < result.length; i++) {
+      if (i === 0) {
+        result[i].slope = 0;
+      } else {
+        const dDist = (result[i].distance - result[i - 1].distance) * 1000; // km to m
+        const dAlt = result[i].altitude - result[i - 1].altitude;
+        result[i].slope = dDist > 0 ? (dAlt / dDist) * 100 : 0; // slope in %
+      }
+    }
     
     return result;
   }, [data]);
+
+  // Build a slope-based gradient for the stroke
+  const slopeGradientStops = useMemo(() => {
+    if (smoothedData.length < 2) return [];
+    const maxDist = smoothedData[smoothedData.length - 1].distance;
+    if (maxDist === 0) return [];
+
+    return smoothedData.map((point) => {
+      const offset = (point.distance / maxDist) * 100;
+      const slope = Math.abs(point.slope || 0);
+      // 0% slope = green (#10b981), 8%+ slope = red (#ef4444)
+      const t = Math.min(slope / 8, 1);
+      // Interpolate hue: green (145) -> yellow (50) -> red (0)
+      const hue = 145 - t * 145;
+      const sat = 70 + t * 10;
+      const light = 50;
+      return { offset: `${offset}%`, color: `hsl(${hue}, ${sat}%, ${light}%)` };
+    });
+  }, [smoothedData]);
 
   const handleMouseMove = useCallback((state: any) => {
     if (state && state.activePayload && state.activePayload.length > 0) {
