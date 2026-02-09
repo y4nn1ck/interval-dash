@@ -8,10 +8,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { IntervalsActivity, intervalsService } from '@/services/intervalsService';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { parseProperFitFile } from '@/utils/properFitParser';
 import { Loader2, Download, Calendar, Clock, Zap, Mountain, RotateCcw, Heart, Activity } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import FitDataChart from '@/components/fit-analyzer/FitDataChart';
 import TemperatureChart from '@/components/fit-analyzer/TemperatureChart';
 import RouteMap from '@/components/fit-analyzer/RouteMap';
@@ -49,6 +51,19 @@ interface ElevationPoint {
   altitude: number;
   lat?: number;
   lng?: number;
+}
+
+interface LapData {
+  lapNumber: number;
+  startTime: string;
+  duration: string;
+  avgPower: number;
+  maxPower: number;
+  avgCadence: number;
+  maxCadence: number;
+  avgHeartRate: number;
+  maxHeartRate: number;
+  normalizedPower?: number;
 }
 
 const getSportIcon = (type: string) => {
@@ -96,6 +111,7 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
   const [temperatureData, setTemperatureData] = useState<TemperatureDataPoint[]>([]);
   const [gpsData, setGpsData] = useState<GpsPoint[]>([]);
   const [elevationData, setElevationData] = useState<ElevationPoint[]>([]);
+  const [lapData, setLapData] = useState<LapData[]>([]);
   const [hoveredPoint, setHoveredPoint] = useState<{ lat: number; lng: number } | null>(null);
   const [analysisStats, setAnalysisStats] = useState<{
     avgPower?: number;
@@ -230,6 +246,43 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
       setTemperatureData(tempPoints);
       setGpsData(gpsPoints);
       setElevationData(elevPoints);
+
+      // Extract lap data
+      const laps: LapData[] = [];
+      if (parsedData.rawDataStructure?.activity?.sessions?.[0]?.laps && Array.isArray(parsedData.rawDataStructure.activity.sessions[0].laps)) {
+        parsedData.rawDataStructure.activity.sessions[0].laps.forEach((lap: any, index: number) => {
+          const lapDurationSeconds = lap.total_elapsed_time || 0;
+          let lapStartTime = 'N/A';
+          if (lap.start_time) {
+            try {
+              const d = new Date(lap.start_time);
+              if (!isNaN(d.getTime())) {
+                lapStartTime = format(d, 'HH:mm:ss');
+              }
+            } catch {}
+          }
+          const formatDur = (s: number) => {
+            const h = Math.floor(s / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            const sec = Math.round(s % 60);
+            return h > 0 ? `${h}h${m.toString().padStart(2,'0')}m${sec.toString().padStart(2,'0')}s` : `${m}m${sec.toString().padStart(2,'0')}s`;
+          };
+          laps.push({
+            lapNumber: index + 1,
+            startTime: lapStartTime,
+            duration: formatDur(lapDurationSeconds),
+            avgPower: Math.round(lap.avg_power || 0),
+            maxPower: Math.round(lap.max_power || 0),
+            avgCadence: Math.round(lap.avg_cadence || 0),
+            maxCadence: Math.round(lap.max_cadence || 0),
+            avgHeartRate: Math.round(lap.avg_heart_rate || 0),
+            maxHeartRate: Math.round(lap.max_heart_rate || 0),
+            normalizedPower: lap.normalized_power ? Math.round(lap.normalized_power) : undefined,
+          });
+        });
+      }
+      setLapData(laps);
+
       setIsAnalyzed(true);
 
       toast({
@@ -254,6 +307,7 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
     setTemperatureData([]);
     setGpsData([]);
     setElevationData([]);
+    setLapData([]);
     setAnalysisStats({});
     setHoveredPoint(null);
     onClose();
@@ -430,6 +484,49 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
                 zoomDomain={null}
                 onResetZoom={() => {}}
               />
+            )}
+
+            {/* Laps Table */}
+            {lapData.length > 0 && (
+              <Card className="overflow-hidden">
+                <CardHeader className="border-b border-border/50 pb-4">
+                  <CardTitle className="text-lg">Tours / Intervalles</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4 overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-center">Tour</TableHead>
+                        <TableHead className="text-center">Heure</TableHead>
+                        <TableHead className="text-center">Durée</TableHead>
+                        <TableHead className="text-center text-orange-400">Pwr Moy</TableHead>
+                        <TableHead className="text-center text-orange-400">Pwr Max</TableHead>
+                        <TableHead className="text-center text-orange-400/70">NP</TableHead>
+                        <TableHead className="text-center text-purple-400">Cad Moy</TableHead>
+                        <TableHead className="text-center text-purple-400">Cad Max</TableHead>
+                        <TableHead className="text-center text-red-400">FC Moy</TableHead>
+                        <TableHead className="text-center text-red-400">FC Max</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {lapData.map((lap) => (
+                        <TableRow key={lap.lapNumber}>
+                          <TableCell className="text-center font-bold text-primary">{lap.lapNumber}</TableCell>
+                          <TableCell className="text-center text-muted-foreground">{lap.startTime}</TableCell>
+                          <TableCell className="text-center font-medium">{lap.duration}</TableCell>
+                          <TableCell className="text-center font-medium text-orange-400">{lap.avgPower}W</TableCell>
+                          <TableCell className="text-center">{lap.maxPower}W</TableCell>
+                          <TableCell className="text-center text-muted-foreground">{lap.normalizedPower ? `${lap.normalizedPower}W` : '-'}</TableCell>
+                          <TableCell className="text-center font-medium text-purple-400">{lap.avgCadence}</TableCell>
+                          <TableCell className="text-center">{lap.maxCadence}</TableCell>
+                          <TableCell className="text-center font-medium text-red-400">{lap.avgHeartRate}</TableCell>
+                          <TableCell className="text-center">{lap.maxHeartRate}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
             )}
           </div>
         )}

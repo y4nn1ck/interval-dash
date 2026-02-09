@@ -142,6 +142,7 @@ export default {
 				'fade-in-up-delay-2': 'fade-in-up 0.5s ease-out 0.2s forwards',
 				'fade-in-up-delay-3': 'fade-in-up 0.5s ease-out 0.3s forwards',
 				'fade-in-up-delay-4': 'fade-in-up 0.5s ease-out 0.4s forwards',
+				'fade-in-up-delay-5': 'fade-in-up 0.5s ease-out 0.5s forwards',
 				'fade-in-scale': 'fade-in-scale 0.4s ease-out forwards',
 				'slide-in-left': 'slide-in-left 0.4s ease-out forwards',
 				'slide-in-right': 'slide-in-right 0.4s ease-out forwards',
