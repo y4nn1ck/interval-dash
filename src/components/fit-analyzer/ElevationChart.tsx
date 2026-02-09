@@ -33,7 +33,6 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
     const minAltitude = Math.min(...altitudes);
     const maxAltitude = Math.max(...altitudes);
     
-    // Calculate elevation gain and loss
     let elevationGain = 0;
     let elevationLoss = 0;
     
@@ -59,7 +58,7 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
     if (data.length === 0) return [];
     
     const windowSize = Math.max(1, Math.floor(data.length / 200));
-    const result: ElevationPoint[] = [];
+    const result: (ElevationPoint & { slope?: number })[] = [];
     
     for (let i = 0; i < data.length; i += windowSize) {
       const window = data.slice(i, Math.min(i + windowSize, data.length));
@@ -75,9 +74,39 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
         index: midPoint.index
       });
     }
+
+    // Calculate slope for each point
+    for (let i = 0; i < result.length; i++) {
+      if (i === 0) {
+        result[i].slope = 0;
+      } else {
+        const dDist = (result[i].distance - result[i - 1].distance) * 1000; // km to m
+        const dAlt = result[i].altitude - result[i - 1].altitude;
+        result[i].slope = dDist > 0 ? (dAlt / dDist) * 100 : 0; // slope in %
+      }
+    }
     
     return result;
   }, [data]);
+
+  // Build a slope-based gradient for the stroke
+  const slopeGradientStops = useMemo(() => {
+    if (smoothedData.length < 2) return [];
+    const maxDist = smoothedData[smoothedData.length - 1].distance;
+    if (maxDist === 0) return [];
+
+    return smoothedData.map((point) => {
+      const offset = (point.distance / maxDist) * 100;
+      const slope = Math.abs(point.slope || 0);
+      // 0% slope = green (#10b981), 8%+ slope = red (#ef4444)
+      const t = Math.min(slope / 8, 1);
+      // Interpolate hue: green (145) -> yellow (50) -> red (0)
+      const hue = 145 - t * 145;
+      const sat = 70 + t * 10;
+      const light = 50;
+      return { offset: `${offset}%`, color: `hsl(${hue}, ${sat}%, ${light}%)` };
+    });
+  }, [smoothedData]);
 
   const handleMouseMove = useCallback((state: any) => {
     if (state && state.activePayload && state.activePayload.length > 0) {
@@ -100,13 +129,19 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const point = payload[0].payload;
+      const slope = point.slope || 0;
+      const slopeColor = Math.abs(slope) < 3 ? 'text-emerald-400' : Math.abs(slope) < 6 ? 'text-yellow-400' : 'text-red-400';
       return (
         <div className="bg-background/95 border border-border rounded-lg p-3 shadow-xl backdrop-blur-sm">
           <p className="text-sm text-muted-foreground">
-            Distance: <span className="font-semibold text-foreground">{payload[0].payload.distance.toFixed(2)} km</span>
+            Distance: <span className="font-semibold text-foreground">{point.distance.toFixed(2)} km</span>
           </p>
           <p className="text-sm text-emerald-400 font-medium">
             Altitude: <span className="font-bold">{Math.round(payload[0].value)} m</span>
+          </p>
+          <p className={`text-sm ${slopeColor} font-medium`}>
+            Pente: <span className="font-bold">{slope > 0 ? '+' : ''}{slope.toFixed(1)}%</span>
           </p>
         </div>
       );
@@ -150,11 +185,15 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
               onMouseLeave={handleMouseLeave}
             >
               <defs>
-                <linearGradient id="elevationGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.7} />
-                  <stop offset="30%" stopColor="#10b981" stopOpacity={0.4} />
-                  <stop offset="70%" stopColor="#059669" stopOpacity={0.2} />
+                <linearGradient id="elevationFillGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.5} />
+                  <stop offset="50%" stopColor="#10b981" stopOpacity={0.2} />
                   <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+                </linearGradient>
+                <linearGradient id="elevationSlopeStroke" x1="0" y1="0" x2="1" y2="0">
+                  {slopeGradientStops.map((stop, i) => (
+                    <stop key={i} offset={stop.offset} stopColor={stop.color} />
+                  ))}
                 </linearGradient>
                 <filter id="elevationGlow">
                   <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
@@ -202,9 +241,9 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
               <Area
                 type="basis"
                 dataKey="altitude"
-                stroke="#10b981"
-                strokeWidth={1.5}
-                fill="url(#elevationGradient)"
+                stroke="url(#elevationSlopeStroke)"
+                strokeWidth={2}
+                fill="url(#elevationFillGradient)"
                 isAnimationActive={false}
                 filter="url(#elevationGlow)"
                 activeDot={{
