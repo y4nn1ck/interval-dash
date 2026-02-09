@@ -129,13 +129,19 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const point = payload[0].payload;
+      const slope = point.slope || 0;
+      const slopeColor = Math.abs(slope) < 3 ? 'text-emerald-400' : Math.abs(slope) < 6 ? 'text-yellow-400' : 'text-red-400';
       return (
         <div className="bg-background/95 border border-border rounded-lg p-3 shadow-xl backdrop-blur-sm">
           <p className="text-sm text-muted-foreground">
-            Distance: <span className="font-semibold text-foreground">{payload[0].payload.distance.toFixed(2)} km</span>
+            Distance: <span className="font-semibold text-foreground">{point.distance.toFixed(2)} km</span>
           </p>
           <p className="text-sm text-emerald-400 font-medium">
             Altitude: <span className="font-bold">{Math.round(payload[0].value)} m</span>
+          </p>
+          <p className={`text-sm ${slopeColor} font-medium`}>
+            Pente: <span className="font-bold">{slope > 0 ? '+' : ''}{slope.toFixed(1)}%</span>
           </p>
         </div>
       );
