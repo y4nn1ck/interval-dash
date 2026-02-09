@@ -306,6 +306,7 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
     setTemperatureData([]);
     setGpsData([]);
     setElevationData([]);
+    setLapData([]);
     setAnalysisStats({});
     setHoveredPoint(null);
     onClose();
