@@ -249,7 +249,7 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
                   fillOpacity={0.35}
                   stroke={seg.color}
                   strokeOpacity={0.15}
-                  ifOverflow="extendDomain"
+                  ifOverflow="visible"
                 >
                   <Label
                     value={`${seg.slope > 0 ? '' : ''}${seg.slope}%`}
@@ -263,6 +263,8 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
               ))}
               <XAxis
                 dataKey="distance"
+                type="number"
+                domain={['dataMin', 'dataMax']}
                 tickFormatter={(value) => `${value.toFixed(1)}`}
                 stroke="hsl(var(--muted-foreground))"
                 fontSize={12}
