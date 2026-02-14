@@ -8,6 +8,8 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  ReferenceArea,
+  Label,
 } from 'recharts';
 
 interface ElevationPoint {
@@ -98,14 +100,49 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
     return smoothedData.map((point) => {
       const offset = (point.distance / maxDist) * 100;
       const slope = Math.abs(point.slope || 0);
-      // 0% slope = green (#10b981), 8%+ slope = red (#ef4444)
       const t = Math.min(slope / 8, 1);
-      // Interpolate hue: green (145) -> yellow (50) -> red (0)
       const hue = 145 - t * 145;
       const sat = 70 + t * 10;
       const light = 50;
       return { offset: `${offset}%`, color: `hsl(${hue}, ${sat}%, ${light}%)` };
     });
+  }, [smoothedData]);
+
+  // Build per-km segments with average slope and color (climbfinder style)
+  const kmSegments = useMemo(() => {
+    if (smoothedData.length < 2) return [];
+    const maxDist = smoothedData[smoothedData.length - 1].distance;
+    const segmentSize = maxDist > 30 ? 2 : 1; // 2km segments for long routes
+    const segments: { x1: number; x2: number; slope: number; color: string }[] = [];
+
+    for (let km = 0; km < maxDist; km += segmentSize) {
+      const x1 = km;
+      const x2 = Math.min(km + segmentSize, maxDist);
+      // Find points in this segment
+      const pts = smoothedData.filter(p => p.distance >= x1 && p.distance <= x2);
+      if (pts.length < 2) continue;
+      
+      // Average slope from altitude difference over distance
+      const altDiff = pts[pts.length - 1].altitude - pts[0].altitude;
+      const distDiff = (pts[pts.length - 1].distance - pts[0].distance) * 1000;
+      const avgSlope = distDiff > 0 ? (altDiff / distDiff) * 100 : 0;
+      
+      const absSlope = Math.abs(avgSlope);
+      const t = Math.min(absSlope / 8, 1);
+      // Gray for descent/flat (<1%), then green->yellow->orange->red
+      let color: string;
+      if (avgSlope < 1) {
+        color = 'hsl(0, 0%, 60%)'; // gray for flat/descent
+      } else {
+        const hue = 45 - t * 45; // orange(45) to red(0)
+        const sat = 80 + t * 10;
+        const light = 55 - t * 10;
+        color = `hsl(${hue}, ${sat}%, ${light}%)`;
+      }
+
+      segments.push({ x1, x2, slope: Math.round(avgSlope), color });
+    }
+    return segments;
   }, [smoothedData]);
 
   const handleMouseMove = useCallback((state: any) => {
@@ -186,9 +223,8 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
             >
               <defs>
                 <linearGradient id="elevationFillGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.5} />
-                  <stop offset="50%" stopColor="#10b981" stopOpacity={0.2} />
-                  <stop offset="100%" stopColor="#059669" stopOpacity={0.05} />
+                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="#059669" stopOpacity={0.02} />
                 </linearGradient>
                 <linearGradient id="elevationSlopeStroke" x1="0" y1="0" x2="1" y2="0">
                   {slopeGradientStops.map((stop, i) => (
@@ -203,6 +239,28 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
                   </feMerge>
                 </filter>
               </defs>
+              {/* Km-segmented colored bars (climbfinder style) */}
+              {kmSegments.map((seg, i) => (
+                <ReferenceArea
+                  key={i}
+                  x1={seg.x1}
+                  x2={seg.x2}
+                  fill={seg.color}
+                  fillOpacity={0.35}
+                  stroke={seg.color}
+                  strokeOpacity={0.15}
+                  ifOverflow="extendDomain"
+                >
+                  <Label
+                    value={`${seg.slope > 0 ? '' : ''}${seg.slope}%`}
+                    position="insideBottom"
+                    offset={15}
+                    fill={seg.color}
+                    fontSize={11}
+                    fontWeight={700}
+                  />
+                </ReferenceArea>
+              ))}
               <XAxis
                 dataKey="distance"
                 tickFormatter={(value) => `${value.toFixed(1)}`}
