@@ -257,6 +257,32 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
             </AreaChart>
           </ResponsiveContainer>
         </div>
+        
+        {/* Slope gradient legend */}
+        <div className="mt-6 flex items-center gap-4">
+          <div className="flex-1">
+            <div 
+              className="h-6 rounded border border-border/50"
+              style={{
+                background: 'linear-gradient(to right, hsl(145, 70%, 50%), hsl(72.5, 80%, 50%), hsl(0, 70%, 50%))'
+              }}
+            />
+          </div>
+          <div className="flex gap-4 text-xs text-muted-foreground">
+            <div className="flex flex-col items-center">
+              <span className="font-semibold text-emerald-400">0%</span>
+              <span>Plat</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="font-semibold text-yellow-400">4%</span>
+              <span>Moyen</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="font-semibold text-red-400">8%+</span>
+              <span>Raide</span>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
