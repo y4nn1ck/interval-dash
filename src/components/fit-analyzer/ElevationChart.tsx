@@ -8,8 +8,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  ReferenceArea,
-  Label,
 } from 'recharts';
 
 interface ElevationPoint {
@@ -91,62 +89,26 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
     return result;
   }, [data]);
 
-  // Build a slope-based gradient for the stroke
+  // Build slope-based gradient stops for both stroke and fill
   const slopeGradientStops = useMemo(() => {
     if (smoothedData.length < 2) return [];
     const maxDist = smoothedData[smoothedData.length - 1].distance;
     if (maxDist === 0) return [];
 
-    return smoothedData.map((point) => {
-      const offset = (point.distance / maxDist) * 100;
-      const slope = Math.abs(point.slope || 0);
-      const t = Math.min(slope / 8, 1);
-      const hue = 145 - t * 145;
-      const sat = 70 + t * 10;
-      const light = 50;
-      return { offset: `${offset}%`, color: `hsl(${hue}, ${sat}%, ${light}%)` };
-    });
-  }, [smoothedData]);
+    const getSlopeColor = (slope: number) => {
+      const abs = Math.abs(slope);
+      if (abs < 0.5) return 'hsl(210, 15%, 55%)';
+      if (abs < 3) return 'hsl(145, 60%, 45%)';
+      if (abs < 5) return 'hsl(55, 75%, 50%)';
+      if (abs < 7) return 'hsl(30, 85%, 50%)';
+      if (abs < 10) return 'hsl(10, 85%, 48%)';
+      return 'hsl(350, 90%, 42%)';
+    };
 
-  // Build per-km segments with average slope and color (climbfinder style)
-  const kmSegments = useMemo(() => {
-    if (smoothedData.length < 2) return [];
-    const maxDist = smoothedData[smoothedData.length - 1].distance;
-    const segmentSize = maxDist > 30 ? 2 : 1; // 2km segments for long routes
-    const segments: { x1: number; x2: number; slope: number; color: string }[] = [];
-
-    for (let km = 0; km < maxDist; km += segmentSize) {
-      const x1 = km;
-      const x2 = Math.min(km + segmentSize, maxDist);
-      // Find points in this segment
-      const pts = smoothedData.filter(p => p.distance >= x1 && p.distance <= x2);
-      if (pts.length < 2) continue;
-      
-      // Average slope from altitude difference over distance
-      const altDiff = pts[pts.length - 1].altitude - pts[0].altitude;
-      const distDiff = (pts[pts.length - 1].distance - pts[0].distance) * 1000;
-      const avgSlope = distDiff > 0 ? (altDiff / distDiff) * 100 : 0;
-      
-      const absSlope = Math.abs(avgSlope);
-      const t = Math.min(absSlope / 10, 1);
-      let color: string;
-      if (avgSlope < 0.5) {
-        color = 'hsl(210, 15%, 55%)'; // subtle blue-gray for flat/descent
-      } else if (avgSlope < 3) {
-        color = 'hsl(145, 60%, 45%)'; // green for easy slopes
-      } else if (avgSlope < 5) {
-        color = 'hsl(55, 75%, 50%)'; // yellow for moderate
-      } else if (avgSlope < 7) {
-        color = 'hsl(30, 85%, 50%)'; // orange for hard
-      } else if (avgSlope < 10) {
-        color = 'hsl(10, 85%, 48%)'; // red-orange for very hard
-      } else {
-        color = 'hsl(350, 90%, 42%)'; // deep red for extreme
-      }
-
-      segments.push({ x1, x2, slope: Math.round(avgSlope), color });
-    }
-    return segments;
+    return smoothedData.map((point) => ({
+      offset: `${(point.distance / maxDist) * 100}%`,
+      color: getSlopeColor(point.slope || 0),
+    }));
   }, [smoothedData]);
 
   const handleMouseMove = useCallback((state: any) => {
@@ -226,9 +188,11 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
               onMouseLeave={handleMouseLeave}
             >
               <defs>
-                <linearGradient id="elevationFillGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b981" stopOpacity={0.15} />
-                  <stop offset="100%" stopColor="#059669" stopOpacity={0.02} />
+                {/* Horizontal slope-based gradient for fill */}
+                <linearGradient id="elevationSlopeFill" x1="0" y1="0" x2="1" y2="0">
+                  {slopeGradientStops.map((stop, i) => (
+                    <stop key={`fill-${i}`} offset={stop.offset} stopColor={stop.color} stopOpacity={0.35} />
+                  ))}
                 </linearGradient>
                 <linearGradient id="elevationSlopeStroke" x1="0" y1="0" x2="1" y2="0">
                   {slopeGradientStops.map((stop, i) => (
@@ -243,28 +207,6 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
                   </feMerge>
                 </filter>
               </defs>
-              {/* Km-segmented colored bars (climbfinder style) */}
-              {kmSegments.map((seg, i) => (
-                <ReferenceArea
-                  key={i}
-                  x1={seg.x1}
-                  x2={seg.x2}
-                  fill={seg.color}
-                  fillOpacity={0.2}
-                  stroke={seg.color}
-                  strokeOpacity={0.4}
-                  ifOverflow="visible"
-                >
-                  <Label
-                    value={`${seg.slope > 0 ? '' : ''}${seg.slope}%`}
-                    position="insideBottom"
-                    offset={15}
-                    fill={seg.color}
-                    fontSize={11}
-                    fontWeight={700}
-                  />
-                </ReferenceArea>
-              ))}
               <XAxis
                 dataKey="distance"
                 type="number"
@@ -307,7 +249,7 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
                 dataKey="altitude"
                 stroke="url(#elevationSlopeStroke)"
                 strokeWidth={2}
-                fill="url(#elevationFillGradient)"
+                fill="url(#elevationSlopeFill)"
                 isAnimationActive={false}
                 filter="url(#elevationGlow)"
                 activeDot={{
