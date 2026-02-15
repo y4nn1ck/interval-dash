@@ -141,10 +141,70 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
               }
             });
           } else {
-            console.log('No activity.records found, trying fallback locations...');
+            console.log('No activity.records found, trying cascade structure (sessions>laps>records)...');
+            
+            // Cascade mode: records are nested in activity.sessions[].laps[].records[]
+            if (data.activity?.sessions) {
+              for (const session of data.activity.sessions) {
+                if (session.laps && Array.isArray(session.laps)) {
+                  for (const lap of session.laps) {
+                    if (lap.records && Array.isArray(lap.records)) {
+                      console.log(`Found ${lap.records.length} records in lap`);
+                      lap.records.forEach((record: any, index: number) => {
+                        if (record && typeof record === 'object') {
+                          const extractedRecord: FitRecord = {};
+                          
+                          const extractedTimestamp = extractTimestamp(record.timestamp);
+                          if (extractedTimestamp) extractedRecord.timestamp = extractedTimestamp;
+                          
+                          if (typeof record.power === 'number') extractedRecord.power = record.power;
+                          if (typeof record.cadence === 'number') extractedRecord.cadence = record.cadence;
+                          if (typeof record.heart_rate === 'number') extractedRecord.heart_rate = record.heart_rate;
+                          if (typeof record.speed === 'number') extractedRecord.speed = record.speed;
+                          if (typeof record.distance === 'number') extractedRecord.distance = record.distance;
+                          if (typeof record.altitude === 'number') extractedRecord.altitude = record.altitude;
+                          if (typeof record.temperature === 'number') extractedRecord.temperature = record.temperature;
+                          if (typeof record.core_temperature === 'number') extractedRecord.core_temperature = record.core_temperature;
+                          if (typeof record.skin_temperature === 'number') extractedRecord.skin_temperature = record.skin_temperature;
+                          if (typeof record.elapsed_time === 'number') extractedRecord.elapsed_time = record.elapsed_time;
+                          
+                          if (typeof record.position_lat === 'number') {
+                            extractedRecord.position_lat = Math.abs(record.position_lat) > 180 
+                              ? record.position_lat * (180 / Math.pow(2, 31))
+                              : record.position_lat;
+                          }
+                          if (typeof record.position_long === 'number') {
+                            extractedRecord.position_long = Math.abs(record.position_long) > 180 
+                              ? record.position_long * (180 / Math.pow(2, 31))
+                              : record.position_long;
+                          }
+                          
+                          records.push(extractedRecord);
+                          
+                          if (records.length <= 3) {
+                            console.log(`Record ${records.length - 1}:`, {
+                              power: extractedRecord.power,
+                              cadence: extractedRecord.cadence,
+                              heart_rate: extractedRecord.heart_rate,
+                              elapsed_time: extractedRecord.elapsed_time,
+                              altitude: extractedRecord.altitude,
+                              position_lat: extractedRecord.position_lat,
+                              position_long: extractedRecord.position_long,
+                            });
+                          }
+                        }
+                      });
+                    }
+                  }
+                }
+              }
+              if (records.length > 0) {
+                console.log(`Extracted ${records.length} records from cascade structure`);
+              }
+            }
             
             // Fallback: direct records array
-            if (data.records && Array.isArray(data.records)) {
+            if (records.length === 0 && data.records && Array.isArray(data.records)) {
               console.log(`Found data.records with ${data.records.length} items`);
               data.records.forEach((record: any) => {
                 if (record && typeof record === 'object') {
@@ -188,10 +248,17 @@ export const parseProperFitFile = async (file: File): Promise<ParsedFitData> => 
           let sessions: any[] = [];
           let laps: any[] = [];
           
-          if (data.sessions && Array.isArray(data.sessions)) {
+          if (data.activity?.sessions && Array.isArray(data.activity.sessions)) {
+            sessions = data.activity.sessions;
+            for (const session of data.activity.sessions) {
+              if (session.laps && Array.isArray(session.laps)) {
+                laps = laps.concat(session.laps);
+              }
+            }
+          } else if (data.sessions && Array.isArray(data.sessions)) {
             sessions = data.sessions;
           }
-          if (data.laps && Array.isArray(data.laps)) {
+          if (laps.length === 0 && data.laps && Array.isArray(data.laps)) {
             laps = data.laps;
           }
 
