@@ -128,16 +128,20 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
       const avgSlope = distDiff > 0 ? (altDiff / distDiff) * 100 : 0;
       
       const absSlope = Math.abs(avgSlope);
-      const t = Math.min(absSlope / 8, 1);
-      // Gray for descent/flat (<1%), then green->yellow->orange->red
+      const t = Math.min(absSlope / 10, 1);
       let color: string;
-      if (avgSlope < 1) {
-        color = 'hsl(0, 0%, 60%)'; // gray for flat/descent
+      if (avgSlope < 0.5) {
+        color = 'hsl(210, 15%, 55%)'; // subtle blue-gray for flat/descent
+      } else if (avgSlope < 3) {
+        color = 'hsl(145, 60%, 45%)'; // green for easy slopes
+      } else if (avgSlope < 5) {
+        color = 'hsl(55, 75%, 50%)'; // yellow for moderate
+      } else if (avgSlope < 7) {
+        color = 'hsl(30, 85%, 50%)'; // orange for hard
+      } else if (avgSlope < 10) {
+        color = 'hsl(10, 85%, 48%)'; // red-orange for very hard
       } else {
-        const hue = 45 - t * 45; // orange(45) to red(0)
-        const sat = 80 + t * 10;
-        const light = 55 - t * 10;
-        color = `hsl(${hue}, ${sat}%, ${light}%)`;
+        color = 'hsl(350, 90%, 42%)'; // deep red for extreme
       }
 
       segments.push({ x1, x2, slope: Math.round(avgSlope), color });
@@ -246,9 +250,9 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
                   x1={seg.x1}
                   x2={seg.x2}
                   fill={seg.color}
-                  fillOpacity={0.35}
+                  fillOpacity={0.2}
                   stroke={seg.color}
-                  strokeOpacity={0.15}
+                  strokeOpacity={0.4}
                   ifOverflow="visible"
                 >
                   <Label
@@ -324,22 +328,26 @@ const ElevationChart: React.FC<ElevationChartProps> = ({ data, onHover }) => {
             <div 
               className="h-6 rounded border border-border/50"
               style={{
-                background: 'linear-gradient(to right, hsl(145, 70%, 50%), hsl(72.5, 80%, 50%), hsl(0, 70%, 50%))'
+                background: 'linear-gradient(to right, hsl(210, 15%, 55%) 0%, hsl(145, 60%, 45%) 15%, hsl(55, 75%, 50%) 40%, hsl(30, 85%, 50%) 60%, hsl(10, 85%, 48%) 80%, hsl(350, 90%, 42%) 100%)'
               }}
             />
           </div>
-          <div className="flex gap-4 text-xs text-muted-foreground">
+            <div className="flex gap-3 text-xs text-muted-foreground">
             <div className="flex flex-col items-center">
-              <span className="font-semibold text-emerald-400">0%</span>
-              <span>Plat</span>
+              <span className="font-semibold" style={{ color: 'hsl(145, 60%, 45%)' }}>0-3%</span>
+              <span>Facile</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="font-semibold text-yellow-400">4%</span>
+              <span className="font-semibold" style={{ color: 'hsl(55, 75%, 50%)' }}>3-5%</span>
               <span>Moyen</span>
             </div>
             <div className="flex flex-col items-center">
-              <span className="font-semibold text-red-400">8%+</span>
-              <span>Raide</span>
+              <span className="font-semibold" style={{ color: 'hsl(30, 85%, 50%)' }}>5-7%</span>
+              <span>Dur</span>
+            </div>
+            <div className="flex flex-col items-center">
+              <span className="font-semibold" style={{ color: 'hsl(350, 90%, 42%)' }}>10%+</span>
+              <span>Extrême</span>
             </div>
           </div>
         </div>
