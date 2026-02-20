@@ -333,7 +333,7 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
         </DialogHeader>
 
         {/* Activity Summary */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
           <div className="metric-card p-3 rounded-lg">
             <div className="flex items-center gap-2 mb-1">
               <Clock className="h-4 w-4 text-emerald-400" />
@@ -355,15 +355,6 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
             </div>
             <p className="text-lg font-bold">{Math.round(activity.total_elevation_gain)}m</p>
           </div>
-          {activity.icu_average_watts && (
-            <div className="metric-card p-3 rounded-lg">
-              <div className="flex items-center gap-2 mb-1">
-                <Zap className="h-4 w-4 text-orange-400" />
-                <span className="text-xs text-muted-foreground">Puissance moy</span>
-              </div>
-              <p className="text-lg font-bold text-orange-400">{Math.round(activity.icu_average_watts)}W</p>
-            </div>
-          )}
           {activity.icu_training_load && (
             <div className="metric-card p-3 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
@@ -399,62 +390,56 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
           </div>
         ) : (
           <div className="space-y-6 mt-6">
-            {/* Analysis Stats */}
-            {(analysisStats.avgPower || analysisStats.avgHeartRate) && (
-              <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+            {/* Analysis Stats - Grouped cards */}
+            {(analysisStats.avgPower || analysisStats.avgHeartRate || analysisStats.avgCadence) && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {analysisStats.avgPower && (
-                  <>
-                    <div className="metric-card p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Zap className="h-4 w-4 text-orange-400" />
-                        <span className="text-xs text-muted-foreground">Pwr Moy</span>
-                      </div>
-                      <p className="text-lg font-bold text-orange-400">{analysisStats.avgPower}W</p>
-                    </div>
-                    <div className="metric-card p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Zap className="h-4 w-4 text-orange-400" />
-                        <span className="text-xs text-muted-foreground">Pwr Max</span>
-                      </div>
-                      <p className="text-lg font-bold">{analysisStats.maxPower}W</p>
-                    </div>
-                  </>
-                )}
-                {analysisStats.normalizedPower && (
                   <div className="metric-card p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Zap className="h-4 w-4 text-orange-400/70" />
-                      <span className="text-xs text-muted-foreground">NP</span>
+                    <div className="flex items-center gap-2 mb-2">
+                      <Zap className="h-4 w-4 text-orange-400" />
+                      <span className="text-xs text-muted-foreground">Puissance</span>
                     </div>
-                    <p className="text-lg font-bold">{analysisStats.normalizedPower}W</p>
+                    <div className="space-y-1">
+                      <p className="text-lg font-bold text-orange-400">
+                        Moy <span className="text-xl">{analysisStats.avgPower}W</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Max <span className="font-semibold text-foreground">{analysisStats.maxPower}W</span>
+                      </p>
+                      {analysisStats.normalizedPower && (
+                        <p className="text-sm text-muted-foreground">
+                          NP <span className="font-semibold text-foreground">{analysisStats.normalizedPower}W</span>
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
                 {analysisStats.avgCadence && (
                   <div className="metric-card p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-2">
                       <RotateCcw className="h-4 w-4 text-purple-400" />
                       <span className="text-xs text-muted-foreground">Cadence</span>
                     </div>
-                    <p className="text-lg font-bold text-purple-400">{analysisStats.avgCadence}</p>
+                    <p className="text-lg font-bold text-purple-400">
+                      Moy <span className="text-xl">{analysisStats.avgCadence} rpm</span>
+                    </p>
                   </div>
                 )}
                 {analysisStats.avgHeartRate && (
-                  <>
-                    <div className="metric-card p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Heart className="h-4 w-4 text-red-400" />
-                        <span className="text-xs text-muted-foreground">FC Moy</span>
-                      </div>
-                      <p className="text-lg font-bold text-red-400">{analysisStats.avgHeartRate}</p>
+                  <div className="metric-card p-3 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Heart className="h-4 w-4 text-red-400" />
+                      <span className="text-xs text-muted-foreground">Fréquence cardiaque</span>
                     </div>
-                    <div className="metric-card p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Heart className="h-4 w-4 text-red-400" />
-                        <span className="text-xs text-muted-foreground">FC Max</span>
-                      </div>
-                      <p className="text-lg font-bold">{analysisStats.maxHeartRate}</p>
+                    <div className="space-y-1">
+                      <p className="text-lg font-bold text-red-400">
+                        Moy <span className="text-xl">{analysisStats.avgHeartRate} bpm</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Max <span className="font-semibold text-foreground">{analysisStats.maxHeartRate} bpm</span>
+                      </p>
                     </div>
-                  </>
+                  </div>
                 )}
               </div>
             )}
