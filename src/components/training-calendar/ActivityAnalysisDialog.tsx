@@ -115,11 +115,13 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
   const [hoveredPoint, setHoveredPoint] = useState<{ lat: number; lng: number } | null>(null);
   const [analysisStats, setAnalysisStats] = useState<{
     avgPower?: number;
+    minPower?: number;
     maxPower?: number;
     avgCadence?: number;
     minCadence?: number;
     maxCadence?: number;
     avgHeartRate?: number;
+    minHeartRate?: number;
     maxHeartRate?: number;
     normalizedPower?: number;
   }>({});
@@ -170,6 +172,9 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
         avgPower: powerRecords.length > 0 
           ? Math.round(powerRecords.reduce((sum: number, r: any) => sum + (r.power || 0), 0) / powerRecords.length)
           : undefined,
+        minPower: powerRecords.length > 0 
+          ? Math.min(...powerRecords.map((r: any) => r.power || 0))
+          : undefined,
         maxPower: powerRecords.length > 0 
           ? Math.max(...powerRecords.map((r: any) => r.power || 0))
           : undefined,
@@ -184,6 +189,9 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
           : undefined,
         avgHeartRate: heartRateRecords.length > 0 
           ? Math.round(heartRateRecords.reduce((sum: number, r: any) => sum + (r.heart_rate || 0), 0) / heartRateRecords.length)
+          : undefined,
+        minHeartRate: heartRateRecords.length > 0 
+          ? Math.min(...heartRateRecords.map((r: any) => r.heart_rate || 0))
           : undefined,
         maxHeartRate: heartRateRecords.length > 0 
           ? Math.max(...heartRateRecords.map((r: any) => r.heart_rate || 0))
@@ -412,7 +420,8 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
                         Moy <span className="text-xl">{analysisStats.avgPower}W</span>
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Max <span className="font-semibold text-foreground">{analysisStats.maxPower}W</span>
+                        Min <span className="font-semibold text-foreground">{analysisStats.minPower}W</span>
+                        {' · '}Max <span className="font-semibold text-foreground">{analysisStats.maxPower}W</span>
                       </p>
                       {analysisStats.normalizedPower && (
                         <p className="text-sm text-muted-foreground">
@@ -450,7 +459,8 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
                         Moy <span className="text-xl">{analysisStats.avgHeartRate} bpm</span>
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        Max <span className="font-semibold text-foreground">{analysisStats.maxHeartRate} bpm</span>
+                        Min <span className="font-semibold text-foreground">{analysisStats.minHeartRate} bpm</span>
+                        {' · '}Max <span className="font-semibold text-foreground">{analysisStats.maxHeartRate} bpm</span>
                       </p>
                     </div>
                   </div>
