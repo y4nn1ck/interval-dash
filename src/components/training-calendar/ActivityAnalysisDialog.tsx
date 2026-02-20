@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { IntervalsActivity, intervalsService } from '@/services/intervalsService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { parseProperFitFile } from '@/utils/properFitParser';
-import { Loader2, Download, Calendar, Clock, Zap, Mountain, RotateCcw, Heart, Activity } from 'lucide-react';
+import { Loader2, Download, Calendar, Clock, Zap, Mountain, RotateCcw, Heart, Activity, Gauge } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -123,6 +123,9 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
     avgHeartRate?: number;
     minHeartRate?: number;
     maxHeartRate?: number;
+    avgSpeed?: number;
+    minSpeed?: number;
+    maxSpeed?: number;
     normalizedPower?: number;
   }>({});
 
@@ -167,6 +170,7 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
       const powerRecords = recordsToUse.filter((r: any) => r.power && r.power > 0);
       const cadenceRecords = recordsToUse.filter((r: any) => r.cadence && r.cadence > 0);
       const heartRateRecords = recordsToUse.filter((r: any) => r.heart_rate && r.heart_rate > 0);
+      const speedRecords = recordsToUse.filter((r: any) => r.speed && r.speed > 0);
 
       setAnalysisStats({
         avgPower: powerRecords.length > 0 
@@ -195,6 +199,15 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
           : undefined,
         maxHeartRate: heartRateRecords.length > 0 
           ? Math.max(...heartRateRecords.map((r: any) => r.heart_rate || 0))
+          : undefined,
+        avgSpeed: speedRecords.length > 0 
+          ? Math.round((speedRecords.reduce((sum: number, r: any) => sum + (r.speed || 0), 0) / speedRecords.length) * 3.6 * 10) / 10
+          : undefined,
+        minSpeed: speedRecords.length > 0 
+          ? Math.round(Math.min(...speedRecords.map((r: any) => r.speed || 0)) * 3.6 * 10) / 10
+          : undefined,
+        maxSpeed: speedRecords.length > 0 
+          ? Math.round(Math.max(...speedRecords.map((r: any) => r.speed || 0)) * 3.6 * 10) / 10
           : undefined,
         normalizedPower: parsedData.rawDataStructure?.activity?.sessions?.[0]?.normalized_power 
           ? Math.round(parsedData.rawDataStructure.activity.sessions[0].normalized_power)
@@ -407,8 +420,8 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
         ) : (
           <div className="space-y-6 mt-6">
             {/* Analysis Stats - Grouped cards */}
-            {(analysisStats.avgPower || analysisStats.avgHeartRate || analysisStats.avgCadence) && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {(analysisStats.avgPower || analysisStats.avgHeartRate || analysisStats.avgCadence || analysisStats.avgSpeed) && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 {analysisStats.avgPower && (
                   <div className="metric-card p-3 rounded-lg">
                     <div className="flex items-center gap-2 mb-2">
@@ -461,6 +474,23 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
                       <p className="text-sm text-muted-foreground">
                         Min <span className="font-semibold text-foreground">{analysisStats.minHeartRate} bpm</span>
                         {' · '}Max <span className="font-semibold text-foreground">{analysisStats.maxHeartRate} bpm</span>
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {analysisStats.avgSpeed && (
+                  <div className="metric-card p-3 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Gauge className="h-4 w-4 text-cyan-400" />
+                      <span className="text-xs text-muted-foreground">Vitesse</span>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-lg font-bold text-cyan-400">
+                        Moy <span className="text-xl">{analysisStats.avgSpeed} km/h</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Min <span className="font-semibold text-foreground">{analysisStats.minSpeed} km/h</span>
+                        {' · '}Max <span className="font-semibold text-foreground">{analysisStats.maxSpeed} km/h</span>
                       </p>
                     </div>
                   </div>
