@@ -117,6 +117,8 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
     avgPower?: number;
     maxPower?: number;
     avgCadence?: number;
+    minCadence?: number;
+    maxCadence?: number;
     avgHeartRate?: number;
     maxHeartRate?: number;
     normalizedPower?: number;
@@ -173,6 +175,12 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
           : undefined,
         avgCadence: cadenceRecords.length > 0 
           ? Math.round(cadenceRecords.reduce((sum: number, r: any) => sum + (r.cadence || 0), 0) / cadenceRecords.length)
+          : undefined,
+        minCadence: cadenceRecords.length > 0 
+          ? Math.min(...cadenceRecords.map((r: any) => r.cadence || 0))
+          : undefined,
+        maxCadence: cadenceRecords.length > 0 
+          ? Math.max(...cadenceRecords.map((r: any) => r.cadence || 0))
           : undefined,
         avgHeartRate: heartRateRecords.length > 0 
           ? Math.round(heartRateRecords.reduce((sum: number, r: any) => sum + (r.heart_rate || 0), 0) / heartRateRecords.length)
@@ -420,9 +428,15 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
                       <RotateCcw className="h-4 w-4 text-purple-400" />
                       <span className="text-xs text-muted-foreground">Cadence</span>
                     </div>
-                    <p className="text-lg font-bold text-purple-400">
-                      Moy <span className="text-xl">{analysisStats.avgCadence} rpm</span>
-                    </p>
+                    <div className="space-y-1">
+                      <p className="text-lg font-bold text-purple-400">
+                        Moy <span className="text-xl">{analysisStats.avgCadence} rpm</span>
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Min <span className="font-semibold text-foreground">{analysisStats.minCadence} rpm</span>
+                        {' · '}Max <span className="font-semibold text-foreground">{analysisStats.maxCadence} rpm</span>
+                      </p>
+                    </div>
                   </div>
                 )}
                 {analysisStats.avgHeartRate && (
