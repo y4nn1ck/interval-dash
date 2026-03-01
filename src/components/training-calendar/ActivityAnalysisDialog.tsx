@@ -66,6 +66,22 @@ interface LapData {
   normalizedPower?: number;
 }
 
+const getSpeedUnit = (type: string): 'km/h' | 'min/km' | 'min/100m' => {
+  const lowerType = (type || '').toLowerCase();
+  if (lowerType.includes('swim') || lowerType.includes('swimming')) return 'min/100m';
+  if (lowerType.includes('run') || lowerType.includes('running')) return 'min/km';
+  return 'km/h';
+};
+
+const formatSpeedAsPace = (speedMs: number, unit: 'min/km' | 'min/100m'): string => {
+  if (speedMs <= 0) return '-';
+  const divisor = unit === 'min/100m' ? 100 : 1000;
+  const paceSeconds = divisor / speedMs;
+  const mins = Math.floor(paceSeconds / 60);
+  const secs = Math.round(paceSeconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
 const getSportIcon = (type: string) => {
   const lowerType = (type || '').toLowerCase();
   if (lowerType.includes('ride') || lowerType.includes('cycling') || lowerType.includes('bike')) {
