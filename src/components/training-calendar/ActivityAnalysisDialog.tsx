@@ -591,6 +591,45 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
               </div>
             )}
 
+            {/* AI Analysis */}
+            <div className="metric-card p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-400" />
+                  <span className="font-semibold">Analyse IA de la séance</span>
+                </div>
+                {!aiAnalysis && (
+                  <Button
+                    onClick={requestAiAnalysis}
+                    disabled={isAiLoading}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {isAiLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Analyse en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Lancer l'analyse
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+              {aiAnalysis ? (
+                <div className="prose prose-sm dark:prose-invert max-w-none text-sm">
+                  <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
+                </div>
+              ) : !isAiLoading ? (
+                <p className="text-sm text-muted-foreground">
+                  Cliquez sur "Lancer l'analyse" pour obtenir une analyse complète de votre séance par l'IA.
+                </p>
+              ) : null}
+            </div>
+
             {/* Route Map */}
             {gpsData.length > 0 && (
               <RouteMap gpsData={gpsData} hoveredPoint={hoveredPoint} />
