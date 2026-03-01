@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { IntervalsActivity, intervalsService } from '@/services/intervalsService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { parseProperFitFile } from '@/utils/properFitParser';
-import { Loader2, Download, Calendar, Clock, Zap, Mountain, RotateCcw, Heart, Activity, Gauge } from 'lucide-react';
+import { Loader2, Download, Calendar, Clock, Zap, Mountain, RotateCcw, Heart, Activity, Gauge, Sparkles } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -136,6 +138,9 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
   const [elevationData, setElevationData] = useState<ElevationPoint[]>([]);
   const [lapData, setLapData] = useState<LapData[]>([]);
   const [hoveredPoint, setHoveredPoint] = useState<{ lat: number; lng: number } | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
   const [analysisStats, setAnalysisStats] = useState<{
     avgPower?: number;
     minPower?: number;
@@ -151,6 +156,58 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
     maxSpeed?: number;
     normalizedPower?: number;
   }>({});
+
+  const requestAiAnalysis = useCallback(async () => {
+    if (!activity || !analysisStats.avgPower) return;
+    setIsAiLoading(true);
+    try {
+      const speedUnit = getSpeedUnit(activity.type || '');
+      const isPace = speedUnit === 'min/km' || speedUnit === 'min/100m';
+      let speedDisplay = 'N/A';
+      if (analysisStats.avgSpeed) {
+        if (isPace) {
+          speedDisplay = `Moy ${formatSpeedAsPace(analysisStats.avgSpeed, speedUnit as 'min/km' | 'min/100m')} ${speedUnit}`;
+        } else {
+          speedDisplay = `Moy ${Math.round(analysisStats.avgSpeed * 10) / 10} ${speedUnit}`;
+        }
+      }
+
+      const { data, error } = await supabase.functions.invoke('analyze-workout', {
+        body: {
+          workoutData: {
+            type: activity.type,
+            duration: activity.moving_time ? formatDuration(activity.moving_time) : undefined,
+            distance: activity.distance ? formatDistance(activity.distance) : undefined,
+            avgPower: analysisStats.avgPower,
+            minPower: analysisStats.minPower,
+            maxPower: analysisStats.maxPower,
+            normalizedPower: analysisStats.normalizedPower,
+            avgCadence: analysisStats.avgCadence,
+            minCadence: analysisStats.minCadence,
+            maxCadence: analysisStats.maxCadence,
+            avgHeartRate: analysisStats.avgHeartRate,
+            minHeartRate: analysisStats.minHeartRate,
+            maxHeartRate: analysisStats.maxHeartRate,
+            speedDisplay,
+            tss: activity.icu_training_load ? Math.round(activity.icu_training_load) : undefined,
+            lapCount: lapData.length || undefined,
+          }
+        }
+      });
+
+      if (error) throw error;
+      setAiAnalysis(data.analysis);
+    } catch (err) {
+      console.error('AI analysis error:', err);
+      toast({
+        title: "Erreur d'analyse IA",
+        description: "Impossible d'obtenir l'analyse. Réessayez plus tard.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAiLoading(false);
+    }
+  }, [activity, analysisStats, lapData, toast]);
 
   const handleAnalyze = async () => {
     if (!activity) return;
@@ -533,6 +590,45 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
                 })()}
               </div>
             )}
+
+            {/* AI Analysis */}
+            <div className="metric-card p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-amber-400" />
+                  <span className="font-semibold">Analyse IA de la séance</span>
+                </div>
+                {!aiAnalysis && (
+                  <Button
+                    onClick={requestAiAnalysis}
+                    disabled={isAiLoading}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {isAiLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Analyse en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Lancer l'analyse
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+              {aiAnalysis ? (
+                <div className="prose prose-sm dark:prose-invert max-w-none text-sm">
+                  <ReactMarkdown>{aiAnalysis}</ReactMarkdown>
+                </div>
+              ) : !isAiLoading ? (
+                <p className="text-sm text-muted-foreground">
+                  Cliquez sur "Lancer l'analyse" pour obtenir une analyse complète de votre séance par l'IA.
+                </p>
+              ) : null}
+            </div>
 
             {/* Route Map */}
             {gpsData.length > 0 && (
