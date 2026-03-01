@@ -507,7 +507,7 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
                   const formatVal = (v?: number) => {
                     if (!v) return '-';
                     if (isPace) return formatSpeedAsPace(v, speedUnit as 'min/km' | 'min/100m');
-                    return `${Math.round(v * 3.6 * 10) / 10}`;
+                    return `${Math.round(v * 10) / 10}`;
                   };
                   const label = isPace ? 'Allure' : 'Vitesse';
                   // For pace, min speed = slowest = highest pace, max speed = fastest = lowest pace
