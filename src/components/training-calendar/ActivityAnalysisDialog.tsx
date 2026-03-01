@@ -141,6 +141,22 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
   const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
+  const [analysisStats, setAnalysisStats] = useState<{
+    avgPower?: number;
+    minPower?: number;
+    maxPower?: number;
+    avgCadence?: number;
+    minCadence?: number;
+    maxCadence?: number;
+    avgHeartRate?: number;
+    minHeartRate?: number;
+    maxHeartRate?: number;
+    avgSpeed?: number;
+    minSpeed?: number;
+    maxSpeed?: number;
+    normalizedPower?: number;
+  }>({});
+
   const requestAiAnalysis = useCallback(async () => {
     if (!activity || !analysisStats.avgPower) return;
     setIsAiLoading(true);
@@ -192,21 +208,6 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
       setIsAiLoading(false);
     }
   }, [activity, analysisStats, lapData, toast]);
-  const [analysisStats, setAnalysisStats] = useState<{
-    avgPower?: number;
-    minPower?: number;
-    maxPower?: number;
-    avgCadence?: number;
-    minCadence?: number;
-    maxCadence?: number;
-    avgHeartRate?: number;
-    minHeartRate?: number;
-    maxHeartRate?: number;
-    avgSpeed?: number;
-    minSpeed?: number;
-    maxSpeed?: number;
-    normalizedPower?: number;
-  }>({});
 
   const handleAnalyze = async () => {
     if (!activity) return;
