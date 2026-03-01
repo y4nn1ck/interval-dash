@@ -494,23 +494,36 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
                     </div>
                   </div>
                 )}
-                {analysisStats.avgSpeed && (
-                  <div className="metric-card p-3 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Gauge className="h-4 w-4 text-cyan-400" />
-                      <span className="text-xs text-muted-foreground">Vitesse</span>
+                {analysisStats.avgSpeed && (() => {
+                  const speedUnit = getSpeedUnit(activity?.type || '');
+                  const isPace = speedUnit === 'min/km' || speedUnit === 'min/100m';
+                  const formatVal = (v?: number) => {
+                    if (!v) return '-';
+                    if (isPace) return formatSpeedAsPace(v, speedUnit as 'min/km' | 'min/100m');
+                    return `${Math.round(v * 3.6 * 10) / 10}`;
+                  };
+                  const label = isPace ? 'Allure' : 'Vitesse';
+                  // For pace, min speed = slowest = highest pace, max speed = fastest = lowest pace
+                  const displayMin = isPace ? formatVal(analysisStats.maxSpeed) : formatVal(analysisStats.minSpeed);
+                  const displayMax = isPace ? formatVal(analysisStats.minSpeed) : formatVal(analysisStats.maxSpeed);
+                  return (
+                    <div className="metric-card p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Gauge className="h-4 w-4 text-cyan-400" />
+                        <span className="text-xs text-muted-foreground">{label}</span>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-lg font-bold text-cyan-400">
+                          Moy <span className="text-xl">{formatVal(analysisStats.avgSpeed)} {speedUnit}</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Min <span className="font-semibold text-foreground">{displayMin} {speedUnit}</span>
+                          {' · '}Max <span className="font-semibold text-foreground">{displayMax} {speedUnit}</span>
+                        </p>
+                      </div>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-lg font-bold text-cyan-400">
-                        Moy <span className="text-xl">{analysisStats.avgSpeed} km/h</span>
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Min <span className="font-semibold text-foreground">{analysisStats.minSpeed} km/h</span>
-                        {' · '}Max <span className="font-semibold text-foreground">{analysisStats.maxSpeed} km/h</span>
-                      </p>
-                    </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             )}
 
