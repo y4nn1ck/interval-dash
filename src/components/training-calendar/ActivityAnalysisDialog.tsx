@@ -138,6 +138,60 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
   const [elevationData, setElevationData] = useState<ElevationPoint[]>([]);
   const [lapData, setLapData] = useState<LapData[]>([]);
   const [hoveredPoint, setHoveredPoint] = useState<{ lat: number; lng: number } | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
+  const requestAiAnalysis = useCallback(async () => {
+    if (!activity || !analysisStats.avgPower) return;
+    setIsAiLoading(true);
+    try {
+      const speedUnit = getSpeedUnit(activity.type || '');
+      const isPace = speedUnit === 'min/km' || speedUnit === 'min/100m';
+      let speedDisplay = 'N/A';
+      if (analysisStats.avgSpeed) {
+        if (isPace) {
+          speedDisplay = `Moy ${formatSpeedAsPace(analysisStats.avgSpeed, speedUnit as 'min/km' | 'min/100m')} ${speedUnit}`;
+        } else {
+          speedDisplay = `Moy ${Math.round(analysisStats.avgSpeed * 10) / 10} ${speedUnit}`;
+        }
+      }
+
+      const { data, error } = await supabase.functions.invoke('analyze-workout', {
+        body: {
+          workoutData: {
+            type: activity.type,
+            duration: activity.moving_time ? formatDuration(activity.moving_time) : undefined,
+            distance: activity.distance ? formatDistance(activity.distance) : undefined,
+            avgPower: analysisStats.avgPower,
+            minPower: analysisStats.minPower,
+            maxPower: analysisStats.maxPower,
+            normalizedPower: analysisStats.normalizedPower,
+            avgCadence: analysisStats.avgCadence,
+            minCadence: analysisStats.minCadence,
+            maxCadence: analysisStats.maxCadence,
+            avgHeartRate: analysisStats.avgHeartRate,
+            minHeartRate: analysisStats.minHeartRate,
+            maxHeartRate: analysisStats.maxHeartRate,
+            speedDisplay,
+            tss: activity.icu_training_load ? Math.round(activity.icu_training_load) : undefined,
+            lapCount: lapData.length || undefined,
+          }
+        }
+      });
+
+      if (error) throw error;
+      setAiAnalysis(data.analysis);
+    } catch (err) {
+      console.error('AI analysis error:', err);
+      toast({
+        title: "Erreur d'analyse IA",
+        description: "Impossible d'obtenir l'analyse. Réessayez plus tard.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAiLoading(false);
+    }
+  }, [activity, analysisStats, lapData, toast]);
   const [analysisStats, setAnalysisStats] = useState<{
     avgPower?: number;
     minPower?: number;
