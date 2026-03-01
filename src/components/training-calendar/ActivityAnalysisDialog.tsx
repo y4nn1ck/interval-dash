@@ -73,12 +73,19 @@ const getSpeedUnit = (type: string): 'km/h' | 'min/km' | 'min/100m' => {
   return 'km/h';
 };
 
-const formatSpeedAsPace = (speedMs: number, unit: 'min/km' | 'min/100m'): string => {
-  if (speedMs <= 0) return '-';
-  const divisor = unit === 'min/100m' ? 100 : 1000;
-  const paceSeconds = divisor / speedMs;
-  const mins = Math.floor(paceSeconds / 60);
-  const secs = Math.round(paceSeconds % 60);
+// speedKmh is already in km/h from the FIT parser
+const formatSpeedAsPace = (speedKmh: number, unit: 'min/km' | 'min/100m'): string => {
+  if (speedKmh <= 0) return '-';
+  // Convert km/h to pace
+  const paceMinPerKm = 60 / speedKmh; // minutes per km
+  if (unit === 'min/100m') {
+    const paceMinPer100m = paceMinPerKm / 10;
+    const mins = Math.floor(paceMinPer100m);
+    const secs = Math.round((paceMinPer100m - mins) * 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+  const mins = Math.floor(paceMinPerKm);
+  const secs = Math.round((paceMinPerKm - mins) * 60);
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
