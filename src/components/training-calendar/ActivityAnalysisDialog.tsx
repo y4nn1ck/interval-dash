@@ -217,13 +217,13 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
           ? Math.max(...heartRateRecords.map((r: any) => r.heart_rate || 0))
           : undefined,
         avgSpeed: speedRecords.length > 0 
-          ? Math.round((speedRecords.reduce((sum: number, r: any) => sum + (r.speed || 0), 0) / speedRecords.length) * 3.6 * 10) / 10
+          ? speedRecords.reduce((sum: number, r: any) => sum + (r.speed || 0), 0) / speedRecords.length
           : undefined,
         minSpeed: speedRecords.length > 0 
-          ? Math.round(Math.min(...speedRecords.map((r: any) => r.speed || 0)) * 3.6 * 10) / 10
+          ? Math.min(...speedRecords.map((r: any) => r.speed || 0))
           : undefined,
         maxSpeed: speedRecords.length > 0 
-          ? Math.round(Math.max(...speedRecords.map((r: any) => r.speed || 0)) * 3.6 * 10) / 10
+          ? Math.max(...speedRecords.map((r: any) => r.speed || 0))
           : undefined,
         normalizedPower: parsedData.rawDataStructure?.activity?.sessions?.[0]?.normalized_power 
           ? Math.round(parsedData.rawDataStructure.activity.sessions[0].normalized_power)
