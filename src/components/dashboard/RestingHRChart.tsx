@@ -46,17 +46,17 @@ const RestingHRChart = ({ data }: RestingHRChartProps) => {
               <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" strokeWidth={1} />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
           <XAxis 
             dataKey="date" 
             tickFormatter={(dateStr) => {
               const date = parseISO(dateStr);
               return format(date, 'EEE', { locale: fr });
             }}
-            className="text-gray-600"
             fontSize={12}
             tickLine={false}
             axisLine={false}
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
           />
           <YAxis 
             className="text-gray-600"
