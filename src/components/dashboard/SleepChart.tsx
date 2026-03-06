@@ -97,7 +97,11 @@ const SleepChart = ({ data }: SleepChartProps) => {
           <ChartTooltip 
             content={<ChartTooltipContent 
               className="bg-card/95 backdrop-blur-xl border-border shadow-xl"
-              formatter={(value) => [`${Math.round(value as number)}h (${getSleepLabel(value as number)})`, 'Sommeil']}
+              formatter={(value) => {
+                const hours = Math.floor(value as number);
+                const minutes = Math.round(((value as number) - hours) * 60);
+                return [`${hours}h${minutes.toString().padStart(2, '0')} (${getSleepLabel(value as number)})`, 'Sommeil'];
+              }}
             />}
             labelFormatter={(value) => {
               const date = parseISO(value as string);
