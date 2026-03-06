@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import Dashboard from "./pages/Dashboard";
 import PowerCompar from "./pages/PowerCompar";
 import FitAnalyzer from "./pages/FitAnalyzer";
@@ -22,33 +23,36 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
-          <SidebarProvider>
-            <div className="min-h-screen flex w-full">
-              <AppSidebar />
-              <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
-                  <SidebarTrigger className="-ml-1" />
-                  <ThemeToggle />
-                </header>
-                <main className="flex-1">
-                  <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/power-compar" element={<PowerCompar />} />
-                    <Route path="/fit-analyzer" element={<FitAnalyzer />} />
-                    <Route path="/fit-raw-reader" element={<FitRawReader />} />
-                    <Route path="/training-calendar" element={<TrainingCalendar />} />
-                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </main>
-              </SidebarInset>
-            </div>
-          </SidebarProvider>
-        </BrowserRouter>
+        <ErrorBoundary>
+          <BrowserRouter>
+            <SidebarProvider>
+              <div className="min-h-screen flex w-full">
+                <AppSidebar />
+                <SidebarInset>
+                  <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
+                    <SidebarTrigger className="-ml-1" />
+                    <ThemeToggle />
+                  </header>
+                  <main className="flex-1">
+                    <Routes>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/power-compar" element={<PowerCompar />} />
+                      <Route path="/fit-analyzer" element={<FitAnalyzer />} />
+                      <Route path="/fit-raw-reader" element={<FitRawReader />} />
+                      <Route path="/training-calendar" element={<TrainingCalendar />} />
+                      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
+                </SidebarInset>
+              </div>
+            </SidebarProvider>
+          </BrowserRouter>
+        </ErrorBoundary>
       </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );
 
 export default App;
+
