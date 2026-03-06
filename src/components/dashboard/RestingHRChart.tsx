@@ -27,7 +27,7 @@ const RestingHRChart = ({ data }: RestingHRChartProps) => {
 
   if (validData.length === 0) {
     return (
-      <div className="h-[300px] w-full flex items-center justify-center text-gray-500">
+      <div className="h-[300px] w-full flex items-center justify-center text-muted-foreground">
         <p>Aucune donnée de fréquence cardiaque disponible</p>
       </div>
     );
@@ -46,28 +46,28 @@ const RestingHRChart = ({ data }: RestingHRChartProps) => {
               <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" strokeWidth={1} />
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
           <XAxis 
             dataKey="date" 
             tickFormatter={(dateStr) => {
               const date = parseISO(dateStr);
               return format(date, 'EEE', { locale: fr });
             }}
-            className="text-gray-600"
             fontSize={12}
             tickLine={false}
             axisLine={false}
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
           />
           <YAxis 
-            className="text-gray-600"
             fontSize={12}
             tickLine={false}
             axisLine={false}
             domain={['dataMin - 5', 'dataMax + 5']}
+            tick={{ fill: 'hsl(var(--muted-foreground))' }}
           />
           <ChartTooltip 
             content={<ChartTooltipContent 
-              className="bg-white/95 backdrop-blur-sm border-gray-200 shadow-xl"
+              className="bg-card/95 backdrop-blur-xl border-border shadow-xl"
               formatter={(value) => [`${value} bpm`, 'FC Repos']}
             />}
             labelFormatter={(value) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CTLATLTSBChart from './CTLATLTSBChart';
-import HydrationChart from './HydrationChart';
+import RestingHRChart from './RestingHRChart';
 import SleepChart from './SleepChart';
 import { useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 
@@ -57,34 +57,30 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
     return data;
   };
 
-  const generateHydrationData = () => {
+  const generateRestingHRData = () => {
     const data = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date();
       date.setDate(date.getDate() - (6 - i));
       const dateStr = date.toISOString().split('T')[0];
       
-      let hydration = null;
+      let restingHR = 0;
       
       if (weeklyStats && weeklyStats.length > 0) {
         const apiData = weeklyStats.find(stat => stat.date === dateStr);
-        if (apiData && apiData.hydration !== null && apiData.hydration !== undefined) {
-          hydration = apiData.hydration;
+        if (apiData && apiData.resting_hr !== null && apiData.resting_hr !== undefined) {
+          restingHR = apiData.resting_hr;
         }
       }
       
-      if (hydration === null || hydration === undefined) {
-        const fallbackValues = [1, 2, 1, 3, 2, 1, 4];
-        hydration = fallbackValues[i];
-      }
-      
-      if (hydration === null || hydration === undefined) {
-        hydration = 0;
+      if (!restingHR) {
+        const fallbackValues = [50, 48, 52, 49, 51, 50, 49];
+        restingHR = fallbackValues[i];
       }
       
       data.push({
         date: dateStr,
-        hydration: hydration,
+        resting_hr: restingHR,
       });
     }
     
@@ -152,16 +148,16 @@ const ChartsSection = ({ ctl, atl }: ChartsSectionProps) => {
         </CardContent>
       </Card>
 
-      {/* Hydration Chart */}
+      {/* Resting Heart Rate Chart */}
       <Card className="glass-card opacity-0 animate-fade-in-up" style={{ animationDelay: '0.45s', animationFillMode: 'forwards' }}>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-semibold">
-            <span className="gradient-text">Hydratation quotidienne</span>
+            <span className="gradient-text">Fréquence cardiaque au repos</span>
             <span className="text-muted-foreground text-sm font-normal ml-2">(7 jours)</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <HydrationChart data={generateHydrationData()} />
+          <RestingHRChart data={generateRestingHRData()} />
         </CardContent>
       </Card>
     </div>
