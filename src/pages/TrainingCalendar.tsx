@@ -9,6 +9,7 @@ import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { IntervalsActivity } from '@/services/intervalsService';
 import ActivityAnalysisDialog from '@/components/training-calendar/ActivityAnalysisDialog';
+import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
@@ -270,48 +271,7 @@ const TrainingCalendar = () => {
       </div>
 
       {/* Weekly Summary */}
-      {activities.length > 0 && (
-        <Card className="glass-card opacity-0 animate-fade-in-up-delay-3">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-3 text-lg">
-              <Activity className="h-5 w-5 text-primary" />
-              Résumé de la semaine
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="metric-card p-4 rounded-lg">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Activités</p>
-                <p className="text-2xl font-bold text-foreground">{activities.length}</p>
-              </div>
-              <div className="metric-card p-4 rounded-lg">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Durée totale</p>
-                <p className="text-2xl font-bold text-emerald-400">
-                  {formatDuration(activities.reduce((sum, a) => sum + (a.moving_time || 0), 0))}
-                </p>
-              </div>
-              <div className="metric-card p-4 rounded-lg">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Distance</p>
-                <p className="text-2xl font-bold text-blue-400">
-                  {formatDistance(activities.reduce((sum, a) => sum + (a.distance || 0), 0))}
-                </p>
-              </div>
-              <div className="metric-card p-4 rounded-lg">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Dénivelé</p>
-                <p className="text-2xl font-bold text-purple-400">
-                  {Math.round(activities.reduce((sum, a) => sum + (a.total_elevation_gain || 0), 0))}m
-                </p>
-              </div>
-              <div className="metric-card p-4 rounded-lg">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Charge (TSS)</p>
-                <p className="text-2xl font-bold text-orange-400">
-                  {Math.round(activities.reduce((sum, a) => sum + (a.icu_training_load || 0), 0))}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <WeeklySummary activities={activities} />
 
       {/* Analysis Dialog */}
       <ActivityAnalysisDialog
