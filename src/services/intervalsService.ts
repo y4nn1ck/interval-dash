@@ -279,7 +279,26 @@ class IntervalsService {
   }
 
   async getActivityFitFile(activityId: string): Promise<ArrayBuffer | null> {
-    // ... keep existing code
+    try {
+      const apiKey = localStorage.getItem('intervals_api_key');
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      if (!apiKey || !athleteId) return null;
+
+      const response = await fetch(`${this.baseUrl}/activity/${activityId}/fit-file`, {
+        headers: {
+          'Authorization': `Basic ${btoa(`API_KEY:${apiKey}`)}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch FIT file: ${response.statusText}`);
+      }
+
+      return await response.arrayBuffer();
+    } catch (error) {
+      console.error('Error fetching activity FIT file:', error);
+      return null;
+    }
   }
 
   async getEvents(startDate: string, endDate: string): Promise<IntervalsEvent[]> {
