@@ -9,6 +9,7 @@ import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { IntervalsActivity } from '@/services/intervalsService';
 import ActivityAnalysisDialog from '@/components/training-calendar/ActivityAnalysisDialog';
+import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
