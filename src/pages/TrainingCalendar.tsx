@@ -328,7 +328,7 @@ const TrainingCalendar = () => {
                       </div>
                     )}
                   </>
-                )}
+              </CardContent>
             </Card>
           );
         })}
