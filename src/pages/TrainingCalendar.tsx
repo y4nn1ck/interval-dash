@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight, Calendar, Loader2, Activity, Clock, Zap, Mou
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameDay, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { IntervalsActivity } from '@/services/intervalsService';
+import { IntervalsActivity, IntervalsEvent } from '@/services/intervalsService';
 import ActivityAnalysisDialog from '@/components/training-calendar/ActivityAnalysisDialog';
 import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 
@@ -70,6 +70,29 @@ const TrainingCalendar = () => {
     startDateStr, 
     endDateStr
   );
+
+  const { data: events = [] } = useIntervalsEvents(startDateStr, endDateStr);
+
+  // Group events by day, excluding those already paired with an activity
+  const eventsByDay = useMemo(() => {
+    const pairedActivityIds = new Set(
+      events.filter(e => e.paired_activity_id).map(e => e.paired_activity_id)
+    );
+    const grouped: Record<string, IntervalsEvent[]> = {};
+    events.forEach((event) => {
+      // Only show events that are NOT already paired with an activity
+      if (event.paired_activity_id && activities.some(a => a.id === event.paired_activity_id)) {
+        return; // Skip, already shown as completed activity
+      }
+      const eventDate = parseISO(event.start_date_local);
+      const dateKey = format(eventDate, 'yyyy-MM-dd');
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(event);
+    });
+    return grouped;
+  }, [events, activities]);
 
   const weekDays = useMemo(() => {
     const days = [];
