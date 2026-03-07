@@ -15,6 +15,21 @@ export interface IntervalsActivity {
   icu_average_watts?: number;
 }
 
+export interface IntervalsEvent {
+  id: number;
+  start_date_local: string;
+  name: string;
+  type: string;
+  category: string;
+  description?: string;
+  color?: string;
+  moving_time?: number;
+  distance?: number;
+  icu_training_load?: number;
+  paired_activity_id?: string | null;
+  workout_doc?: any;
+}
+
 export interface IntervalsDailyStats {
   date: string;
   training_load: number;
@@ -269,7 +284,6 @@ class IntervalsService {
       const athleteId = localStorage.getItem('intervals_athlete_id');
       if (!apiKey || !athleteId) return null;
 
-      console.log(`Fetching FIT file for activity ${activityId}...`);
       const response = await fetch(`${this.baseUrl}/activity/${activityId}/fit-file`, {
         headers: {
           'Authorization': `Basic ${btoa(`API_KEY:${apiKey}`)}`
@@ -284,6 +298,35 @@ class IntervalsService {
     } catch (error) {
       console.error('Error fetching activity FIT file:', error);
       return null;
+    }
+  }
+
+  async getEvents(startDate: string, endDate: string): Promise<IntervalsEvent[]> {
+    try {
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      if (!athleteId) return [];
+
+      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/events?oldest=${startDate}&newest=${endDate}`);
+      
+      return data
+        .filter((event: any) => event.category === 'WORKOUT')
+        .map((event: any) => ({
+          id: event.id,
+          start_date_local: event.start_date_local,
+          name: event.name || 'Sans nom',
+          type: event.type || 'Unknown',
+          category: event.category,
+          description: event.description,
+          color: event.color,
+          moving_time: event.moving_time || 0,
+          distance: event.distance || 0,
+          icu_training_load: event.icu_training_load,
+          paired_activity_id: event.paired_activity_id,
+          workout_doc: event.workout_doc,
+        }));
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      return [];
     }
   }
 
