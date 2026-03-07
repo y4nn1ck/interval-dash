@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { useIntervalsAuth, useIntervalsActivities, useIntervalsEvents } from '@/hooks/useIntervalsData';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
-import { ChevronLeft, ChevronRight, Calendar, Loader2, Activity, Clock, Zap, Mountain, Heart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Loader2, Activity, Clock, Zap, Mountain, Heart, ClipboardList } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameDay, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
