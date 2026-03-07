@@ -327,7 +327,8 @@ const TrainingCalendar = () => {
                         <span className="text-xs">Repos</span>
                       </div>
                     )}
-                  </>
+                   </>
+                 )}
               </CardContent>
             </Card>
           );
