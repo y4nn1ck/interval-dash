@@ -90,6 +90,14 @@ export const useIntervalsActivities = (startDate: string, endDate: string) => {
   });
 };
 
+export const useIntervalsEvents = (startDate: string, endDate: string) => {
+  return useQuery({
+    queryKey: ['intervals-events', startDate, endDate],
+    queryFn: () => intervalsService.getEvents(startDate, endDate),
+    enabled: !!startDate && !!endDate,
+  });
+};
+
 export const useIntervalsActivityFitFile = () => {
   const queryClient = useQueryClient();
   
