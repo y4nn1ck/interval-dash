@@ -24,6 +24,11 @@ const menuItems = [
     icon: CalendarDays,
   },
   {
+    title: "Résultats courses",
+    url: "/race-results",
+    icon: Trophy,
+  },
+  {
     title: "Power Compar",
     url: "/power-compar",
     icon: BarChart3,
