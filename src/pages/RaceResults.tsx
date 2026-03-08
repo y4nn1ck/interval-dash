@@ -127,7 +127,6 @@ export default function RaceResults() {
     setActivityId("");
     setActivityCandidates([]);
   };
-  };
 
   const populateForm = (r: RaceResult) => {
     setEditingId(r.id);
