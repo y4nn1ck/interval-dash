@@ -85,6 +85,7 @@ export default function RaceResults() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterDistance, setFilterDistance] = useState<string>("all");
+  const [filterYear, setFilterYear] = useState<string>("all");
 
   // Form state
   const [raceType, setRaceType] = useState("running");
@@ -232,9 +233,12 @@ export default function RaceResults() {
     }
   };
 
+  const allYears = [...new Set(results.map(r => new Date(r.activity_date).getFullYear()))].sort((a, b) => b - a);
+
   const filtered = results.filter(r => {
     if (filterType !== "all" && r.race_type !== filterType) return false;
     if (filterDistance !== "all" && r.distance !== filterDistance) return false;
+    if (filterYear !== "all" && new Date(r.activity_date).getFullYear() !== parseInt(filterYear)) return false;
     return true;
   });
 
@@ -450,6 +454,13 @@ export default function RaceResults() {
                 {getDistanceLabel(filterType === "all" ? "running" : filterType, d)}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+        <Select value={filterYear} onValueChange={setFilterYear}>
+          <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les années</SelectItem>
+            {allYears.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
