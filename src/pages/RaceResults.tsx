@@ -85,6 +85,7 @@ export default function RaceResults() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterDistance, setFilterDistance] = useState<string>("all");
+  const [filterYear, setFilterYear] = useState<string>("all");
 
   // Form state
   const [raceType, setRaceType] = useState("running");
