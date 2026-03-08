@@ -90,13 +90,10 @@ const TrainingCalendar = () => {
     return map;
   }, [events]);
 
-  // Group events by day, excluding those already paired with an activity
+  // Group ALL events by day (including paired ones)
   const eventsByDay = useMemo(() => {
     const grouped: Record<string, IntervalsEvent[]> = {};
     events.forEach((event) => {
-      if (event.paired_activity_id && activities.some(a => a.id === event.paired_activity_id)) {
-        return;
-      }
       const eventDate = parseISO(event.start_date_local);
       const dateKey = format(eventDate, 'yyyy-MM-dd');
       if (!grouped[dateKey]) {
@@ -105,7 +102,7 @@ const TrainingCalendar = () => {
       grouped[dateKey].push(event);
     });
     return grouped;
-  }, [events, activities]);
+  }, [events]);
 
   const weekDays = useMemo(() => {
     const days = [];
@@ -270,40 +267,54 @@ const TrainingCalendar = () => {
                           <ClipboardList className="h-3 w-3 text-primary/60" />
                           <span className="text-[10px] font-medium text-primary/60 uppercase tracking-wider">Prévu</span>
                         </div>
-                        {dayEvents.map((event) => (
-                          <button
-                            key={`event-${event.id}`}
-                            onClick={() => handleEventClick(event)}
-                            className={cn(
-                              "w-full text-left p-2 rounded-lg transition-all duration-200",
-                              "border border-dashed border-primary/40 bg-primary/5",
-                              "hover:bg-primary/10 hover:shadow-md hover:scale-[1.02] cursor-pointer",
-                            )}
-                          >
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-base">{getSportIcon(event.type)}</span>
-                              <span className="text-xs font-medium truncate flex-1 text-primary/80">
-                                {event.name}
-                              </span>
-                            </div>
-                            <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground">
-                              {event.moving_time && event.moving_time > 0 && (
-                                <span className="flex items-center gap-0.5">
-                                  <Clock className="h-2.5 w-2.5" />
-                                  {formatDuration(event.moving_time)}
+                        {dayEvents.map((event) => {
+                          const isPaired = !!(event.paired_activity_id && activities.some(a => a.id === event.paired_activity_id));
+                          return (
+                            <button
+                              key={`event-${event.id}`}
+                              onClick={() => handleEventClick(event)}
+                              className={cn(
+                                "w-full text-left p-2 rounded-lg transition-all duration-200",
+                                "hover:shadow-md hover:scale-[1.02] cursor-pointer",
+                                isPaired
+                                  ? "border border-dashed border-green-500/30 bg-green-500/5 hover:bg-green-500/10"
+                                  : "border border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10",
+                              )}
+                            >
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-base">{getSportIcon(event.type)}</span>
+                                <span className={cn(
+                                  "text-xs font-medium truncate flex-1",
+                                  isPaired ? "text-green-400/80" : "text-primary/80"
+                                )}>
+                                  {event.name}
                                 </span>
-                              )}
-                              {event.distance && event.distance > 0 && (
-                                <span>{formatDistance(event.distance)}</span>
-                              )}
-                              {event.icu_training_load && (
-                                <span className="text-primary/60 font-medium">
-                                  ~{Math.round(event.icu_training_load)} TSS
-                                </span>
-                              )}
-                            </div>
-                          </button>
-                        ))}
+                                {isPaired && (
+                                  <span className="text-[10px] text-green-400/70">✓</span>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground">
+                                {event.moving_time && event.moving_time > 0 && (
+                                  <span className="flex items-center gap-0.5">
+                                    <Clock className="h-2.5 w-2.5" />
+                                    {formatDuration(event.moving_time)}
+                                  </span>
+                                )}
+                                {event.distance && event.distance > 0 && (
+                                  <span>{formatDistance(event.distance)}</span>
+                                )}
+                                {event.icu_training_load && (
+                                  <span className={cn(
+                                    "font-medium",
+                                    isPaired ? "text-green-400/60" : "text-primary/60"
+                                  )}>
+                                    ~{Math.round(event.icu_training_load)} TSS
+                                  </span>
+                                )}
+                              </div>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
 
