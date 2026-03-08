@@ -110,6 +110,8 @@ export default function RaceResults() {
     setHours(""); setMinutes(""); setSeconds("");
     setActivityHours(""); setActivityMinutes(""); setActivitySeconds("");
     setHasActivityTime(false);
+    setOverallRank("");
+    setCategoryRank("");
     setNotes("");
   };
 
