@@ -11,6 +11,7 @@ import { IntervalsActivity, IntervalsEvent } from '@/services/intervalsService';
 import ActivityAnalysisDialog from '@/components/training-calendar/ActivityAnalysisDialog';
 import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 import ComplianceIndicator from '@/components/training-calendar/ComplianceIndicator';
+import ComplianceEvolutionChart from '@/components/training-calendar/ComplianceEvolutionChart';
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
@@ -351,6 +352,9 @@ const TrainingCalendar = () => {
 
       {/* Weekly Summary */}
       <WeeklySummary activities={activities} events={events} />
+
+      {/* Compliance Evolution Chart */}
+      <ComplianceEvolutionChart currentWeekStart={currentWeekStart} />
 
       {/* Analysis Dialog */}
       <ActivityAnalysisDialog
