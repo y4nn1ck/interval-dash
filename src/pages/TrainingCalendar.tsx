@@ -306,7 +306,7 @@ const TrainingCalendar = () => {
                       return (
                         <button
                           key={activity.id}
-                          onClick={() => handleActivityClick(activity)}
+                          onClick={() => handleActivityClick(activity, pairedEvent)}
                           className={cn(
                             "w-full text-left p-2 rounded-lg transition-all duration-200",
                             "bg-secondary/50 hover:bg-secondary border border-border/50",
