@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useIntervalsAuth, useIntervalsActivities, useIntervalsEvents } from '@/hooks/useIntervalsData';
@@ -127,14 +127,33 @@ const TrainingCalendar = () => {
     return grouped;
   }, [activities]);
 
-  // Max planned events across all days for consistent vertical alignment
-  const maxPlannedEvents = useMemo(() => {
-    return weekDays.reduce((max, day) => {
-      const dateKey = format(day, 'yyyy-MM-dd');
-      const count = (eventsByDay[dateKey] || []).length;
-      return Math.max(max, count);
-    }, 0);
-  }, [weekDays, eventsByDay]);
+  // Ref-based alignment: measure actual planned section heights and apply max
+  const plannedRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [plannedMinHeight, setPlannedMinHeight] = useState<number>(0);
+
+  const setPlannedRef = useCallback((index: number) => (el: HTMLDivElement | null) => {
+    plannedRefs.current[index] = el;
+  }, []);
+
+  useEffect(() => {
+    // Wait for render, then measure
+    const timer = setTimeout(() => {
+      let maxH = 0;
+      plannedRefs.current.forEach((el) => {
+        if (el) {
+          // Temporarily remove minHeight to get natural height
+          const prev = el.style.minHeight;
+          el.style.minHeight = '0px';
+          maxH = Math.max(maxH, el.scrollHeight);
+          el.style.minHeight = prev;
+        }
+      });
+      if (maxH > 0) {
+        setPlannedMinHeight(maxH);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [events, activities, currentWeekStart]);
 
   const handlePreviousWeek = () => {
     setCurrentWeekStart(prev => subWeeks(prev, 1));
@@ -271,8 +290,9 @@ const TrainingCalendar = () => {
                   <>
                     {/* Planned section with consistent min-height for alignment */}
                     <div
+                      ref={setPlannedRef(index)}
                       className="space-y-1.5 flex-shrink-0"
-                      style={{ minHeight: maxPlannedEvents > 0 ? `${maxPlannedEvents * 52 + 20}px` : undefined }}
+                      style={{ minHeight: plannedMinHeight > 0 ? `${plannedMinHeight}px` : undefined }}
                     >
                       {dayEvents.length > 0 && (
                         <>
@@ -333,7 +353,7 @@ const TrainingCalendar = () => {
                     </div>
 
                     {/* Separator - always present when there are planned events in the week */}
-                    {maxPlannedEvents > 0 && (
+                    {plannedMinHeight > 0 && (
                       <div className={cn("border-t my-1.5", dayEvents.length > 0 || dayActivities.length > 0 ? "border-border/30" : "border-transparent")} />
                     )}
 
