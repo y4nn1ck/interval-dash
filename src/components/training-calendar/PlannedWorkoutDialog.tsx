@@ -101,8 +101,8 @@ const WorkoutStepRow: React.FC<{ step: WorkoutStep; index: number; depth?: numbe
   }
 
   const powerTarget = formatPowerTarget(step.power);
-  const rampTarget = step.ramp
-    ? `${step.ramp.start}% → ${step.ramp.end}% ${step.ramp.units === '%ftp' ? 'FTP' : step.ramp.units}`
+  const rampTarget = step.ramp && step.ramp.start != null && step.ramp.end != null && !isNaN(step.ramp.start) && !isNaN(step.ramp.end)
+    ? `${step.ramp.start}% → ${step.ramp.end}% ${step.ramp.units === '%ftp' ? 'FTP' : step.ramp.units || ''}`
     : null;
   const duration = formatStepDuration(step.duration);
   const zoneColor = getZoneColor(step.power);
