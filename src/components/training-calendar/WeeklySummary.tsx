@@ -172,7 +172,7 @@ const WeeklySummary = ({ activities, events = [], viewMode = 'week' }: WeeklySum
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg">
               <ClipboardCheck className="h-5 w-5 text-primary" />
-              Compliance hebdomadaire
+              Compliance {complianceLabel}
             </CardTitle>
           </CardHeader>
           <CardContent>
