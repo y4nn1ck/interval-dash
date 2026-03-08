@@ -5,30 +5,34 @@ import { BarChart3 } from 'lucide-react';
 
 interface WorkoutStep {
   duration?: number;
-  power?: { value: number; units: string };
-  ramp?: { start: number; end: number; units: string };
+  power?: { value?: number; start?: number; end?: number; units: string };
+  hr?: any;
+  cadence?: any;
+  ramp?: boolean;
   text?: string;
   steps?: WorkoutStep[];
+  reps?: number;
   repeat?: number;
+  distance?: number;
 }
 
 interface FlatStep {
   startTime: number;
   duration: number;
-  power: number; // % FTP or absolute
-  powerEnd?: number; // for ramps
+  power: number;
+  powerEnd?: number;
   label: string;
   isRamp: boolean;
 }
 
 const ZONE_COLORS = [
-  { max: 55, color: '#6B7280', label: 'Z1 Récup' },      // gray
-  { max: 75, color: '#3B82F6', label: 'Z2 Endurance' },   // blue
-  { max: 90, color: '#22C55E', label: 'Z3 Tempo' },       // green
-  { max: 105, color: '#EAB308', label: 'Z4 Seuil' },      // yellow
-  { max: 120, color: '#F97316', label: 'Z5 VO2max' },     // orange
-  { max: 150, color: '#EF4444', label: 'Z6 Anaérobie' },  // red
-  { max: Infinity, color: '#A855F7', label: 'Z7 Sprint' }, // purple
+  { max: 55, color: '#6B7280', label: 'Z1 Récup' },
+  { max: 75, color: '#3B82F6', label: 'Z2 Endurance' },
+  { max: 90, color: '#22C55E', label: 'Z3 Tempo' },
+  { max: 105, color: '#EAB308', label: 'Z4 Seuil' },
+  { max: 120, color: '#F97316', label: 'Z5 VO2max' },
+  { max: 150, color: '#EF4444', label: 'Z6 Anaérobie' },
+  { max: Infinity, color: '#A855F7', label: 'Z7 Sprint' },
 ];
 
 const getZoneColorHex = (pct: number): string => {
@@ -38,38 +42,57 @@ const getZoneColorHex = (pct: number): string => {
   return ZONE_COLORS[ZONE_COLORS.length - 1].color;
 };
 
+// Convert power zone numbers to approximate %FTP
+const powerZoneToFtp = (zone: number): number => {
+  const map: Record<number, number> = { 1: 50, 2: 68, 3: 83, 4: 97, 5: 112, 6: 135, 7: 160 };
+  return map[zone] || 50;
+};
+
+const extractPower = (step: WorkoutStep): { power: number; powerEnd?: number; isRamp: boolean; label: string } => {
+  const p = step.power;
+  if (!p) return { power: 50, isRamp: false, label: step.text || '' };
+
+  const isRamp = !!step.ramp;
+
+  if (isRamp && p.start != null && p.end != null && !isNaN(p.start) && !isNaN(p.end)) {
+    if (p.units === '%ftp') {
+      return { power: p.start, powerEnd: p.end, isRamp: true, label: `${p.start}→${p.end}%` };
+    }
+    if (p.units === 'power_zone') {
+      const s = powerZoneToFtp(p.start);
+      const e = powerZoneToFtp(p.end);
+      return { power: s, powerEnd: e, isRamp: true, label: `Z${p.start}→Z${p.end}` };
+    }
+    return { power: p.start, powerEnd: p.end, isRamp: true, label: `${p.start}→${p.end}` };
+  }
+
+  if (p.value != null && !isNaN(p.value)) {
+    if (p.units === '%ftp') return { power: p.value, isRamp: false, label: `${p.value}%` };
+    if (p.units === 'power_zone') {
+      const pct = powerZoneToFtp(p.value);
+      return { power: pct, isRamp: false, label: `Z${p.value}` };
+    }
+    return { power: p.value, isRamp: false, label: `${p.value}W` };
+  }
+
+  return { power: 50, isRamp: false, label: step.text || '' };
+};
+
 const flattenSteps = (steps: WorkoutStep[], startTime = 0): FlatStep[] => {
   const flat: FlatStep[] = [];
   let currentTime = startTime;
 
   for (const step of steps) {
-    if (step.repeat && step.steps) {
-      for (let r = 0; r < step.repeat; r++) {
+    const reps = step.reps || step.repeat;
+    if (reps && step.steps) {
+      for (let r = 0; r < reps; r++) {
         const inner = flattenSteps(step.steps, currentTime);
         flat.push(...inner);
         currentTime = inner.length > 0 ? inner[inner.length - 1].startTime + inner[inner.length - 1].duration : currentTime;
       }
     } else {
       const dur = step.duration && step.duration > 0 ? step.duration : 60;
-      let power = 50;
-      let powerEnd: number | undefined;
-      let isRamp = false;
-      let label = '';
-
-      if (step.power && step.power.value != null && !isNaN(step.power.value)) {
-        power = step.power.value;
-        label = step.power.units === '%ftp' ? `${power}%` : `${power}W`;
-      } else if (step.ramp && step.ramp.start != null && step.ramp.end != null && !isNaN(step.ramp.start) && !isNaN(step.ramp.end)) {
-        power = step.ramp.start;
-        powerEnd = step.ramp.end;
-        isRamp = true;
-        label = `${power}→${powerEnd}%`;
-      } else {
-        // No power info - use default zone 1
-        power = 50;
-        label = step.text || '';
-      }
-
+      const { power, powerEnd, isRamp, label } = extractPower(step);
       flat.push({ startTime: currentTime, duration: dur, power, powerEnd, label, isRamp });
       currentTime += dur;
     }

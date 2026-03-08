@@ -45,24 +45,42 @@ const formatDistance = (meters: number) => {
 
 interface WorkoutStep {
   duration?: number;
-  power?: { value: number; units: string };
+  power?: { value?: number; start?: number; end?: number; units: string };
   cadence?: { value: number };
-  ramp?: { start: number; end: number; units: string };
+  ramp?: boolean;
   text?: string;
   steps?: WorkoutStep[];
+  reps?: number;
   repeat?: number;
 }
 
-const formatPowerTarget = (power: { value: number; units: string } | undefined) => {
-  if (!power || power.value == null || isNaN(power.value)) return null;
-  if (power.units === '%ftp') return `${power.value}% FTP`;
-  if (power.units === 'W') return `${power.value}W`;
-  return `${power.value} ${power.units}`;
+const formatPowerTarget = (power: WorkoutStep['power']) => {
+  if (!power) return null;
+  if (power.value != null && !isNaN(power.value)) {
+    if (power.units === '%ftp') return `${power.value}% FTP`;
+    if (power.units === 'power_zone') return `Zone ${power.value}`;
+    if (power.units === 'W') return `${power.value}W`;
+    return `${power.value} ${power.units}`;
+  }
+  return null;
 };
 
-const getZoneColor = (power: { value: number; units: string } | undefined): string => {
-  if (!power || power.value == null || isNaN(power.value) || power.units !== '%ftp') return 'bg-muted text-muted-foreground';
-  const pct = power.value;
+const formatRampTarget = (step: WorkoutStep) => {
+  if (!step.ramp || !step.power?.start || !step.power?.end) return null;
+  const p = step.power;
+  const unitLabel = p.units === '%ftp' ? 'FTP' : p.units === 'power_zone' ? 'Zone' : (p.units || '');
+  return `${p.start}% → ${p.end}% ${unitLabel}`;
+};
+
+const getZoneColor = (power: WorkoutStep['power']): string => {
+  if (!power) return 'bg-muted text-muted-foreground';
+  let pct: number | undefined;
+  if (power.value != null && !isNaN(power.value)) {
+    pct = power.units === '%ftp' ? power.value : undefined;
+  } else if (power.start != null) {
+    pct = power.units === '%ftp' ? power.start : undefined;
+  }
+  if (pct == null) return 'bg-muted text-muted-foreground';
   if (pct <= 55) return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
   if (pct <= 75) return 'bg-green-500/20 text-green-400 border-green-500/30';
   if (pct <= 90) return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
@@ -82,12 +100,13 @@ const formatStepDuration = (seconds: number | undefined) => {
 
 const WorkoutStepRow: React.FC<{ step: WorkoutStep; index: number; depth?: number }> = ({ step, index, depth = 0 }) => {
   // Repeat block
-  if (step.repeat && step.steps) {
+  const reps = step.reps || step.repeat;
+  if (reps && step.steps) {
     return (
       <div className={cn("rounded-lg border border-border/50 overflow-hidden", depth > 0 && "ml-4")}>
         <div className="bg-primary/10 px-3 py-1.5 flex items-center gap-2">
           <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-            {step.repeat}x
+            {reps}x
           </Badge>
           <span className="text-xs text-muted-foreground">Répétitions</span>
         </div>
@@ -101,9 +120,7 @@ const WorkoutStepRow: React.FC<{ step: WorkoutStep; index: number; depth?: numbe
   }
 
   const powerTarget = formatPowerTarget(step.power);
-  const rampTarget = step.ramp && step.ramp.start != null && step.ramp.end != null && !isNaN(step.ramp.start) && !isNaN(step.ramp.end)
-    ? `${step.ramp.start}% → ${step.ramp.end}% ${step.ramp.units === '%ftp' ? 'FTP' : step.ramp.units || ''}`
-    : null;
+  const rampTarget = formatRampTarget(step);
   const duration = formatStepDuration(step.duration);
   const zoneColor = getZoneColor(step.power);
 
