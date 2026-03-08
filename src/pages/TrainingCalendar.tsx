@@ -5,7 +5,7 @@ import { useIntervalsAuth, useIntervalsActivities, useIntervalsEvents } from '@/
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import { ChevronLeft, ChevronRight, Calendar, Loader2, Activity, Clock, Zap, Mountain, Heart, ClipboardList, RefreshCw } from 'lucide-react';
 import StravaPendingBanner from '@/components/dashboard/StravaPendingBanner';
-import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameDay, parseISO } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, addMonths, subMonths, startOfMonth, endOfMonth, isSameDay, isSameMonth, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { IntervalsActivity, IntervalsEvent } from '@/services/intervalsService';
@@ -15,6 +15,8 @@ import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 import ComplianceIndicator from '@/components/training-calendar/ComplianceIndicator';
 import ComplianceEvolutionChart from '@/components/training-calendar/ComplianceEvolutionChart';
 import TrainingLoadEvolutionChart from '@/components/training-calendar/TrainingLoadEvolutionChart';
+import MonthlyCalendarView from '@/components/training-calendar/MonthlyCalendarView';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
