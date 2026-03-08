@@ -50,6 +50,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background p-6">
+      <SEO title="Tableau de bord" description="Suivez vos métriques d'entraînement, charge, CTL/ATL/TSB et séances du jour." path="/" />
       <div className="max-w-7xl mx-auto">
         <DashboardHeader athleteName={athleteName} athleteId={athleteId} />
 

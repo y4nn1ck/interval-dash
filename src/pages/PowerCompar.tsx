@@ -173,6 +173,7 @@ const PowerCompar = () => {
 
   return (
     <div className="min-h-screen p-6 md:p-8 space-y-8">
+      <SEO title="Comparateur de puissance" description="Comparez les courbes de puissance et cadence de deux fichiers FIT côte à côte." path="/power-compar" />
       {/* Header */}
       <div className="space-y-2 opacity-0 animate-fade-in-up">
         <h1 className="text-4xl font-bold gradient-text">Power Compar</h1>

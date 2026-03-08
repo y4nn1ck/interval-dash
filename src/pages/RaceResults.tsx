@@ -301,6 +301,7 @@ export default function RaceResults() {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto">
+      <SEO title="Résultats courses" description="Consultez vos résultats de courses, suivez votre progression et comparez vos chronos par distance." path="/race-results" />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
