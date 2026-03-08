@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { useIntervalsAuth, useIntervalsActivities, useIntervalsEvents } from '@/hooks/useIntervalsData';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
-import { ChevronLeft, ChevronRight, Calendar, Loader2, Activity, Clock, Zap, Mountain, Heart, ClipboardList } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Loader2, Activity, Clock, Zap, Mountain, Heart, ClipboardList, RefreshCw } from 'lucide-react';
 import StravaPendingBanner from '@/components/dashboard/StravaPendingBanner';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameDay, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -74,7 +74,7 @@ const TrainingCalendar = () => {
   const startDateStr = format(currentWeekStart, 'yyyy-MM-dd');
   const endDateStr = format(weekEnd, 'yyyy-MM-dd');
 
-  const { data: activities = [], isLoading: activitiesLoading, pendingStravaCount } = useIntervalsActivities(
+  const { data: activities = [], isLoading: activitiesLoading, pendingStravaCount, refetch: refetchActivities, isFetching: isRefreshingActivities } = useIntervalsActivities(
     startDateStr, 
     endDateStr
   );
@@ -227,6 +227,16 @@ const TrainingCalendar = () => {
               <Button
                 variant="outline"
                 size="icon"
+                onClick={() => refetchActivities()}
+                disabled={isRefreshingActivities}
+                className="h-9 w-9"
+                title="Rafraîchir les activités"
+              >
+                <RefreshCw className={cn("h-4 w-4", isRefreshingActivities && "animate-spin")} />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={handlePreviousWeek}
                 className="h-9 w-9"
               >
@@ -254,7 +264,7 @@ const TrainingCalendar = () => {
       </Card>
 
       {/* Strava Pending Banner */}
-      <StravaPendingBanner count={pendingStravaCount} className="opacity-0 animate-fade-in-up-delay-1" />
+      <StravaPendingBanner count={pendingStravaCount} onRefresh={() => refetchActivities()} isRefreshing={isRefreshingActivities} className="opacity-0 animate-fade-in-up-delay-1" />
 
       {/* Week Grid */}
       <div className="grid grid-cols-7 gap-3 opacity-0 animate-fade-in-up-delay-2">
