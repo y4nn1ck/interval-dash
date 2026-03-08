@@ -75,8 +75,15 @@ const TrainingCalendar = () => {
 
   const weekEnd = useMemo(() => endOfWeek(currentWeekStart, { weekStartsOn: 1 }), [currentWeekStart]);
 
-  const startDateStr = format(currentWeekStart, 'yyyy-MM-dd');
-  const endDateStr = format(weekEnd, 'yyyy-MM-dd');
+  const monthStart = useMemo(() => startOfMonth(currentMonth), [currentMonth]);
+  const monthEnd = useMemo(() => endOfMonth(currentMonth), [currentMonth]);
+
+  const startDateStr = viewMode === 'week'
+    ? format(currentWeekStart, 'yyyy-MM-dd')
+    : format(startOfWeek(monthStart, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+  const endDateStr = viewMode === 'week'
+    ? format(weekEnd, 'yyyy-MM-dd')
+    : format(endOfWeek(monthEnd, { weekStartsOn: 1 }), 'yyyy-MM-dd');
 
   const { data: activities = [], isLoading: activitiesLoading, pendingStravaCount, refetch: refetchActivities, isFetching: isRefreshingActivities } = useIntervalsActivities(
     startDateStr, 
