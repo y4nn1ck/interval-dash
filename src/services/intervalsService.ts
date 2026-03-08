@@ -15,6 +15,11 @@ export interface IntervalsActivity {
   icu_average_watts?: number;
 }
 
+export interface ActivitiesResult {
+  activities: IntervalsActivity[];
+  pendingStravaCount: number;
+}
+
 export interface IntervalsEvent {
   id: number;
   start_date_local: string;
