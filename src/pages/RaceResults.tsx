@@ -163,6 +163,20 @@ export default function RaceResults() {
     onError: () => toast.error("Erreur lors de l'ajout"),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, ...result }: Omit<RaceResult, "created_at">) => {
+      const { error } = await supabase.from("race_results").update(result).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["race-results"] });
+      toast.success("Résultat mis à jour !");
+      setOpen(false);
+      resetForm();
+    },
+    onError: () => toast.error("Erreur lors de la mise à jour"),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("race_results").delete().eq("id", id);
