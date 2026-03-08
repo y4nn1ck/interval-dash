@@ -128,6 +128,7 @@ const formatDistance = (meters: number) => {
 
 const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
   activity,
+  plannedEvent,
   isOpen,
   onClose,
 }) => {
