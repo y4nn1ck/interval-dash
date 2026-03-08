@@ -208,12 +208,16 @@ const TrainingLoadEvolutionChart = () => {
                     dataKey="ctl"
                     fill="url(#ctlFill)"
                     stroke="none"
+                    legendType="none"
+                    tooltipType="none"
                   />
                   <Area
                     type="basis"
                     dataKey="atl"
                     fill="url(#atlFill)"
                     stroke="none"
+                    legendType="none"
+                    tooltipType="none"
                   />
                   <Line
                     type="basis"
@@ -324,6 +328,8 @@ const TrainingLoadEvolutionChart = () => {
                     fill="url(#tsbPosFill)"
                     stroke="none"
                     baseValue={0}
+                    legendType="none"
+                    tooltipType="none"
                   />
                   <Line
                     type="basis"
