@@ -56,6 +56,7 @@ const App = () => (
       </ThemeProvider>
     </ErrorBoundary>
   </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;
