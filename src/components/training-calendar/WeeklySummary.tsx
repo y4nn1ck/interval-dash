@@ -53,7 +53,9 @@ interface SportSummary {
   load: number;
 }
 
-const WeeklySummary = ({ activities, events = [] }: WeeklySummaryProps) => {
+const WeeklySummary = ({ activities, events = [], viewMode = 'week' }: WeeklySummaryProps) => {
+  const periodLabel = viewMode === 'month' ? 'du mois' : 'de la semaine';
+  const complianceLabel = viewMode === 'month' ? 'mensuelle' : 'hebdomadaire';
   const sportBreakdown = useMemo(() => {
     const grouped: Record<string, SportSummary> = {};
     activities.forEach((a) => {
