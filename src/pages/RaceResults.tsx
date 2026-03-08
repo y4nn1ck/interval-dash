@@ -26,8 +26,8 @@ const DISTANCES: Record<string, { value: string; label: string }[]> = {
   running: [
     { value: "5k", label: "5 km" },
     { value: "10k", label: "10 km" },
-    { value: "semi", label: "Semi-marathon (21.1 km)" },
-    { value: "marathon", label: "Marathon (42.2 km)" },
+    { value: "semi", label: "Semi-marathon" },
+    { value: "marathon", label: "Marathon" },
     { value: "trail_short", label: "Trail court (<30 km)" },
     { value: "trail_long", label: "Trail long (>30 km)" },
     { value: "ultra", label: "Ultra-trail" },
