@@ -229,13 +229,16 @@ const PlannedWorkoutDialog: React.FC<PlannedWorkoutDialogProps> = ({
           </Card>
         )}
 
-        {/* Workout Structure */}
+        {/* Workout Visual Chart */}
+        {steps.length > 0 && <WorkoutStructureChart steps={steps} />}
+
+        {/* Workout Structure Details */}
         {steps.length > 0 && (
           <Card className="glass-card mt-2">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm flex items-center gap-2">
                 <Target className="h-4 w-4 text-primary" />
-                Structure de l'entraînement
+                Détail des étapes
                 <Badge variant="outline" className="ml-auto text-xs">
                   {steps.reduce((count, s) => count + (s.steps ? s.steps.length : 1), 0)} étapes
                 </Badge>
