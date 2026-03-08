@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
-import { Flag, Plus, Calendar, Trash2, Pencil } from "lucide-react";
+import { Flag, Plus, Calendar, Trash2, Pencil, PersonStanding, Waves } from "lucide-react";
 import { toast } from "sonner";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -48,6 +48,16 @@ const PRIORITIES = [
 const getDistanceLabel = (type: string, distance: string) => {
   const found = DISTANCES[type]?.find(d => d.value === distance);
   return found?.label || distance;
+};
+
+const getRaceTypeIcon = (type: string) => {
+  switch (type) {
+    case "triathlon":
+      return <Waves className="h-4 w-4" />;
+    case "running":
+    default:
+      return <PersonStanding className="h-4 w-4" />;
+  }
 };
 
 const getPriorityStyle = (priority: string) => {
@@ -305,6 +315,7 @@ const UpcomingRaces = () => {
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                      <span className="opacity-70">{getRaceTypeIcon(race.race_type)}</span>
                       <Calendar className="h-3 w-3" />
                       <span>{format(parseISO(race.race_date), "EEEE d MMMM yyyy", { locale: fr })}</span>
                       <span className="opacity-50">·</span>
