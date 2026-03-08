@@ -111,6 +111,7 @@ export default function RaceResults() {
   // Analysis dialog state
   const [analysisActivity, setAnalysisActivity] = useState<IntervalsActivity | null>(null);
   const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
+
   const resetForm = () => {
     setEditingId(null);
     setRaceType("running");
