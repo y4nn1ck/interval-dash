@@ -11,12 +11,22 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    const stored = localStorage.getItem('theme') as Theme;
-    return stored || 'dark';
+    try {
+      const stored = localStorage.getItem('theme') as Theme | null;
+      return stored === 'light' || stored === 'dark' ? stored : 'dark';
+    } catch (error) {
+      console.warn('Theme localStorage unavailable, falling back to dark theme', error);
+      return 'dark';
+    }
   });
 
   useEffect(() => {
-    localStorage.setItem('theme', theme);
+    try {
+      localStorage.setItem('theme', theme);
+    } catch (error) {
+      console.warn('Unable to persist theme in localStorage', error);
+    }
+
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
   }, [theme]);

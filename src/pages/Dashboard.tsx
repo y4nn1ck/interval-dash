@@ -12,8 +12,16 @@ const Dashboard = () => {
   
   const { data: todayStats } = useIntervalsDailyStats(today);
 
-  const athleteName = localStorage.getItem('intervals_athlete_name') || 'Athlète';
-  const athleteId = localStorage.getItem('intervals_athlete_id') || '';
+  const getStoredValue = (key: string, fallback: string) => {
+    try {
+      return localStorage.getItem(key) || fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
+  const athleteName = getStoredValue('intervals_athlete_name', 'Athlète');
+  const athleteId = getStoredValue('intervals_athlete_id', '');
 
   const todayMetrics = todayStats || {
     date: today,
