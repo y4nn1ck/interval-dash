@@ -95,10 +95,16 @@ const TrainingLoadEvolutionChart = () => {
     if (!active || !payload?.length) return null;
     let dateLabel = '';
     try { dateLabel = format(parseISO(label), 'd MMM yyyy', { locale: fr }); } catch { dateLabel = label; }
+    const seen = new Set<string>();
+    const uniquePayload = payload.filter((entry: any) => {
+      if (seen.has(entry.dataKey)) return false;
+      seen.add(entry.dataKey);
+      return true;
+    });
     return (
       <div className="bg-card/95 backdrop-blur-xl border border-border rounded-lg shadow-xl p-3 text-sm">
         <p className="font-medium text-foreground mb-2">{dateLabel}</p>
-        {payload.map((entry: any) => (
+        {uniquePayload.map((entry: any) => (
           <div key={entry.dataKey} className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-muted-foreground">{chartConfig[entry.dataKey as keyof typeof chartConfig]?.label}:</span>
