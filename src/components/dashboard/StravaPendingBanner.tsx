@@ -1,0 +1,28 @@
+import React from 'react';
+import { CloudOff, RefreshCw } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface StravaPendingBannerProps {
+  count: number;
+  className?: string;
+}
+
+const StravaPendingBanner = ({ count, className }: StravaPendingBannerProps) => {
+  if (count <= 0) return null;
+
+  return (
+    <div className={cn(
+      "flex items-center gap-2 px-3 py-2 rounded-lg",
+      "bg-orange-500/10 border border-orange-500/20 text-orange-400",
+      className
+    )}>
+      <RefreshCw className="h-3.5 w-3.5 animate-spin" style={{ animationDuration: '3s' }} />
+      <span className="text-xs font-medium">
+        {count} activité{count > 1 ? 's' : ''} Strava en attente de synchronisation
+      </span>
+      <CloudOff className="h-3 w-3 ml-auto opacity-60" />
+    </div>
+  );
+};
+
+export default StravaPendingBanner;
