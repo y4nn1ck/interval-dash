@@ -21,6 +21,7 @@ import FitDataChart from '@/components/fit-analyzer/FitDataChart';
 import TemperatureChart from '@/components/fit-analyzer/TemperatureChart';
 import RouteMap from '@/components/fit-analyzer/RouteMap';
 import ElevationChart from '@/components/fit-analyzer/ElevationChart';
+import PlannedVsRealized from '@/components/training-calendar/PlannedVsRealized';
 
 interface ActivityAnalysisDialogProps {
   activity: IntervalsActivity | null;
