@@ -456,6 +456,13 @@ export default function RaceResults() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={filterYear} onValueChange={setFilterYear}>
+          <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes les années</SelectItem>
+            {allYears.map(y => <SelectItem key={y} value={String(y)}>{y}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Results table */}
