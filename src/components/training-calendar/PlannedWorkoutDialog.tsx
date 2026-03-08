@@ -12,6 +12,7 @@ import { Clock, Zap, ClipboardList, Target, Activity } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import WorkoutStructureChart from './WorkoutStructureChart';
 
 interface PlannedWorkoutDialogProps {
   event: IntervalsEvent | null;
