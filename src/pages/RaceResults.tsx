@@ -155,7 +155,41 @@ export default function RaceResults() {
     setOverallRank(r.overall_rank ? String(r.overall_rank) : "");
     setCategoryRank(r.category_rank ? String(r.category_rank) : "");
     setNotes(r.notes || "");
+    setActivityId(r.activity_id || "");
     setOpen(true);
+  };
+
+  const searchActivities = async (raceDate: string) => {
+    setLoadingActivities(true);
+    try {
+      const start = format(subDays(new Date(raceDate), 1), "yyyy-MM-dd");
+      const end = format(addDays(new Date(raceDate), 1), "yyyy-MM-dd");
+      const { activities } = await intervalsService.getActivities(start, end);
+      setActivityCandidates(activities);
+    } catch {
+      setActivityCandidates([]);
+    } finally {
+      setLoadingActivities(false);
+    }
+  };
+
+  const openAnalysis = async (aId: string) => {
+    try {
+      const raceResult = results.find(r => r.activity_id === aId);
+      if (!raceResult) return;
+      const start = format(subDays(new Date(raceResult.activity_date), 1), "yyyy-MM-dd");
+      const end = format(addDays(new Date(raceResult.activity_date), 1), "yyyy-MM-dd");
+      const { activities } = await intervalsService.getActivities(start, end);
+      const found = activities.find(a => a.id === aId);
+      if (found) {
+        setAnalysisActivity(found);
+        setIsAnalysisOpen(true);
+      } else {
+        toast.error("Séance introuvable dans Intervals.icu");
+      }
+    } catch {
+      toast.error("Erreur de connexion à Intervals.icu");
+    }
   };
 
   const { data: results = [], isLoading } = useQuery({
