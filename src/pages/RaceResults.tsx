@@ -219,6 +219,8 @@ export default function RaceResults() {
       activity_date: date,
       activity_id: null,
       activity_time_seconds: activityTime && activityTime > 0 ? activityTime : null,
+      overall_rank: overallRank ? parseInt(overallRank) : null,
+      category_rank: categoryRank ? parseInt(categoryRank) : null,
       notes: notes.trim() || null,
     };
 
