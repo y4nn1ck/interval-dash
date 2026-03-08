@@ -350,7 +350,7 @@ const TrainingCalendar = () => {
       </div>
 
       {/* Weekly Summary */}
-      <WeeklySummary activities={activities} />
+      <WeeklySummary activities={activities} events={events} />
 
       {/* Analysis Dialog */}
       <ActivityAnalysisDialog
