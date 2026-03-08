@@ -127,6 +127,15 @@ const TrainingCalendar = () => {
     return grouped;
   }, [activities]);
 
+  // Max planned events across all days for consistent vertical alignment
+  const maxPlannedEvents = useMemo(() => {
+    return weekDays.reduce((max, day) => {
+      const dateKey = format(day, 'yyyy-MM-dd');
+      const count = (eventsByDay[dateKey] || []).length;
+      return Math.max(max, count);
+    }, 0);
+  }, [weekDays, eventsByDay]);
+
   const handlePreviousWeek = () => {
     setCurrentWeekStart(prev => subWeeks(prev, 1));
   };
@@ -253,74 +262,79 @@ const TrainingCalendar = () => {
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="px-2 pb-2 space-y-2">
+              <CardContent className="px-2 pb-2 flex flex-col">
                 {activitiesLoading ? (
                   <div className="flex items-center justify-center py-4">
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 ) : (
                   <>
-                    {/* Planned workouts (not yet done) */}
-                    {dayEvents.length > 0 && (
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-1.5 px-1">
-                          <ClipboardList className="h-3 w-3 text-primary/60" />
-                          <span className="text-[10px] font-medium text-primary/60 uppercase tracking-wider">Prévu</span>
-                        </div>
-                        {dayEvents.map((event) => {
-                          const isPaired = !!(event.paired_activity_id && activities.some(a => a.id === event.paired_activity_id));
-                          return (
-                            <button
-                              key={`event-${event.id}`}
-                              onClick={() => handleEventClick(event)}
-                              className={cn(
-                                "w-full text-left p-2 rounded-lg transition-all duration-200",
-                                "hover:shadow-md hover:scale-[1.02] cursor-pointer",
-                                isPaired
-                                  ? "border border-dashed border-green-500/30 bg-green-500/5 hover:bg-green-500/10"
-                                  : "border border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10",
-                              )}
-                            >
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-base">{getSportIcon(event.type)}</span>
-                                <span className={cn(
-                                  "text-xs font-medium truncate flex-1",
-                                  isPaired ? "text-green-400/80" : "text-primary/80"
-                                )}>
-                                  {event.name}
-                                </span>
-                                {isPaired && (
-                                  <span className="text-[10px] text-green-400/70">✓</span>
+                    {/* Planned section with consistent min-height for alignment */}
+                    <div
+                      className="space-y-1.5"
+                      style={{ minHeight: maxPlannedEvents > 0 ? `${maxPlannedEvents * 56 + 20}px` : undefined }}
+                    >
+                      {dayEvents.length > 0 && (
+                        <>
+                          <div className="flex items-center gap-1.5 px-1">
+                            <ClipboardList className="h-3 w-3 text-primary/60" />
+                            <span className="text-[10px] font-medium text-primary/60 uppercase tracking-wider">Prévu</span>
+                          </div>
+                          {dayEvents.map((event) => {
+                            const isPaired = !!(event.paired_activity_id && activities.some(a => a.id === event.paired_activity_id));
+                            return (
+                              <button
+                                key={`event-${event.id}`}
+                                onClick={() => handleEventClick(event)}
+                                className={cn(
+                                  "w-full text-left p-2 rounded-lg transition-all duration-200",
+                                  "hover:shadow-md hover:scale-[1.02] cursor-pointer",
+                                  isPaired
+                                    ? "border border-dashed border-green-500/30 bg-green-500/5 hover:bg-green-500/10"
+                                    : "border border-dashed border-primary/40 bg-primary/5 hover:bg-primary/10",
                                 )}
-                              </div>
-                              <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground">
-                                {event.moving_time && event.moving_time > 0 && (
-                                  <span className="flex items-center gap-0.5">
-                                    <Clock className="h-2.5 w-2.5" />
-                                    {formatDuration(event.moving_time)}
-                                  </span>
-                                )}
-                                {event.distance && event.distance > 0 && (
-                                  <span>{formatDistance(event.distance)}</span>
-                                )}
-                                {event.icu_training_load && (
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-base">{getSportIcon(event.type)}</span>
                                   <span className={cn(
-                                    "font-medium",
-                                    isPaired ? "text-green-400/60" : "text-primary/60"
+                                    "text-xs font-medium truncate flex-1",
+                                    isPaired ? "text-green-400/80" : "text-primary/80"
                                   )}>
-                                    ~{Math.round(event.icu_training_load)} TSS
+                                    {event.name}
                                   </span>
-                                )}
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
+                                  {isPaired && (
+                                    <span className="text-[10px] text-green-400/70">✓</span>
+                                  )}
+                                </div>
+                                <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground">
+                                  {event.moving_time && event.moving_time > 0 && (
+                                    <span className="flex items-center gap-0.5">
+                                      <Clock className="h-2.5 w-2.5" />
+                                      {formatDuration(event.moving_time)}
+                                    </span>
+                                  )}
+                                  {event.distance && event.distance > 0 && (
+                                    <span>{formatDistance(event.distance)}</span>
+                                  )}
+                                  {event.icu_training_load && (
+                                    <span className={cn(
+                                      "font-medium",
+                                      isPaired ? "text-green-400/60" : "text-primary/60"
+                                    )}>
+                                      ~{Math.round(event.icu_training_load)} TSS
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </>
+                      )}
+                    </div>
 
                     {/* Separator when both sections exist */}
                     {dayEvents.length > 0 && dayActivities.length > 0 && (
-                      <div className="border-t border-border/30 my-1" />
+                      <div className="border-t border-border/30 my-1.5" />
                     )}
 
                     {/* Completed activities */}
@@ -385,8 +399,8 @@ const TrainingCalendar = () => {
                         <span className="text-xs">Repos</span>
                       </div>
                     )}
-                   </>
-                 )}
+                  </>
+                )}
               </CardContent>
             </Card>
           );
