@@ -14,7 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      race_results: {
+        Row: {
+          activity_date: string
+          activity_id: string | null
+          activity_time_seconds: number | null
+          created_at: string
+          distance: string
+          id: string
+          name: string
+          notes: string | null
+          official_time_seconds: number
+          race_type: string
+        }
+        Insert: {
+          activity_date?: string
+          activity_id?: string | null
+          activity_time_seconds?: number | null
+          created_at?: string
+          distance: string
+          id?: string
+          name: string
+          notes?: string | null
+          official_time_seconds: number
+          race_type?: string
+        }
+        Update: {
+          activity_date?: string
+          activity_id?: string | null
+          activity_time_seconds?: number | null
+          created_at?: string
+          distance?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          official_time_seconds?: number
+          race_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
