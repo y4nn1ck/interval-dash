@@ -203,7 +203,7 @@ export default function RaceResults() {
       ? parseTimeToSeconds(activityHours, activityMinutes, activitySeconds)
       : null;
 
-    addMutation.mutate({
+    const payload = {
       name: name.trim(),
       race_type: raceType,
       distance,
@@ -212,7 +212,13 @@ export default function RaceResults() {
       activity_id: null,
       activity_time_seconds: activityTime && activityTime > 0 ? activityTime : null,
       notes: notes.trim() || null,
-    });
+    };
+
+    if (editingId) {
+      updateMutation.mutate({ id: editingId, ...payload } as any);
+    } else {
+      addMutation.mutate(payload);
+    }
   };
 
   const filtered = results.filter(r => {
