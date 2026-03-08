@@ -417,6 +417,56 @@ export default function RaceResults() {
                 )}
               </div>
 
+              {/* Rattacher une séance Intervals.icu */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Activity className="h-3.5 w-3.5 text-primary" />
+                  Séance Intervals.icu (optionnel)
+                </Label>
+                {activityId ? (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-xs gap-1 py-1">
+                      <Activity className="h-3 w-3" />
+                      {activityCandidates.find(a => a.id === activityId)?.name || activityId}
+                    </Badge>
+                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setActivityId("")}>
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs gap-2"
+                      disabled={!date || loadingActivities}
+                      onClick={() => searchActivities(date)}
+                    >
+                      {loadingActivities ? "Recherche..." : "Rechercher les séances autour de cette date"}
+                    </Button>
+                    {activityCandidates.length > 0 && (
+                      <div className="space-y-1 max-h-[120px] overflow-y-auto">
+                        {activityCandidates.map(a => (
+                          <button
+                            key={a.id}
+                            type="button"
+                            className="w-full text-left px-3 py-1.5 rounded-md text-xs hover:bg-accent transition-colors border border-border/50"
+                            onClick={() => setActivityId(a.id)}
+                          >
+                            <span className="font-medium">{a.name}</span>
+                            <span className="text-muted-foreground ml-2">
+                              {format(new Date(a.start_date_local), "dd/MM HH:mm")}
+                              {a.distance > 0 && ` · ${(a.distance / 1000).toFixed(1)}km`}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Classement */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
