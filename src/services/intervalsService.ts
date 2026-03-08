@@ -335,7 +335,7 @@ class IntervalsService {
       const athleteId = localStorage.getItem('intervals_athlete_id');
       if (!athleteId) return [];
 
-      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness/${startDate}/${endDate}`);
+      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness?oldest=${startDate}&newest=${endDate}`);
       
       return data.map((item: any) => ({
         date: item.id,
