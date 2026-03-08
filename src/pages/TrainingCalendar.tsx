@@ -90,13 +90,10 @@ const TrainingCalendar = () => {
     return map;
   }, [events]);
 
-  // Group events by day, excluding those already paired with an activity
+  // Group ALL events by day (including paired ones)
   const eventsByDay = useMemo(() => {
     const grouped: Record<string, IntervalsEvent[]> = {};
     events.forEach((event) => {
-      if (event.paired_activity_id && activities.some(a => a.id === event.paired_activity_id)) {
-        return;
-      }
       const eventDate = parseISO(event.start_date_local);
       const dateKey = format(eventDate, 'yyyy-MM-dd');
       if (!grouped[dateKey]) {
@@ -105,7 +102,7 @@ const TrainingCalendar = () => {
       grouped[dateKey].push(event);
     });
     return grouped;
-  }, [events, activities]);
+  }, [events]);
 
   const weekDays = useMemo(() => {
     const days = [];
