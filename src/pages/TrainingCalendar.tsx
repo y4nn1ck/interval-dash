@@ -9,6 +9,7 @@ import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { IntervalsActivity, IntervalsEvent } from '@/services/intervalsService';
 import ActivityAnalysisDialog from '@/components/training-calendar/ActivityAnalysisDialog';
+import PlannedWorkoutDialog from '@/components/training-calendar/PlannedWorkoutDialog';
 import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 import ComplianceIndicator from '@/components/training-calendar/ComplianceIndicator';
 import ComplianceEvolutionChart from '@/components/training-calendar/ComplianceEvolutionChart';
