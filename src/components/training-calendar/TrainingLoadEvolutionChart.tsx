@@ -333,6 +333,8 @@ const TrainingLoadEvolutionChart = () => {
                     fill="url(#tsbPosFill)"
                     stroke="none"
                     baseValue={0}
+                    legendType="none"
+                    tooltipType="none"
                   />
                   <Line
                     type="basis"
