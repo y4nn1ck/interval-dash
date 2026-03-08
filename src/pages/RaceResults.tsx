@@ -688,6 +688,12 @@ export default function RaceResults() {
           )}
         </CardContent>
       </Card>
+
+      <ActivityAnalysisDialog
+        activity={analysisActivity}
+        isOpen={isAnalysisOpen}
+        onClose={() => { setIsAnalysisOpen(false); setAnalysisActivity(null); }}
+      />
     </div>
   );
 }
