@@ -1,11 +1,4 @@
-
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
-
+import { supabase } from '@/integrations/supabase/client';
 export interface GarminAuthData {
   accessToken: string;
   accessTokenSecret: string;
@@ -71,8 +64,9 @@ class GarminService {
         oauthVerifier
       });
       
-      // Store auth data in Supabase
-      const { error } = await supabase
+      // Store auth data
+      const client = supabase as any;
+      const { error } = await client
         .from('garmin_auth')
         .upsert({
           user_id: (await supabase.auth.getUser()).data.user?.id,
@@ -135,7 +129,8 @@ class GarminService {
 
   async isAuthenticated(): Promise<boolean> {
     try {
-      const { data } = await supabase
+      const client = supabase as any;
+      const { data } = await client
         .from('garmin_auth')
         .select('access_token')
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
