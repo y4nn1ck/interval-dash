@@ -168,16 +168,25 @@ const TrainingCalendar = () => {
     return () => clearTimeout(timer);
   }, [events, activities, currentWeekStart]);
 
-  const handlePreviousWeek = () => {
-    setCurrentWeekStart(prev => subWeeks(prev, 1));
+  const handlePrevious = () => {
+    if (viewMode === 'week') {
+      setCurrentWeekStart(prev => subWeeks(prev, 1));
+    } else {
+      setCurrentMonth(prev => subMonths(prev, 1));
+    }
   };
 
-  const handleNextWeek = () => {
-    setCurrentWeekStart(prev => addWeeks(prev, 1));
+  const handleNext = () => {
+    if (viewMode === 'week') {
+      setCurrentWeekStart(prev => addWeeks(prev, 1));
+    } else {
+      setCurrentMonth(prev => addMonths(prev, 1));
+    }
   };
 
-  const handleThisWeek = () => {
+  const handleToday = () => {
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
+    setCurrentMonth(new Date());
   };
 
   const handleActivityClick = (activity: IntervalsActivity, pairedEvent?: IntervalsEvent) => {
