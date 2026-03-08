@@ -60,9 +60,11 @@ const formatDistance = (meters: number) => {
 };
 
 const TrainingCalendar = () => {
+  const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
   const [currentWeekStart, setCurrentWeekStart] = useState(() => 
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [selectedActivity, setSelectedActivity] = useState<IntervalsActivity | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedActivityEvent, setSelectedActivityEvent] = useState<IntervalsEvent | null>(null);
