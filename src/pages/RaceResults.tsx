@@ -104,7 +104,13 @@ export default function RaceResults() {
   const [overallRank, setOverallRank] = useState("");
   const [categoryRank, setCategoryRank] = useState("");
   const [notes, setNotes] = useState("");
+  const [activityId, setActivityId] = useState("");
+  const [activityCandidates, setActivityCandidates] = useState<IntervalsActivity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(false);
 
+  // Analysis dialog state
+  const [analysisActivity, setAnalysisActivity] = useState<IntervalsActivity | null>(null);
+  const [isAnalysisOpen, setIsAnalysisOpen] = useState(false);
   const resetForm = () => {
     setEditingId(null);
     setRaceType("running");
