@@ -294,7 +294,6 @@ const TrainingCalendar = () => {
                       className="space-y-1.5 flex-shrink-0"
                       style={{ minHeight: plannedMinHeight > 0 ? `${plannedMinHeight}px` : undefined }}
                     >
-                    >
                       {dayEvents.length > 0 && (
                         <>
                           <div className="flex items-center gap-1.5 px-1">
