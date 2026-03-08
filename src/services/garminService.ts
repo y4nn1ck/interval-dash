@@ -64,8 +64,9 @@ class GarminService {
         oauthVerifier
       });
       
-      // Store auth data in Supabase
-      const { error } = await supabase
+      // Store auth data
+      const client = supabase as any;
+      const { error } = await client
         .from('garmin_auth')
         .upsert({
           user_id: (await supabase.auth.getUser()).data.user?.id,
