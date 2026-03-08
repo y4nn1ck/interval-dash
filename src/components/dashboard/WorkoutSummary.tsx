@@ -1,24 +1,24 @@
 
 import React from 'react';
 import WorkoutCard from './WorkoutCard';
+import StravaPendingBanner from './StravaPendingBanner';
 import { useTodayWorkouts } from '@/hooks/useTodayWorkouts';
 
 const WorkoutSummary = () => {
-  const { data: todayWorkouts = [] } = useTodayWorkouts();
-
-  if (todayWorkouts.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        <p>Aucune séance enregistrée pour aujourd'hui.</p>
-      </div>
-    );
-  }
+  const { data: todayWorkouts = [], pendingStravaCount } = useTodayWorkouts();
 
   return (
     <div className="space-y-4">
-      {todayWorkouts.map((workout) => (
-        <WorkoutCard key={workout.id} workout={workout} />
-      ))}
+      <StravaPendingBanner count={pendingStravaCount} />
+      {todayWorkouts.length === 0 ? (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>Aucune séance enregistrée pour aujourd'hui.</p>
+        </div>
+      ) : (
+        todayWorkouts.map((workout) => (
+          <WorkoutCard key={workout.id} workout={workout} />
+        ))
+      )}
     </div>
   );
 };

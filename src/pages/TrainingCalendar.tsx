@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useIntervalsAuth, useIntervalsActivities, useIntervalsEvents } from '@/hooks/useIntervalsData';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import { ChevronLeft, ChevronRight, Calendar, Loader2, Activity, Clock, Zap, Mountain, Heart, ClipboardList } from 'lucide-react';
+import StravaPendingBanner from '@/components/dashboard/StravaPendingBanner';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameDay, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -73,7 +74,7 @@ const TrainingCalendar = () => {
   const startDateStr = format(currentWeekStart, 'yyyy-MM-dd');
   const endDateStr = format(weekEnd, 'yyyy-MM-dd');
 
-  const { data: activities = [], isLoading: activitiesLoading } = useIntervalsActivities(
+  const { data: activities = [], isLoading: activitiesLoading, pendingStravaCount } = useIntervalsActivities(
     startDateStr, 
     endDateStr
   );
@@ -251,6 +252,9 @@ const TrainingCalendar = () => {
           </div>
         </CardHeader>
       </Card>
+
+      {/* Strava Pending Banner */}
+      <StravaPendingBanner count={pendingStravaCount} className="opacity-0 animate-fade-in-up-delay-1" />
 
       {/* Week Grid */}
       <div className="grid grid-cols-7 gap-3 opacity-0 animate-fade-in-up-delay-2">
