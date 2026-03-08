@@ -353,7 +353,7 @@ const TrainingCalendar = () => {
                     </div>
 
                     {/* Separator - always present when there are planned events in the week */}
-                    {maxPlannedEvents > 0 && (
+                    {plannedMinHeight > 0 && (
                       <div className={cn("border-t my-1.5", dayEvents.length > 0 || dayActivities.length > 0 ? "border-border/30" : "border-transparent")} />
                     )}
 
