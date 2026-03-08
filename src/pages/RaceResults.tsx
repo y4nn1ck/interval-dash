@@ -98,6 +98,7 @@ export default function RaceResults() {
   const [notes, setNotes] = useState("");
 
   const resetForm = () => {
+    setEditingId(null);
     setRaceType("running");
     setDistance("");
     setName("");
@@ -106,6 +107,34 @@ export default function RaceResults() {
     setActivityHours(""); setActivityMinutes(""); setActivitySeconds("");
     setHasActivityTime(false);
     setNotes("");
+  };
+
+  const populateForm = (r: RaceResult) => {
+    setEditingId(r.id);
+    setRaceType(r.race_type);
+    setDistance(r.distance);
+    setName(r.name);
+    setDate(r.activity_date);
+    const oh = Math.floor(r.official_time_seconds / 3600);
+    const om = Math.floor((r.official_time_seconds % 3600) / 60);
+    const os = r.official_time_seconds % 60;
+    setHours(oh > 0 ? String(oh) : "");
+    setMinutes(String(om));
+    setSeconds(String(os));
+    if (r.activity_time_seconds) {
+      setHasActivityTime(true);
+      const ah = Math.floor(r.activity_time_seconds / 3600);
+      const am = Math.floor((r.activity_time_seconds % 3600) / 60);
+      const as2 = r.activity_time_seconds % 60;
+      setActivityHours(ah > 0 ? String(ah) : "");
+      setActivityMinutes(String(am));
+      setActivitySeconds(String(as2));
+    } else {
+      setHasActivityTime(false);
+      setActivityHours(""); setActivityMinutes(""); setActivitySeconds("");
+    }
+    setNotes(r.notes || "");
+    setOpen(true);
   };
 
   const { data: results = [], isLoading } = useQuery({
