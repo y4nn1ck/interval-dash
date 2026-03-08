@@ -330,6 +330,33 @@ class IntervalsService {
     }
   }
 
+  async getWellnessRange(startDate: string, endDate: string): Promise<IntervalsDailyStats[]> {
+    try {
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      if (!athleteId) return [];
+
+      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness/${startDate}/${endDate}`);
+      
+      return data.map((item: any) => ({
+        date: item.id,
+        training_load: item.ctl || 0,
+        hrv_rmssd: item.hrvRmssd || item.hrv || 0,
+        resting_hr: item.restingHR || 0,
+        weight: item.weight || 0,
+        sleep_secs: item.sleepSecs || 0,
+        steps: item.steps || 0,
+        calories: item.calories || 0,
+        ctl: item.ctl || 0,
+        atl: item.atl || 0,
+        tsb: item.ctl != null && item.atl != null ? item.ctl - item.atl : 0,
+        hydration: item.hydration || null
+      }));
+    } catch (error) {
+      console.error('Error fetching wellness range:', error);
+      return [];
+    }
+  }
+
   async syncData(): Promise<void> {
     // For now, this is a no-op since we're fetching data directly
     console.log('Data sync completed');
