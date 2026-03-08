@@ -2,8 +2,8 @@ import React from 'react';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import KPICardsSection from '@/components/dashboard/KPICardsSection';
-import ChartsSection from '@/components/dashboard/ChartsSection';
 import WorkoutsSection from '@/components/dashboard/WorkoutsSection';
+import UpcomingRaces from '@/components/dashboard/UpcomingRaces';
 import { useIntervalsAuth, useIntervalsDailyStats } from '@/hooks/useIntervalsData';
 
 const Dashboard = () => {
@@ -12,11 +12,9 @@ const Dashboard = () => {
   
   const { data: todayStats } = useIntervalsDailyStats(today);
 
-  // Get athlete info from localStorage
   const athleteName = localStorage.getItem('intervals_athlete_name') || 'Athlète';
   const athleteId = localStorage.getItem('intervals_athlete_id') || '';
 
-  // Fallback to sample data if not authenticated or no data
   const todayMetrics = todayStats || {
     date: today,
     calories: 2240,
@@ -31,12 +29,10 @@ const Dashboard = () => {
     tsb: 0
   };
 
-  // Use real CTL, ATL, and TSB from API response or fallback values
   const ctl = Math.round(todayStats?.ctl || 67);
   const atl = Math.round(todayStats?.atl || 67);
   const tsb = Math.round(todayStats?.tsb || 0);
 
-  // Format sleep duration properly
   const formatSleepDuration = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -46,17 +42,14 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <DashboardHeader athleteName={athleteName} athleteId={athleteId} />
 
-        {/* Intervals.icu Auth Card */}
         {!isAuthenticated && (
           <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
             <IntervalsAuth />
           </div>
         )}
 
-        {/* KPI Cards */}
         <KPICardsSection
           todayMetrics={todayMetrics}
           ctl={ctl}
@@ -65,8 +58,10 @@ const Dashboard = () => {
           formatSleepDuration={formatSleepDuration}
         />
 
-        {/* Charts Section */}
-        <ChartsSection ctl={ctl} atl={atl} />
+        {/* Upcoming Races */}
+        <div className="mb-8">
+          <UpcomingRaces />
+        </div>
 
         {/* Workouts Section */}
         <WorkoutsSection />
