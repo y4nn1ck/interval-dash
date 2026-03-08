@@ -45,11 +45,12 @@ const formatDistance = (meters: number) => {
 
 interface WorkoutStep {
   duration?: number;
-  power?: { value: number; units: string };
+  power?: { value?: number; start?: number; end?: number; units: string };
   cadence?: { value: number };
-  ramp?: { start: number; end: number; units: string };
+  ramp?: boolean;
   text?: string;
   steps?: WorkoutStep[];
+  reps?: number;
   repeat?: number;
 }
 
