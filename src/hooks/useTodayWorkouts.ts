@@ -62,7 +62,13 @@ export const useTodayWorkouts = () => {
       const activities = await response.json();
       console.log('Activities received:', activities);
       
-      return activities.map((activity: any) => ({
+      // Filter out STRAVA-only activities that have no data available via the API
+      const validActivities = activities.filter((activity: any) => 
+        activity.source !== 'STRAVA' && activity.type
+      );
+      console.log('Valid activities (excluding STRAVA-only):', validActivities.length);
+      
+      return validActivities.map((activity: any) => ({
         id: activity.id,
         start_date_local: activity.start_date_local,
         name: activity.name,
