@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { IntervalsEvent } from '@/services/intervalsService';
 import {
   Dialog,
   DialogContent,
@@ -20,9 +21,11 @@ import FitDataChart from '@/components/fit-analyzer/FitDataChart';
 import TemperatureChart from '@/components/fit-analyzer/TemperatureChart';
 import RouteMap from '@/components/fit-analyzer/RouteMap';
 import ElevationChart from '@/components/fit-analyzer/ElevationChart';
+import PlannedVsRealized from '@/components/training-calendar/PlannedVsRealized';
 
 interface ActivityAnalysisDialogProps {
   activity: IntervalsActivity | null;
+  plannedEvent?: IntervalsEvent | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -126,6 +129,7 @@ const formatDistance = (meters: number) => {
 
 const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
   activity,
+  plannedEvent,
   isOpen,
   onClose,
 }) => {
@@ -474,6 +478,11 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
             </div>
           )}
         </div>
+
+        {/* Planned vs Realized Comparison */}
+        {plannedEvent && (
+          <PlannedVsRealized activity={activity} plannedEvent={plannedEvent} />
+        )}
 
         {/* Analysis Button or Results */}
         {!isAnalyzed ? (

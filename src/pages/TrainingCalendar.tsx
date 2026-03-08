@@ -61,6 +61,7 @@ const TrainingCalendar = () => {
   );
   const [selectedActivity, setSelectedActivity] = useState<IntervalsActivity | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedActivityEvent, setSelectedActivityEvent] = useState<IntervalsEvent | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<IntervalsEvent | null>(null);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 
@@ -141,8 +142,9 @@ const TrainingCalendar = () => {
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
   };
 
-  const handleActivityClick = (activity: IntervalsActivity) => {
+  const handleActivityClick = (activity: IntervalsActivity, pairedEvent?: IntervalsEvent) => {
     setSelectedActivity(activity);
+    setSelectedActivityEvent(pairedEvent || null);
     setIsDialogOpen(true);
   };
 
@@ -304,7 +306,7 @@ const TrainingCalendar = () => {
                       return (
                         <button
                           key={activity.id}
-                          onClick={() => handleActivityClick(activity)}
+                          onClick={() => handleActivityClick(activity, pairedEvent)}
                           className={cn(
                             "w-full text-left p-2 rounded-lg transition-all duration-200",
                             "bg-secondary/50 hover:bg-secondary border border-border/50",
@@ -369,10 +371,12 @@ const TrainingCalendar = () => {
       {/* Analysis Dialog */}
       <ActivityAnalysisDialog
         activity={selectedActivity}
+        plannedEvent={selectedActivityEvent}
         isOpen={isDialogOpen}
         onClose={() => {
           setIsDialogOpen(false);
           setSelectedActivity(null);
+          setSelectedActivityEvent(null);
         }}
       />
 
