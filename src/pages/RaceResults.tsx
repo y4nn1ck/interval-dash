@@ -97,6 +97,8 @@ export default function RaceResults() {
   const [activityMinutes, setActivityMinutes] = useState("");
   const [activitySeconds, setActivitySeconds] = useState("");
   const [hasActivityTime, setHasActivityTime] = useState(false);
+  const [overallRank, setOverallRank] = useState("");
+  const [categoryRank, setCategoryRank] = useState("");
   const [notes, setNotes] = useState("");
 
   const resetForm = () => {
