@@ -288,47 +288,53 @@ const TrainingCalendar = () => {
                     ))}
 
                     {/* Completed activities */}
-                    {dayActivities.map((activity) => (
-                      <button
-                        key={activity.id}
-                        onClick={() => handleActivityClick(activity)}
-                        className={cn(
-                          "w-full text-left p-2 rounded-lg transition-all duration-200",
-                          "bg-secondary/50 hover:bg-secondary border border-border/50",
-                          "hover:shadow-md hover:scale-[1.02] cursor-pointer",
-                          "group"
-                        )}
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-base">{getSportIcon(activity.type)}</span>
-                          <span className="text-xs font-medium truncate flex-1 group-hover:text-primary transition-colors">
-                            {activity.name}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground">
-                          {activity.moving_time > 0 && (
-                            <span className="flex items-center gap-0.5">
-                              <Clock className="h-2.5 w-2.5" />
-                              {formatDuration(activity.moving_time)}
+                    {dayActivities.map((activity) => {
+                      const pairedEvent = pairedEventByActivityId[activity.id];
+                      return (
+                        <button
+                          key={activity.id}
+                          onClick={() => handleActivityClick(activity)}
+                          className={cn(
+                            "w-full text-left p-2 rounded-lg transition-all duration-200",
+                            "bg-secondary/50 hover:bg-secondary border border-border/50",
+                            "hover:shadow-md hover:scale-[1.02] cursor-pointer",
+                            "group"
+                          )}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-base">{getSportIcon(activity.type)}</span>
+                            <span className="text-xs font-medium truncate flex-1 group-hover:text-primary transition-colors">
+                              {activity.name}
                             </span>
-                          )}
-                          {activity.distance > 0 && (
-                            <span>{formatDistance(activity.distance)}</span>
-                          )}
-                          {activity.icu_training_load && (
-                            <span className="text-orange-400 font-medium">
-                              {Math.round(activity.icu_training_load)} TSS
-                            </span>
-                          )}
-                        </div>
-                        {activity.icu_average_watts && (
-                          <div className="mt-1 flex items-center gap-1 text-[10px] text-orange-400">
-                            <Zap className="h-2.5 w-2.5" />
-                            {Math.round(activity.icu_average_watts)}W moy
+                            {pairedEvent && (
+                              <ComplianceIndicator activity={activity} plannedEvent={pairedEvent} />
+                            )}
                           </div>
-                        )}
-                      </button>
-                    ))}
+                          <div className="flex flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground">
+                            {activity.moving_time > 0 && (
+                              <span className="flex items-center gap-0.5">
+                                <Clock className="h-2.5 w-2.5" />
+                                {formatDuration(activity.moving_time)}
+                              </span>
+                            )}
+                            {activity.distance > 0 && (
+                              <span>{formatDistance(activity.distance)}</span>
+                            )}
+                            {activity.icu_training_load && (
+                              <span className="text-orange-400 font-medium">
+                                {Math.round(activity.icu_training_load)} TSS
+                              </span>
+                            )}
+                          </div>
+                          {activity.icu_average_watts && (
+                            <div className="mt-1 flex items-center gap-1 text-[10px] text-orange-400">
+                              <Zap className="h-2.5 w-2.5" />
+                              {Math.round(activity.icu_average_watts)}W moy
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
 
                     {!hasContent && (
                       <div className="flex items-center justify-center py-4 text-muted-foreground/50">
