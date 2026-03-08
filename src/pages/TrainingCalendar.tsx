@@ -9,6 +9,7 @@ import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { IntervalsActivity, IntervalsEvent } from '@/services/intervalsService';
 import ActivityAnalysisDialog from '@/components/training-calendar/ActivityAnalysisDialog';
+import PlannedWorkoutDialog from '@/components/training-calendar/PlannedWorkoutDialog';
 import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 import ComplianceIndicator from '@/components/training-calendar/ComplianceIndicator';
 import ComplianceEvolutionChart from '@/components/training-calendar/ComplianceEvolutionChart';
@@ -60,6 +61,8 @@ const TrainingCalendar = () => {
   );
   const [selectedActivity, setSelectedActivity] = useState<IntervalsActivity | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<IntervalsEvent | null>(null);
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 
   const { isAuthenticated, isLoading: authLoading } = useIntervalsAuth();
 
@@ -141,6 +144,11 @@ const TrainingCalendar = () => {
   const handleActivityClick = (activity: IntervalsActivity) => {
     setSelectedActivity(activity);
     setIsDialogOpen(true);
+  };
+
+  const handleEventClick = (event: IntervalsEvent) => {
+    setSelectedEvent(event);
+    setIsEventDialogOpen(true);
   };
 
   const isCurrentWeek = isSameDay(currentWeekStart, startOfWeek(new Date(), { weekStartsOn: 1 }));
@@ -255,11 +263,13 @@ const TrainingCalendar = () => {
                   <>
                     {/* Planned workouts (not yet done) */}
                     {dayEvents.map((event) => (
-                      <div
+                      <button
                         key={`event-${event.id}`}
+                        onClick={() => handleEventClick(event)}
                         className={cn(
                           "w-full text-left p-2 rounded-lg transition-all duration-200",
                           "border border-dashed border-primary/40 bg-primary/5",
+                          "hover:bg-primary/10 hover:shadow-md hover:scale-[1.02] cursor-pointer",
                         )}
                       >
                         <div className="flex items-center gap-2 mb-1">
@@ -285,7 +295,7 @@ const TrainingCalendar = () => {
                             </span>
                           )}
                         </div>
-                      </div>
+                      </button>
                     ))}
 
                     {/* Completed activities */}
@@ -363,6 +373,16 @@ const TrainingCalendar = () => {
         onClose={() => {
           setIsDialogOpen(false);
           setSelectedActivity(null);
+        }}
+      />
+
+      {/* Planned Workout Dialog */}
+      <PlannedWorkoutDialog
+        event={selectedEvent}
+        isOpen={isEventDialogOpen}
+        onClose={() => {
+          setIsEventDialogOpen(false);
+          setSelectedEvent(null);
         }}
       />
     </div>
