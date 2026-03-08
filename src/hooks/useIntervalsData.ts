@@ -83,11 +83,17 @@ export const useIntervalsMonthlyStats = () => {
 };
 
 export const useIntervalsActivities = (startDate: string, endDate: string) => {
-  return useQuery({
+  const query = useQuery({
     queryKey: ['intervals-activities', startDate, endDate],
     queryFn: () => intervalsService.getActivities(startDate, endDate),
     enabled: !!startDate && !!endDate,
   });
+
+  return {
+    ...query,
+    data: query.data?.activities ?? [],
+    pendingStravaCount: query.data?.pendingStravaCount ?? 0,
+  };
 };
 
 export const useIntervalsEvents = (startDate: string, endDate: string) => {
