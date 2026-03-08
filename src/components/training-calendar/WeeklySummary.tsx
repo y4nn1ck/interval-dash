@@ -236,7 +236,7 @@ const WeeklySummary = ({ activities, events = [], viewMode = 'week' }: WeeklySum
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg">
               <Activity className="h-5 w-5 text-primary" />
-              Résumé de la semaine
+              Résumé {periodLabel}
             </CardTitle>
           </CardHeader>
           <CardContent>
