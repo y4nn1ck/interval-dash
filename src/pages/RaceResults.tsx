@@ -366,6 +366,18 @@ export default function RaceResults() {
                 )}
               </div>
 
+              {/* Classement */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Place générale (optionnel)</Label>
+                  <Input type="number" min="1" placeholder="Ex: 42" value={overallRank} onChange={e => setOverallRank(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Place catégorie (optionnel)</Label>
+                  <Input type="number" min="1" placeholder="Ex: 5" value={categoryRank} onChange={e => setCategoryRank(e.target.value)} />
+                </div>
+              </div>
+
               {/* Notes */}
               <div className="space-y-2">
                 <Label>Notes (optionnel)</Label>
