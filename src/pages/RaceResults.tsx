@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import SEO from "@/components/SEO";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -300,6 +301,7 @@ export default function RaceResults() {
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto">
+      <SEO title="Résultats courses" description="Consultez vos résultats de courses, suivez votre progression et comparez vos chronos par distance." path="/race-results" />
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/AppSidebar";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { HelmetProvider } from "react-helmet-async";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import Dashboard from "./pages/Dashboard";
 import PowerCompar from "./pages/PowerCompar";
@@ -19,6 +20,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
+  <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
       <ThemeProvider>
@@ -54,6 +56,7 @@ const App = () => (
       </ThemeProvider>
     </ErrorBoundary>
   </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;

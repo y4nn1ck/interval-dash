@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import SEO from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useIntervalsAuth, useIntervalsActivities, useIntervalsEvents } from '@/hooks/useIntervalsData';
@@ -230,6 +231,7 @@ const TrainingCalendar = () => {
 
   return (
     <div className="min-h-screen p-6 md:p-8 space-y-8">
+      <SEO title="Calendrier d'entraînement" description="Visualisez vos séances planifiées et réalisées, suivez la compliance et la charge d'entraînement." path="/training-calendar" />
       {/* Header */}
       <div className="space-y-2 opacity-0 animate-fade-in-up">
         <h1 className="text-4xl font-bold gradient-text">Calendrier d'entraînement</h1>

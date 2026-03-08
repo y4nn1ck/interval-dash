@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import SEO from '@/components/SEO';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
@@ -552,6 +553,7 @@ const FitAnalyzer = () => {
 
   return (
     <div className="min-h-screen p-6 md:p-8 space-y-8">
+      <SEO title="Analyseur FIT" description="Analysez en détail vos fichiers FIT : puissance, fréquence cardiaque, température, carte GPS et élévation." path="/fit-analyzer" />
       {/* Header */}
       <div className="space-y-2 opacity-0 animate-fade-in-up">
         <h1 className="text-4xl font-bold gradient-text">FIT Analyzer</h1>
