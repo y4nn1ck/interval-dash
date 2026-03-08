@@ -72,6 +72,8 @@ interface RaceResult {
   activity_date: string;
   activity_id: string | null;
   activity_time_seconds: number | null;
+  overall_rank: number | null;
+  category_rank: number | null;
   notes: string | null;
   created_at: string;
 }
