@@ -15,6 +15,7 @@ import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 import ComplianceIndicator from '@/components/training-calendar/ComplianceIndicator';
 import ComplianceEvolutionChart from '@/components/training-calendar/ComplianceEvolutionChart';
 import TrainingLoadEvolutionChart from '@/components/training-calendar/TrainingLoadEvolutionChart';
+import SportDistributionChart from '@/components/training-calendar/SportDistributionChart';
 import MonthlyCalendarView from '@/components/training-calendar/MonthlyCalendarView';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -485,6 +486,9 @@ const TrainingCalendar = () => {
 
       {/* Period Summary */}
       <WeeklySummary activities={activities} events={events} viewMode={viewMode} />
+
+      {/* Sport Distribution Chart */}
+      <SportDistributionChart activities={activities} viewMode={viewMode} />
 
       {/* Training Load Evolution */}
       <TrainingLoadEvolutionChart />
