@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Clock, Calendar, Trash2, Timer, Route, Pencil } from "lucide-react";
+import { Trophy, Plus, Clock, Calendar, Trash2, Timer, Route, Pencil, Activity, X } from "lucide-react";
 import ProgressionChart from "@/components/race-results/ProgressionChart";
+import ActivityAnalysisDialog from "@/components/training-calendar/ActivityAnalysisDialog";
+import { intervalsService, IntervalsActivity } from "@/services/intervalsService";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, subDays, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const RACE_TYPES = [
