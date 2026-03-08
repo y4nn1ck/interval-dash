@@ -16,6 +16,7 @@ import ComplianceIndicator from '@/components/training-calendar/ComplianceIndica
 import ComplianceEvolutionChart from '@/components/training-calendar/ComplianceEvolutionChart';
 import TrainingLoadEvolutionChart from '@/components/training-calendar/TrainingLoadEvolutionChart';
 import SportDistributionChart from '@/components/training-calendar/SportDistributionChart';
+import WellnessChartsSection from '@/components/dashboard/WellnessChartsSection';
 import MonthlyCalendarView from '@/components/training-calendar/MonthlyCalendarView';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
