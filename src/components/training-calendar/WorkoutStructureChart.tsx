@@ -50,20 +50,24 @@ const flattenSteps = (steps: WorkoutStep[], startTime = 0): FlatStep[] => {
         currentTime = inner.length > 0 ? inner[inner.length - 1].startTime + inner[inner.length - 1].duration : currentTime;
       }
     } else {
-      const dur = step.duration || 60;
+      const dur = step.duration && step.duration > 0 ? step.duration : 60;
       let power = 50;
       let powerEnd: number | undefined;
       let isRamp = false;
       let label = '';
 
-      if (step.power) {
+      if (step.power && step.power.value != null && !isNaN(step.power.value)) {
         power = step.power.value;
         label = step.power.units === '%ftp' ? `${power}%` : `${power}W`;
-      } else if (step.ramp) {
+      } else if (step.ramp && step.ramp.start != null && step.ramp.end != null && !isNaN(step.ramp.start) && !isNaN(step.ramp.end)) {
         power = step.ramp.start;
         powerEnd = step.ramp.end;
         isRamp = true;
         label = `${power}→${powerEnd}%`;
+      } else {
+        // No power info - use default zone 1
+        power = 50;
+        label = step.text || '';
       }
 
       flat.push({ startTime: currentTime, duration: dur, power, powerEnd, label, isRamp });
