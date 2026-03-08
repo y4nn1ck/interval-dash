@@ -54,14 +54,14 @@ interface WorkoutStep {
 }
 
 const formatPowerTarget = (power: { value: number; units: string } | undefined) => {
-  if (!power) return null;
+  if (!power || power.value == null || isNaN(power.value)) return null;
   if (power.units === '%ftp') return `${power.value}% FTP`;
   if (power.units === 'W') return `${power.value}W`;
   return `${power.value} ${power.units}`;
 };
 
 const getZoneColor = (power: { value: number; units: string } | undefined): string => {
-  if (!power || power.units !== '%ftp') return 'bg-muted text-muted-foreground';
+  if (!power || power.value == null || isNaN(power.value) || power.units !== '%ftp') return 'bg-muted text-muted-foreground';
   const pct = power.value;
   if (pct <= 55) return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
   if (pct <= 75) return 'bg-green-500/20 text-green-400 border-green-500/30';
@@ -101,8 +101,8 @@ const WorkoutStepRow: React.FC<{ step: WorkoutStep; index: number; depth?: numbe
   }
 
   const powerTarget = formatPowerTarget(step.power);
-  const rampTarget = step.ramp
-    ? `${step.ramp.start}% → ${step.ramp.end}% ${step.ramp.units === '%ftp' ? 'FTP' : step.ramp.units}`
+  const rampTarget = step.ramp && step.ramp.start != null && step.ramp.end != null && !isNaN(step.ramp.start) && !isNaN(step.ramp.end)
+    ? `${step.ramp.start}% → ${step.ramp.end}% ${step.ramp.units === '%ftp' ? 'FTP' : step.ramp.units || ''}`
     : null;
   const duration = formatStepDuration(step.duration);
   const zoneColor = getZoneColor(step.power);
