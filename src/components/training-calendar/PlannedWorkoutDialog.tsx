@@ -54,7 +54,7 @@ interface WorkoutStep {
 }
 
 const formatPowerTarget = (power: { value: number; units: string } | undefined) => {
-  if (!power) return null;
+  if (!power || power.value == null || isNaN(power.value)) return null;
   if (power.units === '%ftp') return `${power.value}% FTP`;
   if (power.units === 'W') return `${power.value}W`;
   return `${power.value} ${power.units}`;
