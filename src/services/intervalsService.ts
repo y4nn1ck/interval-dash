@@ -333,10 +333,22 @@ class IntervalsService {
   async getWellnessRange(startDate: string, endDate: string): Promise<IntervalsDailyStats[]> {
     try {
       const athleteId = localStorage.getItem('intervals_athlete_id');
-      if (!athleteId) return [];
+      if (!athleteId) {
+        console.warn('No athlete ID found for wellness range');
+        return [];
+      }
 
-      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/wellness?oldest=${startDate}&newest=${endDate}`);
+      console.log(`Fetching wellness range from ${startDate} to ${endDate}...`);
+      const url = `/athlete/${athleteId}/wellness?oldest=${startDate}&newest=${endDate}`;
+      console.log('Wellness URL:', url);
+      const data = await this.makeAuthenticatedRequest(url);
+      console.log('Wellness range data received:', data?.length, 'records');
       
+      if (!Array.isArray(data)) {
+        console.warn('Wellness data is not an array:', typeof data);
+        return [];
+      }
+
       return data.map((item: any) => ({
         date: item.id,
         training_load: item.ctl || 0,
