@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 interface WeeklySummaryProps {
   activities: IntervalsActivity[];
   events?: IntervalsEvent[];
+  viewMode?: 'week' | 'month';
 }
 
 const getSportIcon = (type: string) => {
