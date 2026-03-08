@@ -72,6 +72,8 @@ interface RaceResult {
   activity_date: string;
   activity_id: string | null;
   activity_time_seconds: number | null;
+  overall_rank: number | null;
+  category_rank: number | null;
   notes: string | null;
   created_at: string;
 }
@@ -95,6 +97,8 @@ export default function RaceResults() {
   const [activityMinutes, setActivityMinutes] = useState("");
   const [activitySeconds, setActivitySeconds] = useState("");
   const [hasActivityTime, setHasActivityTime] = useState(false);
+  const [overallRank, setOverallRank] = useState("");
+  const [categoryRank, setCategoryRank] = useState("");
   const [notes, setNotes] = useState("");
 
   const resetForm = () => {
@@ -106,6 +110,8 @@ export default function RaceResults() {
     setHours(""); setMinutes(""); setSeconds("");
     setActivityHours(""); setActivityMinutes(""); setActivitySeconds("");
     setHasActivityTime(false);
+    setOverallRank("");
+    setCategoryRank("");
     setNotes("");
   };
 
@@ -133,6 +139,8 @@ export default function RaceResults() {
       setHasActivityTime(false);
       setActivityHours(""); setActivityMinutes(""); setActivitySeconds("");
     }
+    setOverallRank(r.overall_rank ? String(r.overall_rank) : "");
+    setCategoryRank(r.category_rank ? String(r.category_rank) : "");
     setNotes(r.notes || "");
     setOpen(true);
   };
@@ -211,6 +219,8 @@ export default function RaceResults() {
       activity_date: date,
       activity_id: null,
       activity_time_seconds: activityTime && activityTime > 0 ? activityTime : null,
+      overall_rank: overallRank ? parseInt(overallRank) : null,
+      category_rank: categoryRank ? parseInt(categoryRank) : null,
       notes: notes.trim() || null,
     };
 
@@ -356,6 +366,18 @@ export default function RaceResults() {
                 )}
               </div>
 
+              {/* Classement */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Place générale (optionnel)</Label>
+                  <Input type="number" min="1" placeholder="Ex: 42" value={overallRank} onChange={e => setOverallRank(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Place catégorie (optionnel)</Label>
+                  <Input type="number" min="1" placeholder="Ex: 5" value={categoryRank} onChange={e => setCategoryRank(e.target.value)} />
+                </div>
+              </div>
+
               {/* Notes */}
               <div className="space-y-2">
                 <Label>Notes (optionnel)</Label>
@@ -460,6 +482,8 @@ export default function RaceResults() {
                     <th className="text-right py-2 px-3 font-medium text-muted-foreground">
                       <span className="flex items-center justify-end gap-1"><Clock className="h-3 w-3" /> Séance</span>
                     </th>
+                    <th className="text-right py-2 px-3 font-medium text-muted-foreground">Place</th>
+                    <th className="text-right py-2 px-3 font-medium text-muted-foreground">Cat.</th>
                     <th className="text-right py-2 px-3 font-medium text-muted-foreground">Écart</th>
                     <th className="py-2 px-3"></th>
                   </tr>
@@ -500,6 +524,12 @@ export default function RaceResults() {
                           {r.activity_time_seconds
                             ? formatTimeFromSeconds(r.activity_time_seconds)
                             : "—"}
+                        </td>
+                        <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
+                          {r.overall_rank ? `${r.overall_rank}e` : "—"}
+                        </td>
+                        <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
+                          {r.category_rank ? `${r.category_rank}e` : "—"}
                         </td>
                         <td className="py-2.5 px-3 text-right tabular-nums">
                           {diff !== null ? (
