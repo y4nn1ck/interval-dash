@@ -50,6 +50,16 @@ const getDistanceLabel = (type: string, distance: string) => {
   return found?.label || distance;
 };
 
+const getRaceTypeIcon = (type: string) => {
+  switch (type) {
+    case "triathlon":
+      return <Waves className="h-4 w-4" />;
+    case "running":
+    default:
+      return <PersonStanding className="h-4 w-4" />;
+  }
+};
+
 const getPriorityStyle = (priority: string) => {
   return PRIORITIES.find(p => p.value === priority)?.color || PRIORITIES[1].color;
 };
