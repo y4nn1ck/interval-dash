@@ -375,6 +375,16 @@ const TrainingCalendar = () => {
           setSelectedActivity(null);
         }}
       />
+
+      {/* Planned Workout Dialog */}
+      <PlannedWorkoutDialog
+        event={selectedEvent}
+        isOpen={isEventDialogOpen}
+        onClose={() => {
+          setIsEventDialogOpen(false);
+          setSelectedEvent(null);
+        }}
+      />
     </div>
   );
 };
