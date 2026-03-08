@@ -224,6 +224,15 @@ const TrainingCalendar = () => {
       </Card>
 
       {/* Week Grid */}
+      {(() => {
+        // Calculate max planned events across all days for consistent alignment
+        const maxEvents = weekDays.reduce((max, day) => {
+          const dateKey = format(day, 'yyyy-MM-dd');
+          const count = (eventsByDay[dateKey] || []).length;
+          return Math.max(max, count);
+        }, 0);
+
+        return (
       <div className="grid grid-cols-7 gap-3 opacity-0 animate-fade-in-up-delay-2">
         {weekDays.map((day, index) => {
           const dateKey = format(day, 'yyyy-MM-dd');
