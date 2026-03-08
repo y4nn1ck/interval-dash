@@ -525,6 +525,12 @@ export default function RaceResults() {
                             ? formatTimeFromSeconds(r.activity_time_seconds)
                             : "—"}
                         </td>
+                        <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
+                          {r.overall_rank ? `${r.overall_rank}e` : "—"}
+                        </td>
+                        <td className="py-2.5 px-3 text-right tabular-nums text-muted-foreground">
+                          {r.category_rank ? `${r.category_rank}e` : "—"}
+                        </td>
                         <td className="py-2.5 px-3 text-right tabular-nums">
                           {diff !== null ? (
                             <span className={diff > 0 ? "text-orange-400" : "text-emerald-400"}>
