@@ -487,6 +487,9 @@ const TrainingCalendar = () => {
       {/* Period Summary */}
       <WeeklySummary activities={activities} events={events} viewMode={viewMode} />
 
+      {/* Sport Distribution Chart */}
+      <SportDistributionChart activities={activities} viewMode={viewMode} />
+
       {/* Training Load Evolution */}
       <TrainingLoadEvolutionChart />
 
