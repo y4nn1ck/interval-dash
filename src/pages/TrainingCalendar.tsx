@@ -262,20 +262,24 @@ const TrainingCalendar = () => {
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="px-2 pb-2 space-y-2">
+              <CardContent className="px-2 pb-2 flex flex-col">
                 {activitiesLoading ? (
                   <div className="flex items-center justify-center py-4">
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 ) : (
                   <>
-                    {/* Planned workouts (not yet done) */}
-                    {dayEvents.length > 0 && (
-                      <div className="space-y-1.5">
-                        <div className="flex items-center gap-1.5 px-1">
-                          <ClipboardList className="h-3 w-3 text-primary/60" />
-                          <span className="text-[10px] font-medium text-primary/60 uppercase tracking-wider">Prévu</span>
-                        </div>
+                    {/* Planned section with consistent min-height for alignment */}
+                    <div
+                      className="space-y-1.5 mb-1"
+                      style={{ minHeight: maxPlannedEvents > 0 ? `${maxPlannedEvents * 56 + 20}px` : undefined }}
+                    >
+                      {dayEvents.length > 0 && (
+                        <>
+                          <div className="flex items-center gap-1.5 px-1">
+                            <ClipboardList className="h-3 w-3 text-primary/60" />
+                            <span className="text-[10px] font-medium text-primary/60 uppercase tracking-wider">Prévu</span>
+                          </div>
                         {dayEvents.map((event) => {
                           const isPaired = !!(event.paired_activity_id && activities.some(a => a.id === event.paired_activity_id));
                           return (
