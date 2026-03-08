@@ -141,8 +141,9 @@ const TrainingCalendar = () => {
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
   };
 
-  const handleActivityClick = (activity: IntervalsActivity) => {
+  const handleActivityClick = (activity: IntervalsActivity, pairedEvent?: IntervalsEvent) => {
     setSelectedActivity(activity);
+    setSelectedActivityEvent(pairedEvent || null);
     setIsDialogOpen(true);
   };
 
