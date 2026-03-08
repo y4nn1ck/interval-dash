@@ -146,6 +146,11 @@ const TrainingCalendar = () => {
     setIsDialogOpen(true);
   };
 
+  const handleEventClick = (event: IntervalsEvent) => {
+    setSelectedEvent(event);
+    setIsEventDialogOpen(true);
+  };
+
   const isCurrentWeek = isSameDay(currentWeekStart, startOfWeek(new Date(), { weekStartsOn: 1 }));
 
   if (authLoading) {
