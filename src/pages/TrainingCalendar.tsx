@@ -272,7 +272,7 @@ const TrainingCalendar = () => {
                     {/* Planned section with consistent min-height for alignment */}
                     <div
                       className="space-y-1.5"
-                      style={{ minHeight: maxPlannedEvents > 0 ? `${maxPlannedEvents * 56 + 20}px` : undefined }}
+                      style={{ minHeight: maxPlannedEvents > 0 ? `${Math.min(maxPlannedEvents * 48 + 16, 200)}px` : undefined }}
                     >
                       {dayEvents.length > 0 && (
                         <>
