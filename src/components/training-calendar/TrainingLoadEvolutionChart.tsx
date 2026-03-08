@@ -22,11 +22,11 @@ const PERIODS = [
 ] as const;
 
 const TSB_ZONES = [
-  { min: 25, max: 100, label: 'Transition', color: 'hsl(210, 40%, 50%)', opacity: 0.08 },
-  { min: 15, max: 25, label: 'Frais', color: 'hsl(142, 71%, 45%)', opacity: 0.10 },
-  { min: 5, max: 15, label: 'Zone grise', color: 'hsl(45, 80%, 50%)', opacity: 0.08 },
+  { min: 25, max: 100, label: 'Transition', color: 'hsl(45, 80%, 50%)', opacity: 0.12 },
+  { min: 15, max: 25, label: 'Frais', color: 'hsl(210, 70%, 55%)', opacity: 0.12 },
+  { min: 5, max: 15, label: 'Zone grise', color: 'hsl(220, 10%, 60%)', opacity: 0.10 },
   { min: -10, max: 5, label: 'Optimal', color: 'hsl(142, 71%, 45%)', opacity: 0.15 },
-  { min: -30, max: -10, label: 'Risque', color: 'hsl(0, 72%, 51%)', opacity: 0.08 },
+  { min: -30, max: -10, label: 'Risque', color: 'hsl(0, 72%, 51%)', opacity: 0.10 },
   { min: -100, max: -30, label: 'Surmenage', color: 'hsl(0, 72%, 51%)', opacity: 0.15 },
 ];
 
