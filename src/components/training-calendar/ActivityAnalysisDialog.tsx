@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { IntervalsEvent } from '@/services/intervalsService';
 import {
   Dialog,
   DialogContent,
