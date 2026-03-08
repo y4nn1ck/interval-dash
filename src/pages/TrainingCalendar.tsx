@@ -245,7 +245,7 @@ const TrainingCalendar = () => {
             <Card 
               key={dateKey} 
               className={cn(
-                "glass-card min-h-[200px] transition-all duration-300",
+                "glass-card min-h-[200px] transition-all duration-300 flex flex-col",
                 isToday && "ring-2 ring-primary/50 shadow-lg shadow-primary/10"
               )}
             >
