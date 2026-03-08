@@ -127,7 +127,6 @@ export default function RaceResults() {
     setActivityId("");
     setActivityCandidates([]);
   };
-  };
 
   const populateForm = (r: RaceResult) => {
     setEditingId(r.id);
@@ -266,7 +265,6 @@ export default function RaceResults() {
       official_time_seconds: officialTime,
       activity_date: date,
       activity_id: activityId.trim() || null,
-      activity_time_seconds: activityTime && activityTime > 0 ? activityTime : null,
       activity_time_seconds: activityTime && activityTime > 0 ? activityTime : null,
       overall_rank: overallRank ? parseInt(overallRank) : null,
       category_rank: categoryRank ? parseInt(categoryRank) : null,
