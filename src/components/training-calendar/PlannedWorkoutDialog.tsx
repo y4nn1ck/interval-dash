@@ -100,12 +100,13 @@ const formatStepDuration = (seconds: number | undefined) => {
 
 const WorkoutStepRow: React.FC<{ step: WorkoutStep; index: number; depth?: number }> = ({ step, index, depth = 0 }) => {
   // Repeat block
-  if (step.repeat && step.steps) {
+  const reps = step.reps || step.repeat;
+  if (reps && step.steps) {
     return (
       <div className={cn("rounded-lg border border-border/50 overflow-hidden", depth > 0 && "ml-4")}>
         <div className="bg-primary/10 px-3 py-1.5 flex items-center gap-2">
           <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-            {step.repeat}x
+            {reps}x
           </Badge>
           <span className="text-xs text-muted-foreground">Répétitions</span>
         </div>
@@ -119,9 +120,7 @@ const WorkoutStepRow: React.FC<{ step: WorkoutStep; index: number; depth?: numbe
   }
 
   const powerTarget = formatPowerTarget(step.power);
-  const rampTarget = step.ramp && step.ramp.start != null && step.ramp.end != null && !isNaN(step.ramp.start) && !isNaN(step.ramp.end)
-    ? `${step.ramp.start}% → ${step.ramp.end}% ${step.ramp.units === '%ftp' ? 'FTP' : step.ramp.units || ''}`
-    : null;
+  const rampTarget = formatRampTarget(step);
   const duration = formatStepDuration(step.duration);
   const zoneColor = getZoneColor(step.power);
 
