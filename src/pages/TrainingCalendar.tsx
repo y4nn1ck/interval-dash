@@ -127,14 +127,33 @@ const TrainingCalendar = () => {
     return grouped;
   }, [activities]);
 
-  // Max planned events across all days for consistent vertical alignment
-  const maxPlannedEvents = useMemo(() => {
-    return weekDays.reduce((max, day) => {
-      const dateKey = format(day, 'yyyy-MM-dd');
-      const count = (eventsByDay[dateKey] || []).length;
-      return Math.max(max, count);
-    }, 0);
-  }, [weekDays, eventsByDay]);
+  // Ref-based alignment: measure actual planned section heights and apply max
+  const plannedRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [plannedMinHeight, setPlannedMinHeight] = useState<number>(0);
+
+  const setPlannedRef = useCallback((index: number) => (el: HTMLDivElement | null) => {
+    plannedRefs.current[index] = el;
+  }, []);
+
+  useEffect(() => {
+    // Wait for render, then measure
+    const timer = setTimeout(() => {
+      let maxH = 0;
+      plannedRefs.current.forEach((el) => {
+        if (el) {
+          // Temporarily remove minHeight to get natural height
+          const prev = el.style.minHeight;
+          el.style.minHeight = '0px';
+          maxH = Math.max(maxH, el.scrollHeight);
+          el.style.minHeight = prev;
+        }
+      });
+      if (maxH > 0) {
+        setPlannedMinHeight(maxH);
+      }
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [events, activities, currentWeekStart]);
 
   const handlePreviousWeek = () => {
     setCurrentWeekStart(prev => subWeeks(prev, 1));
