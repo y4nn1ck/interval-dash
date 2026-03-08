@@ -54,16 +54,33 @@ interface WorkoutStep {
   repeat?: number;
 }
 
-const formatPowerTarget = (power: { value: number; units: string } | undefined) => {
-  if (!power || power.value == null || isNaN(power.value)) return null;
-  if (power.units === '%ftp') return `${power.value}% FTP`;
-  if (power.units === 'W') return `${power.value}W`;
-  return `${power.value} ${power.units}`;
+const formatPowerTarget = (power: WorkoutStep['power']) => {
+  if (!power) return null;
+  if (power.value != null && !isNaN(power.value)) {
+    if (power.units === '%ftp') return `${power.value}% FTP`;
+    if (power.units === 'power_zone') return `Zone ${power.value}`;
+    if (power.units === 'W') return `${power.value}W`;
+    return `${power.value} ${power.units}`;
+  }
+  return null;
 };
 
-const getZoneColor = (power: { value: number; units: string } | undefined): string => {
-  if (!power || power.value == null || isNaN(power.value) || power.units !== '%ftp') return 'bg-muted text-muted-foreground';
-  const pct = power.value;
+const formatRampTarget = (step: WorkoutStep) => {
+  if (!step.ramp || !step.power?.start || !step.power?.end) return null;
+  const p = step.power;
+  const unitLabel = p.units === '%ftp' ? 'FTP' : p.units === 'power_zone' ? 'Zone' : (p.units || '');
+  return `${p.start}% → ${p.end}% ${unitLabel}`;
+};
+
+const getZoneColor = (power: WorkoutStep['power']): string => {
+  if (!power) return 'bg-muted text-muted-foreground';
+  let pct: number | undefined;
+  if (power.value != null && !isNaN(power.value)) {
+    pct = power.units === '%ftp' ? power.value : undefined;
+  } else if (power.start != null) {
+    pct = power.units === '%ftp' ? power.start : undefined;
+  }
+  if (pct == null) return 'bg-muted text-muted-foreground';
   if (pct <= 55) return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
   if (pct <= 75) return 'bg-green-500/20 text-green-400 border-green-500/30';
   if (pct <= 90) return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
