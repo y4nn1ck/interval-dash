@@ -123,6 +123,9 @@ export default function RaceResults() {
     setOverallRank("");
     setCategoryRank("");
     setNotes("");
+    setActivityId("");
+    setActivityCandidates([]);
+  };
   };
 
   const populateForm = (r: RaceResult) => {
