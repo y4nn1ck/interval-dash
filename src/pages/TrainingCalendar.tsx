@@ -61,6 +61,8 @@ const TrainingCalendar = () => {
   );
   const [selectedActivity, setSelectedActivity] = useState<IntervalsActivity | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<IntervalsEvent | null>(null);
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 
   const { isAuthenticated, isLoading: authLoading } = useIntervalsAuth();
 
