@@ -426,6 +426,9 @@ export default function RaceResults() {
         </div>
       )}
 
+      {/* Progression chart */}
+      <ProgressionChart results={results} />
+
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
         <Select value={filterType} onValueChange={(v) => { setFilterType(v); setFilterDistance("all"); }}>
