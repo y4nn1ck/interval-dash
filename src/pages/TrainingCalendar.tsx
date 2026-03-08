@@ -127,6 +127,15 @@ const TrainingCalendar = () => {
     return grouped;
   }, [activities]);
 
+  // Max planned events across all days for consistent vertical alignment
+  const maxPlannedEvents = useMemo(() => {
+    return weekDays.reduce((max, day) => {
+      const dateKey = format(day, 'yyyy-MM-dd');
+      const count = (eventsByDay[dateKey] || []).length;
+      return Math.max(max, count);
+    }, 0);
+  }, [weekDays, eventsByDay]);
+
   const handlePreviousWeek = () => {
     setCurrentWeekStart(prev => subWeeks(prev, 1));
   };
