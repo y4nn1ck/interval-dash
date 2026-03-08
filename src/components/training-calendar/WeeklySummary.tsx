@@ -313,7 +313,7 @@ const WeeklySummary = ({ activities, events = [], viewMode = 'week' }: WeeklySum
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg">
               <Target className="h-5 w-5 text-primary" />
-              Condition physique de la semaine
+              Condition physique {periodLabel}
             </CardTitle>
           </CardHeader>
           <CardContent>

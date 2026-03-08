@@ -483,8 +483,8 @@ const TrainingCalendar = () => {
       </div>
       )}
 
-      {/* Weekly Summary */}
-      <WeeklySummary activities={activities} events={events} />
+      {/* Period Summary */}
+      <WeeklySummary activities={activities} events={events} viewMode={viewMode} />
 
       {/* Training Load Evolution */}
       <TrainingLoadEvolutionChart />
