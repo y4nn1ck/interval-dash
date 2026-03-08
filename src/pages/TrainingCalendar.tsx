@@ -227,6 +227,16 @@ const TrainingCalendar = () => {
               <Button
                 variant="outline"
                 size="icon"
+                onClick={() => refetchActivities()}
+                disabled={isRefreshingActivities}
+                className="h-9 w-9"
+                title="Rafraîchir les activités"
+              >
+                <RefreshCw className={cn("h-4 w-4", isRefreshingActivities && "animate-spin")} />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={handlePreviousWeek}
                 className="h-9 w-9"
               >
