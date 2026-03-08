@@ -431,6 +431,9 @@ const TrainingCalendar = () => {
       {/* Weekly Summary */}
       <WeeklySummary activities={activities} events={events} />
 
+      {/* Training Load Evolution */}
+      <TrainingLoadEvolutionChart />
+
       {/* Compliance Evolution Chart */}
       <ComplianceEvolutionChart currentWeekStart={currentWeekStart} />
 
