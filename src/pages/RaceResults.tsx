@@ -367,8 +367,10 @@ export default function RaceResults() {
               <DialogClose asChild>
                 <Button variant="outline">Annuler</Button>
               </DialogClose>
-              <Button onClick={handleSubmit} disabled={addMutation.isPending}>
-                {addMutation.isPending ? "Ajout..." : "Ajouter"}
+              <Button onClick={handleSubmit} disabled={addMutation.isPending || updateMutation.isPending}>
+                {editingId
+                  ? (updateMutation.isPending ? "Mise à jour..." : "Mettre à jour")
+                  : (addMutation.isPending ? "Ajout..." : "Ajouter")}
               </Button>
             </DialogFooter>
           </DialogContent>
