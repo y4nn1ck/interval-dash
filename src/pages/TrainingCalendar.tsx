@@ -74,7 +74,7 @@ const TrainingCalendar = () => {
   const startDateStr = format(currentWeekStart, 'yyyy-MM-dd');
   const endDateStr = format(weekEnd, 'yyyy-MM-dd');
 
-  const { data: activities = [], isLoading: activitiesLoading, pendingStravaCount } = useIntervalsActivities(
+  const { data: activities = [], isLoading: activitiesLoading, pendingStravaCount, refetch: refetchActivities, isFetching: isRefreshingActivities } = useIntervalsActivities(
     startDateStr, 
     endDateStr
   );
