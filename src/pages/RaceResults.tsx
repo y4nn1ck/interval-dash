@@ -32,10 +32,10 @@ const DISTANCES: Record<string, { value: string; label: string }[]> = {
   ],
   triathlon: [
     { value: "super_sprint", label: "Super Sprint" },
-    { value: "sprint", label: "Sprint (750m/20km/5km)" },
-    { value: "olympic", label: "Olympique (1.5km/40km/10km)" },
-    { value: "half_ironman", label: "Half Ironman (1.9km/90km/21.1km)" },
-    { value: "ironman", label: "Ironman (3.8km/180km/42.2km)" },
+    { value: "sprint", label: "Sprint" },
+    { value: "olympic", label: "Olympique" },
+    { value: "half_ironman", label: "Half Ironman" },
+    { value: "ironman", label: "Ironman" },
     { value: "other_tri", label: "Autre" },
   ],
 };
