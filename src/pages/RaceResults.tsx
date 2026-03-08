@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Plus, Clock, Calendar, Trash2, Timer, Route } from "lucide-react";
+import { Trophy, Plus, Clock, Calendar, Trash2, Timer, Route, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -79,6 +79,7 @@ interface RaceResult {
 export default function RaceResults() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterDistance, setFilterDistance] = useState<string>("all");
 
@@ -97,6 +98,7 @@ export default function RaceResults() {
   const [notes, setNotes] = useState("");
 
   const resetForm = () => {
+    setEditingId(null);
     setRaceType("running");
     setDistance("");
     setName("");
@@ -105,6 +107,34 @@ export default function RaceResults() {
     setActivityHours(""); setActivityMinutes(""); setActivitySeconds("");
     setHasActivityTime(false);
     setNotes("");
+  };
+
+  const populateForm = (r: RaceResult) => {
+    setEditingId(r.id);
+    setRaceType(r.race_type);
+    setDistance(r.distance);
+    setName(r.name);
+    setDate(r.activity_date);
+    const oh = Math.floor(r.official_time_seconds / 3600);
+    const om = Math.floor((r.official_time_seconds % 3600) / 60);
+    const os = r.official_time_seconds % 60;
+    setHours(oh > 0 ? String(oh) : "");
+    setMinutes(String(om));
+    setSeconds(String(os));
+    if (r.activity_time_seconds) {
+      setHasActivityTime(true);
+      const ah = Math.floor(r.activity_time_seconds / 3600);
+      const am = Math.floor((r.activity_time_seconds % 3600) / 60);
+      const as2 = r.activity_time_seconds % 60;
+      setActivityHours(ah > 0 ? String(ah) : "");
+      setActivityMinutes(String(am));
+      setActivitySeconds(String(as2));
+    } else {
+      setHasActivityTime(false);
+      setActivityHours(""); setActivityMinutes(""); setActivitySeconds("");
+    }
+    setNotes(r.notes || "");
+    setOpen(true);
   };
 
   const { data: results = [], isLoading } = useQuery({
@@ -133,6 +163,20 @@ export default function RaceResults() {
     onError: () => toast.error("Erreur lors de l'ajout"),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, ...result }: Omit<RaceResult, "created_at">) => {
+      const { error } = await supabase.from("race_results").update(result).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["race-results"] });
+      toast.success("Résultat mis à jour !");
+      setOpen(false);
+      resetForm();
+    },
+    onError: () => toast.error("Erreur lors de la mise à jour"),
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("race_results").delete().eq("id", id);
@@ -159,7 +203,7 @@ export default function RaceResults() {
       ? parseTimeToSeconds(activityHours, activityMinutes, activitySeconds)
       : null;
 
-    addMutation.mutate({
+    const payload = {
       name: name.trim(),
       race_type: raceType,
       distance,
@@ -168,7 +212,13 @@ export default function RaceResults() {
       activity_id: null,
       activity_time_seconds: activityTime && activityTime > 0 ? activityTime : null,
       notes: notes.trim() || null,
-    });
+    };
+
+    if (editingId) {
+      updateMutation.mutate({ id: editingId, ...payload } as any);
+    } else {
+      addMutation.mutate(payload);
+    }
   };
 
   const filtered = results.filter(r => {
@@ -210,7 +260,7 @@ export default function RaceResults() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>Nouveau résultat de course</DialogTitle>
+              <DialogTitle>{editingId ? "Modifier le résultat" : "Nouveau résultat de course"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
               {/* Race type */}
@@ -317,8 +367,10 @@ export default function RaceResults() {
               <DialogClose asChild>
                 <Button variant="outline">Annuler</Button>
               </DialogClose>
-              <Button onClick={handleSubmit} disabled={addMutation.isPending}>
-                {addMutation.isPending ? "Ajout..." : "Ajouter"}
+              <Button onClick={handleSubmit} disabled={addMutation.isPending || updateMutation.isPending}>
+                {editingId
+                  ? (updateMutation.isPending ? "Mise à jour..." : "Mettre à jour")
+                  : (addMutation.isPending ? "Ajout..." : "Ajouter")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -457,14 +509,24 @@ export default function RaceResults() {
                           ) : "—"}
                         </td>
                         <td className="py-2.5 px-3 text-right">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                            onClick={() => deleteMutation.mutate(r.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-primary"
+                              onClick={() => populateForm(r)}
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              onClick={() => deleteMutation.mutate(r.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
