@@ -143,9 +143,7 @@ const WorkoutStructureChart: React.FC<WorkoutStructureChartProps> = ({ steps }) 
     return { chartData: data, rampSegments: ramps };
   }, [steps]);
 
-  if (chartData.length === 0) return null;
-
-  const maxPower = Math.max(...chartData.map(d => d.power), 100);
+  const maxPower = Math.max(...(chartData.length > 0 ? chartData.map(d => d.power) : [100]), 100);
   const usedZones = useMemo(() => {
     const zones = new Set<string>();
     chartData.forEach(d => {
@@ -158,6 +156,8 @@ const WorkoutStructureChart: React.FC<WorkoutStructureChartProps> = ({ steps }) 
     });
     return ZONE_COLORS.filter(z => zones.has(z.label));
   }, [chartData]);
+
+  if (chartData.length === 0) return null;
 
   return (
     <Card className="glass-card mt-2">
