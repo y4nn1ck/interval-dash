@@ -296,7 +296,17 @@ const TrainingCalendar = () => {
       {/* Strava Pending Banner */}
       <StravaPendingBanner count={pendingStravaCount} onRefresh={() => refetchActivities()} isRefreshing={isRefreshingActivities} className="opacity-0 animate-fade-in-up-delay-1" />
 
-      {/* Week Grid */}
+      {/* Calendar View */}
+      {viewMode === 'month' ? (
+        <MonthlyCalendarView
+          currentMonth={currentMonth}
+          activities={activities}
+          events={events}
+          isLoading={activitiesLoading}
+          onActivityClick={handleActivityClick}
+          onEventClick={handleEventClick}
+        />
+      ) : (
       <div className="grid grid-cols-7 gap-3 opacity-0 animate-fade-in-up-delay-2">
         {weekDays.map((day, index) => {
           const dateKey = format(day, 'yyyy-MM-dd');
