@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, Plus, Clock, Calendar, Trash2, Timer, Route, Pencil } from "lucide-react";
+import ProgressionChart from "@/components/race-results/ProgressionChart";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -424,6 +425,9 @@ export default function RaceResults() {
           ))}
         </div>
       )}
+
+      {/* Progression chart */}
+      <ProgressionChart results={results} />
 
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
