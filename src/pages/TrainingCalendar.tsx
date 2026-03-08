@@ -264,7 +264,7 @@ const TrainingCalendar = () => {
       </Card>
 
       {/* Strava Pending Banner */}
-      <StravaPendingBanner count={pendingStravaCount} className="opacity-0 animate-fade-in-up-delay-1" />
+      <StravaPendingBanner count={pendingStravaCount} onRefresh={() => refetchActivities()} isRefreshing={isRefreshingActivities} className="opacity-0 animate-fade-in-up-delay-1" />
 
       {/* Week Grid */}
       <div className="grid grid-cols-7 gap-3 opacity-0 animate-fade-in-up-delay-2">
