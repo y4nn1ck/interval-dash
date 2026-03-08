@@ -5,7 +5,7 @@ import { useIntervalsAuth, useIntervalsActivities, useIntervalsEvents } from '@/
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import { ChevronLeft, ChevronRight, Calendar, Loader2, Activity, Clock, Zap, Mountain, Heart, ClipboardList, RefreshCw } from 'lucide-react';
 import StravaPendingBanner from '@/components/dashboard/StravaPendingBanner';
-import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameDay, parseISO } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, addMonths, subMonths, startOfMonth, endOfMonth, isSameDay, isSameMonth, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { IntervalsActivity, IntervalsEvent } from '@/services/intervalsService';
@@ -15,6 +15,8 @@ import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 import ComplianceIndicator from '@/components/training-calendar/ComplianceIndicator';
 import ComplianceEvolutionChart from '@/components/training-calendar/ComplianceEvolutionChart';
 import TrainingLoadEvolutionChart from '@/components/training-calendar/TrainingLoadEvolutionChart';
+import MonthlyCalendarView from '@/components/training-calendar/MonthlyCalendarView';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
@@ -58,9 +60,11 @@ const formatDistance = (meters: number) => {
 };
 
 const TrainingCalendar = () => {
+  const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
   const [currentWeekStart, setCurrentWeekStart] = useState(() => 
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [selectedActivity, setSelectedActivity] = useState<IntervalsActivity | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedActivityEvent, setSelectedActivityEvent] = useState<IntervalsEvent | null>(null);
@@ -71,8 +75,15 @@ const TrainingCalendar = () => {
 
   const weekEnd = useMemo(() => endOfWeek(currentWeekStart, { weekStartsOn: 1 }), [currentWeekStart]);
 
-  const startDateStr = format(currentWeekStart, 'yyyy-MM-dd');
-  const endDateStr = format(weekEnd, 'yyyy-MM-dd');
+  const monthStart = useMemo(() => startOfMonth(currentMonth), [currentMonth]);
+  const monthEnd = useMemo(() => endOfMonth(currentMonth), [currentMonth]);
+
+  const startDateStr = viewMode === 'week'
+    ? format(currentWeekStart, 'yyyy-MM-dd')
+    : format(startOfWeek(monthStart, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+  const endDateStr = viewMode === 'week'
+    ? format(weekEnd, 'yyyy-MM-dd')
+    : format(endOfWeek(monthEnd, { weekStartsOn: 1 }), 'yyyy-MM-dd');
 
   const { data: activities = [], isLoading: activitiesLoading, pendingStravaCount, refetch: refetchActivities, isFetching: isRefreshingActivities } = useIntervalsActivities(
     startDateStr, 
@@ -157,16 +168,25 @@ const TrainingCalendar = () => {
     return () => clearTimeout(timer);
   }, [events, activities, currentWeekStart]);
 
-  const handlePreviousWeek = () => {
-    setCurrentWeekStart(prev => subWeeks(prev, 1));
+  const handlePrevious = () => {
+    if (viewMode === 'week') {
+      setCurrentWeekStart(prev => subWeeks(prev, 1));
+    } else {
+      setCurrentMonth(prev => subMonths(prev, 1));
+    }
   };
 
-  const handleNextWeek = () => {
-    setCurrentWeekStart(prev => addWeeks(prev, 1));
+  const handleNext = () => {
+    if (viewMode === 'week') {
+      setCurrentWeekStart(prev => addWeeks(prev, 1));
+    } else {
+      setCurrentMonth(prev => addMonths(prev, 1));
+    }
   };
 
-  const handleThisWeek = () => {
+  const handleToday = () => {
     setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
+    setCurrentMonth(new Date());
   };
 
   const handleActivityClick = (activity: IntervalsActivity, pairedEvent?: IntervalsEvent) => {
@@ -181,6 +201,7 @@ const TrainingCalendar = () => {
   };
 
   const isCurrentWeek = isSameDay(currentWeekStart, startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const isCurrentMonthView = isSameMonth(currentMonth, new Date());
 
   if (authLoading) {
     return (
@@ -213,7 +234,7 @@ const TrainingCalendar = () => {
         <p className="text-muted-foreground text-lg">Visualisez vos entraînements semaine par semaine</p>
       </div>
 
-      {/* Week Navigation */}
+      {/* Navigation */}
       <Card className="glass-card opacity-0 animate-fade-in-up-delay-1">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
@@ -221,9 +242,18 @@ const TrainingCalendar = () => {
               <div className="p-2 rounded-lg bg-primary/20">
                 <Calendar className="h-5 w-5 text-primary" />
               </div>
-              Semaine du {format(currentWeekStart, 'd MMMM yyyy', { locale: fr })}
+              {viewMode === 'week'
+                ? `Semaine du ${format(currentWeekStart, 'd MMMM yyyy', { locale: fr })}`
+                : format(currentMonth, 'MMMM yyyy', { locale: fr }).replace(/^\w/, c => c.toUpperCase())
+              }
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'week' | 'month')}>
+                <TabsList className="h-9">
+                  <TabsTrigger value="week" className="text-xs px-3">Semaine</TabsTrigger>
+                  <TabsTrigger value="month" className="text-xs px-3">Mois</TabsTrigger>
+                </TabsList>
+              </Tabs>
               <Button
                 variant="outline"
                 size="icon"
@@ -237,23 +267,23 @@ const TrainingCalendar = () => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={handlePreviousWeek}
+                onClick={handlePrevious}
                 className="h-9 w-9"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
-                variant={isCurrentWeek ? "secondary" : "outline"}
+                variant={(viewMode === 'week' ? isCurrentWeek : isCurrentMonthView) ? "secondary" : "outline"}
                 size="sm"
-                onClick={handleThisWeek}
-                disabled={isCurrentWeek}
+                onClick={handleToday}
+                disabled={viewMode === 'week' ? isCurrentWeek : isCurrentMonthView}
               >
                 Aujourd'hui
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                onClick={handleNextWeek}
+                onClick={handleNext}
                 className="h-9 w-9"
               >
                 <ChevronRight className="h-4 w-4" />
@@ -266,7 +296,17 @@ const TrainingCalendar = () => {
       {/* Strava Pending Banner */}
       <StravaPendingBanner count={pendingStravaCount} onRefresh={() => refetchActivities()} isRefreshing={isRefreshingActivities} className="opacity-0 animate-fade-in-up-delay-1" />
 
-      {/* Week Grid */}
+      {/* Calendar View */}
+      {viewMode === 'month' ? (
+        <MonthlyCalendarView
+          currentMonth={currentMonth}
+          activities={activities}
+          events={events}
+          isLoading={activitiesLoading}
+          onActivityClick={handleActivityClick}
+          onEventClick={handleEventClick}
+        />
+      ) : (
       <div className="grid grid-cols-7 gap-3 opacity-0 animate-fade-in-up-delay-2">
         {weekDays.map((day, index) => {
           const dateKey = format(day, 'yyyy-MM-dd');
@@ -441,6 +481,7 @@ const TrainingCalendar = () => {
           );
         })}
       </div>
+      )}
 
       {/* Weekly Summary */}
       <WeeklySummary activities={activities} events={events} />
