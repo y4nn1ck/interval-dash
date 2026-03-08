@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 interface WeeklySummaryProps {
   activities: IntervalsActivity[];
   events?: IntervalsEvent[];
+  viewMode?: 'week' | 'month';
 }
 
 const getSportIcon = (type: string) => {
@@ -52,7 +53,9 @@ interface SportSummary {
   load: number;
 }
 
-const WeeklySummary = ({ activities, events = [] }: WeeklySummaryProps) => {
+const WeeklySummary = ({ activities, events = [], viewMode = 'week' }: WeeklySummaryProps) => {
+  const periodLabel = viewMode === 'month' ? 'du mois' : 'de la semaine';
+  const complianceLabel = viewMode === 'month' ? 'mensuelle' : 'hebdomadaire';
   const sportBreakdown = useMemo(() => {
     const grouped: Record<string, SportSummary> = {};
     activities.forEach((a) => {
@@ -169,7 +172,7 @@ const WeeklySummary = ({ activities, events = [] }: WeeklySummaryProps) => {
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg">
               <ClipboardCheck className="h-5 w-5 text-primary" />
-              Compliance hebdomadaire
+              Compliance {complianceLabel}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -233,7 +236,7 @@ const WeeklySummary = ({ activities, events = [] }: WeeklySummaryProps) => {
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg">
               <Activity className="h-5 w-5 text-primary" />
-              Résumé de la semaine
+              Résumé {periodLabel}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -310,7 +313,7 @@ const WeeklySummary = ({ activities, events = [] }: WeeklySummaryProps) => {
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-3 text-lg">
               <Target className="h-5 w-5 text-primary" />
-              Condition physique de la semaine
+              Condition physique {periodLabel}
             </CardTitle>
           </CardHeader>
           <CardContent>
