@@ -11,7 +11,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Dashboard from "./pages/Dashboard";
 import PowerCompar from "./pages/PowerCompar";
 import FitAnalyzer from "./pages/FitAnalyzer";
-import FitRawReader from "./pages/FitRawReader";
+
 import TrainingCalendar from "./pages/TrainingCalendar";
 import RaceResults from "./pages/RaceResults";
 import NotFound from "./pages/NotFound";
