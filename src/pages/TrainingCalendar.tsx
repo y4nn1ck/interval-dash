@@ -481,6 +481,7 @@ const TrainingCalendar = () => {
           );
         })}
       </div>
+      )}
 
       {/* Weekly Summary */}
       <WeeklySummary activities={activities} events={events} />
