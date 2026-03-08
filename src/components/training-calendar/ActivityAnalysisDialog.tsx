@@ -24,6 +24,7 @@ import ElevationChart from '@/components/fit-analyzer/ElevationChart';
 
 interface ActivityAnalysisDialogProps {
   activity: IntervalsActivity | null;
+  plannedEvent?: IntervalsEvent | null;
   isOpen: boolean;
   onClose: () => void;
 }
