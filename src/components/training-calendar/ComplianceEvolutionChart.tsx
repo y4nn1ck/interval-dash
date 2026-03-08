@@ -144,13 +144,36 @@ const ComplianceEvolutionChart: React.FC<ComplianceChartProps> = ({ currentWeekS
 
   return (
     <Card className="glass-card opacity-0 animate-fade-in-up-delay-3">
-      <CardHeader className="pb-4">
+      <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-3 text-lg">
           <TrendingUp className="h-5 w-5 text-primary" />
           Évolution de la compliance ({NUM_WEEKS} semaines)
         </CardTitle>
+        <p className="text-sm text-muted-foreground mt-1">
+          Suivi de l'adhérence au plan d'entraînement : score global (séances manquées = 0%) et qualité d'exécution (écart durée/distance/TSS des séances réalisées).
+        </p>
       </CardHeader>
       <CardContent>
+        {/* Legend */}
+        <div className="flex flex-wrap gap-4 mb-4 text-xs">
+          <div className="flex items-center gap-1.5">
+            <div className="w-8 h-[3px] rounded-full" style={{ backgroundColor: '#10b981' }} />
+            <span className="text-muted-foreground">Score global (%)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-8 h-[3px] rounded-full border-b-2 border-dashed" style={{ borderColor: '#3b82f6', height: 0 }} />
+            <span className="text-muted-foreground">Qualité d'exécution (%)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: 'hsl(var(--muted-foreground))', opacity: 0.15 }} />
+            <span className="text-muted-foreground">Séances prévues</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#8b5cf6', opacity: 0.5 }} />
+            <span className="text-muted-foreground">Séances réalisées</span>
+          </div>
+        </div>
+
         <ChartContainer config={chartConfig} className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
@@ -187,6 +210,7 @@ const ComplianceEvolutionChart: React.FC<ComplianceChartProps> = ({ currentWeekS
                 axisLine={false}
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
                 tickFormatter={(v) => `${v}%`}
+                label={{ value: 'Compliance %', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--muted-foreground))', fontSize: 11 } }}
               />
               <YAxis
                 yAxisId="count"
@@ -196,13 +220,17 @@ const ComplianceEvolutionChart: React.FC<ComplianceChartProps> = ({ currentWeekS
                 axisLine={false}
                 tick={{ fill: 'hsl(var(--muted-foreground))' }}
                 allowDecimals={false}
+                label={{ value: 'Nb séances', angle: 90, position: 'insideRight', style: { fill: 'hsl(var(--muted-foreground))', fontSize: 11 } }}
               />
               <ChartTooltip
                 content={
                   <ChartTooltipContent
                     className="bg-card/95 backdrop-blur-xl border-border shadow-xl"
                     formatter={(value, name) => {
-                      if (name === 'score' || name === 'quality') return [`${value}%`, undefined];
+                      if (name === 'score') return [`${value}%`, 'Score global'];
+                      if (name === 'quality') return [`${value}%`, "Qualité d'exécution"];
+                      if (name === 'completed') return [`${value}`, 'Séances réalisées'];
+                      if (name === 'planned') return [`${value}`, 'Séances prévues'];
                       return [value, undefined];
                     }}
                   />
@@ -232,6 +260,7 @@ const ComplianceEvolutionChart: React.FC<ComplianceChartProps> = ({ currentWeekS
                 fillOpacity={0.15}
                 radius={[4, 4, 0, 0]}
                 barSize={16}
+                name="planned"
               />
               <Bar
                 yAxisId="count"
@@ -240,6 +269,7 @@ const ComplianceEvolutionChart: React.FC<ComplianceChartProps> = ({ currentWeekS
                 fillOpacity={0.5}
                 radius={[4, 4, 0, 0]}
                 barSize={16}
+                name="completed"
               />
               {/* Lines */}
               <Line
@@ -252,6 +282,7 @@ const ComplianceEvolutionChart: React.FC<ComplianceChartProps> = ({ currentWeekS
                 activeDot={{ r: 6, stroke: 'var(--color-score)', strokeWidth: 2, fill: 'hsl(var(--card))' }}
                 filter="url(#compGlow)"
                 connectNulls
+                name="score"
               />
               <Line
                 yAxisId="percent"
@@ -263,6 +294,7 @@ const ComplianceEvolutionChart: React.FC<ComplianceChartProps> = ({ currentWeekS
                 dot={{ r: 3, fill: 'var(--color-quality)', strokeWidth: 1.5, stroke: 'hsl(var(--card))' }}
                 activeDot={{ r: 5, stroke: 'var(--color-quality)', strokeWidth: 2, fill: 'hsl(var(--card))' }}
                 connectNulls
+                name="quality"
               />
             </ComposedChart>
           </ResponsiveContainer>
