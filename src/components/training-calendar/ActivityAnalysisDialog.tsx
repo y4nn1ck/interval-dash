@@ -479,6 +479,11 @@ const ActivityAnalysisDialog: React.FC<ActivityAnalysisDialogProps> = ({
           )}
         </div>
 
+        {/* Planned vs Realized Comparison */}
+        {plannedEvent && (
+          <PlannedVsRealized activity={activity} plannedEvent={plannedEvent} />
+        )}
+
         {/* Analysis Button or Results */}
         {!isAnalyzed ? (
           <div className="flex justify-center py-8">
