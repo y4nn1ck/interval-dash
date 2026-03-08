@@ -263,11 +263,13 @@ const TrainingCalendar = () => {
                   <>
                     {/* Planned workouts (not yet done) */}
                     {dayEvents.map((event) => (
-                      <div
+                      <button
                         key={`event-${event.id}`}
+                        onClick={() => handleEventClick(event)}
                         className={cn(
                           "w-full text-left p-2 rounded-lg transition-all duration-200",
                           "border border-dashed border-primary/40 bg-primary/5",
+                          "hover:bg-primary/10 hover:shadow-md hover:scale-[1.02] cursor-pointer",
                         )}
                       >
                         <div className="flex items-center gap-2 mb-1">
