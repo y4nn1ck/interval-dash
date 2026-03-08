@@ -13,6 +13,7 @@ import PlannedWorkoutDialog from '@/components/training-calendar/PlannedWorkoutD
 import WeeklySummary from '@/components/training-calendar/WeeklySummary';
 import ComplianceIndicator from '@/components/training-calendar/ComplianceIndicator';
 import ComplianceEvolutionChart from '@/components/training-calendar/ComplianceEvolutionChart';
+import TrainingLoadEvolutionChart from '@/components/training-calendar/TrainingLoadEvolutionChart';
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
@@ -429,6 +430,9 @@ const TrainingCalendar = () => {
 
       {/* Weekly Summary */}
       <WeeklySummary activities={activities} events={events} />
+
+      {/* Training Load Evolution */}
+      <TrainingLoadEvolutionChart />
 
       {/* Compliance Evolution Chart */}
       <ComplianceEvolutionChart currentWeekStart={currentWeekStart} />

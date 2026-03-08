@@ -98,6 +98,15 @@ export const useIntervalsEvents = (startDate: string, endDate: string) => {
   });
 };
 
+export const useIntervalsWellnessRange = (startDate: string, endDate: string) => {
+  return useQuery({
+    queryKey: ['intervals-wellness-range', startDate, endDate],
+    queryFn: () => intervalsService.getWellnessRange(startDate, endDate),
+    enabled: !!startDate && !!endDate,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useIntervalsActivityFitFile = () => {
   const queryClient = useQueryClient();
   
