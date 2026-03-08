@@ -1,4 +1,5 @@
 import React from 'react';
+import SEO from '@/components/SEO';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import KPICardsSection from '@/components/dashboard/KPICardsSection';
