@@ -38,11 +38,6 @@ const menuItems = [
     url: "/fit-analyzer",
     icon: FileSearch,
   },
-  {
-    title: "FIT Raw Reader",
-    url: "/fit-raw-reader",
-    icon: Binary,
-  },
 ];
 
 export function AppSidebar() {
