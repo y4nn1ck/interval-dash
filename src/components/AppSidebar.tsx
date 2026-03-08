@@ -1,4 +1,4 @@
-import { LayoutDashboard, BarChart3, FileSearch, Binary, CalendarDays } from "lucide-react";
+import { LayoutDashboard, BarChart3, FileSearch, Binary, CalendarDays, Trophy } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -22,6 +22,11 @@ const menuItems = [
     title: "Calendrier",
     url: "/training-calendar",
     icon: CalendarDays,
+  },
+  {
+    title: "Résultats courses",
+    url: "/race-results",
+    icon: Trophy,
   },
   {
     title: "Power Compar",
