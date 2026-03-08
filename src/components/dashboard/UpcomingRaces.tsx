@@ -315,6 +315,7 @@ const UpcomingRaces = () => {
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                      <span className="opacity-70">{getRaceTypeIcon(race.race_type)}</span>
                       <Calendar className="h-3 w-3" />
                       <span>{format(parseISO(race.race_date), "EEEE d MMMM yyyy", { locale: fr })}</span>
                       <span className="opacity-50">·</span>
