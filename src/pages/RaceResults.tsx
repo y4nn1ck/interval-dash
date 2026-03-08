@@ -233,9 +233,12 @@ export default function RaceResults() {
     }
   };
 
+  const allYears = [...new Set(results.map(r => new Date(r.activity_date).getFullYear()))].sort((a, b) => b - a);
+
   const filtered = results.filter(r => {
     if (filterType !== "all" && r.race_type !== filterType) return false;
     if (filterDistance !== "all" && r.distance !== filterDistance) return false;
+    if (filterYear !== "all" && new Date(r.activity_date).getFullYear() !== parseInt(filterYear)) return false;
     return true;
   });
 
