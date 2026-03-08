@@ -294,8 +294,8 @@ const TrainingCalendar = () => {
                               ~{Math.round(event.icu_training_load)} TSS
                             </span>
                           )}
+                        </div>
                       </button>
-                      </div>
                     ))}
 
                     {/* Completed activities */}
