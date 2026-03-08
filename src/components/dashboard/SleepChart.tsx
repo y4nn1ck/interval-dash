@@ -1,6 +1,6 @@
 import React from 'react';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
+import { ComposedChart, Line, Bar, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -13,35 +13,27 @@ interface SleepChartProps {
   data: SleepData[];
 }
 
+const getSleepColor = (hours: number) => {
+  if (hours >= 8) return '#10b981';
+  if (hours >= 7) return '#3b82f6';
+  if (hours >= 6) return '#f59e0b';
+  return '#ef4444';
+};
+
+const getSleepLabel = (hours: number) => {
+  if (hours >= 8) return 'Excellent';
+  if (hours >= 7) return 'Bon';
+  if (hours >= 6) return 'Moyen';
+  return 'Insuffisant';
+};
+
+const formatSleepHours = (hours: number) => {
+  const h = Math.floor(hours);
+  const m = Math.round((hours - h) * 60);
+  return `${h}h${m.toString().padStart(2, '0')}`;
+};
+
 const SleepChart = ({ data }: SleepChartProps) => {
-  const sleepConfig = {
-    sleep_hours: {
-      label: 'Sommeil (heures)',
-      color: '#8b5cf6',
-    },
-  };
-
-  const getSleepColor = (hours: number) => {
-    if (hours >= 8) return '#10b981';
-    if (hours >= 7) return '#3b82f6';
-    if (hours >= 6) return '#f59e0b';
-    return '#ef4444';
-  };
-
-  const getGradientId = (hours: number) => {
-    if (hours >= 8) return 'sleepGradient1';
-    if (hours >= 7) return 'sleepGradient2';
-    if (hours >= 6) return 'sleepGradient3';
-    return 'sleepGradient4';
-  };
-
-  const getSleepLabel = (hours: number) => {
-    if (hours >= 8) return 'Excellent';
-    if (hours >= 7) return 'Bon';
-    if (hours >= 6) return 'Moyen';
-    return 'Insuffisant';
-  };
-
   const validData = data.filter(item => item.sleep_hours !== null && item.sleep_hours !== undefined);
 
   if (validData.length === 0) {
@@ -52,79 +44,165 @@ const SleepChart = ({ data }: SleepChartProps) => {
     );
   }
 
+  const avg = validData.reduce((s, d) => s + (d.sleep_hours || 0), 0) / validData.length;
+
+  const chartConfig = {
+    sleep_hours: { label: 'Sommeil', color: '#8b5cf6' },
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (!active || !payload?.length) return null;
+    const hours = payload[0]?.value as number;
+    if (!hours) return null;
+    const color = getSleepColor(hours);
+    return (
+      <div className="rounded-lg border border-border/50 bg-popover/95 backdrop-blur-sm px-3 py-2 shadow-lg">
+        <p className="text-xs text-muted-foreground mb-1">
+          {format(parseISO(label), 'EEEE d MMMM', { locale: fr })}
+        </p>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+          <span className="text-sm font-bold" style={{ color }}>{formatSleepHours(hours)}</span>
+          <span className="text-xs text-muted-foreground">— {getSleepLabel(hours)}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <ChartContainer config={sleepConfig} className="h-[300px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={validData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
-          <defs>
-            <linearGradient id="sleepGradient1" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#10b981" stopOpacity={0.3}/>
-            </linearGradient>
-            <linearGradient id="sleepGradient2" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.3}/>
-            </linearGradient>
-            <linearGradient id="sleepGradient3" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.3}/>
-            </linearGradient>
-            <linearGradient id="sleepGradient4" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-              <stop offset="95%" stopColor="#ef4444" stopOpacity={0.3}/>
-            </linearGradient>
-          </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} />
-          <XAxis 
-            dataKey="date" 
-            tickFormatter={(dateStr) => {
-              const date = parseISO(dateStr);
-              return format(date, 'EEE', { locale: fr });
-            }}
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fill: 'hsl(var(--muted-foreground))' }}
-          />
-          <YAxis 
-            domain={[0, 10]}
-            fontSize={12}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={(value) => `${value}h`}
-            tick={{ fill: 'hsl(var(--muted-foreground))' }}
-          />
-          <ChartTooltip 
-            content={<ChartTooltipContent 
-              className="bg-card/95 backdrop-blur-xl border-border shadow-xl"
-              formatter={(value) => {
-                const hours = Math.floor(value as number);
-                const minutes = Math.round(((value as number) - hours) * 60);
-                return [`${hours}h${minutes.toString().padStart(2, '0')} (${getSleepLabel(value as number)})`, 'Sommeil'];
-              }}
-            />}
-            labelFormatter={(value) => {
-              const date = parseISO(value as string);
-              return format(date, 'dd MMMM yyyy', { locale: fr });
-            }}
-          />
-          <Bar 
-            dataKey="sleep_hours" 
-            name="Sommeil"
-            radius={[6, 6, 0, 0]}
-            strokeWidth={1}
-          >
-            {validData.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={`url(#${getGradientId(entry.sleep_hours || 0)})`}
-                stroke={getSleepColor(entry.sleep_hours || 0)}
-              />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </ChartContainer>
+    <div>
+      {/* Legend */}
+      <div className="flex flex-wrap gap-4 mb-3 text-xs">
+        <div className="flex items-center gap-1.5">
+          <div className="w-3 h-3 rounded-sm bg-[#8b5cf6]/50" />
+          <span className="text-muted-foreground">Durée de sommeil</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-[3px] rounded-full bg-[#8b5cf6]" />
+          <span className="text-muted-foreground">Tendance</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-0 border-b-2 border-dashed border-muted-foreground/40" />
+          <span className="text-muted-foreground">Moyenne ({formatSleepHours(avg)})</span>
+        </div>
+        <div className="flex items-center gap-3 ml-auto">
+          {[
+            { label: '≥8h', color: '#10b981' },
+            { label: '7-8h', color: '#3b82f6' },
+            { label: '6-7h', color: '#f59e0b' },
+            { label: '<6h', color: '#ef4444' },
+          ].map(z => (
+            <div key={z.label} className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: z.color }} />
+              <span className="text-muted-foreground">{z.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <ChartContainer config={chartConfig} className="h-[280px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={validData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+            <defs>
+              <linearGradient id="sleepAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="sleepBarGreen" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10b981" stopOpacity={0.7} />
+                <stop offset="100%" stopColor="#10b981" stopOpacity={0.25} />
+              </linearGradient>
+              <linearGradient id="sleepBarBlue" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.7} />
+                <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.25} />
+              </linearGradient>
+              <linearGradient id="sleepBarYellow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#f59e0b" stopOpacity={0.7} />
+                <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.25} />
+              </linearGradient>
+              <linearGradient id="sleepBarRed" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.7} />
+                <stop offset="100%" stopColor="#ef4444" stopOpacity={0.25} />
+              </linearGradient>
+              <filter id="sleepGlow">
+                <feGaussianBlur stdDeviation="0.5" result="coloredBlur" />
+                <feMerge>
+                  <feMergeNode in="coloredBlur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.4} />
+            <XAxis
+              dataKey="date"
+              tickFormatter={(dateStr) => format(parseISO(dateStr), 'EEE', { locale: fr })}
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
+            />
+            <YAxis
+              domain={[4, 10]}
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(v) => `${v}h`}
+              tick={{ fill: 'hsl(var(--muted-foreground))' }}
+            />
+            <ChartTooltip content={<CustomTooltip />} />
+
+            {/* Average reference line */}
+            <ReferenceLine
+              y={avg}
+              stroke="hsl(var(--muted-foreground))"
+              strokeDasharray="5 3"
+              strokeOpacity={0.4}
+            />
+
+            {/* Area under the trend line */}
+            <Area
+              type="basis"
+              dataKey="sleep_hours"
+              fill="url(#sleepAreaGrad)"
+              stroke="none"
+            />
+
+            {/* Bars with color based on quality */}
+            <Bar
+              dataKey="sleep_hours"
+              radius={[4, 4, 0, 0]}
+              barSize={24}
+              strokeWidth={1}
+            >
+              {validData.map((entry, index) => {
+                const h = entry.sleep_hours || 0;
+                const gradId = h >= 8 ? 'sleepBarGreen' : h >= 7 ? 'sleepBarBlue' : h >= 6 ? 'sleepBarYellow' : 'sleepBarRed';
+                return (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={`url(#${gradId})`}
+                    stroke={getSleepColor(h)}
+                    strokeOpacity={0.6}
+                  />
+                );
+              })}
+            </Bar>
+
+            {/* Trend line */}
+            <Line
+              type="basis"
+              dataKey="sleep_hours"
+              stroke="#8b5cf6"
+              strokeWidth={2}
+              dot={{ r: 3.5, fill: '#8b5cf6', strokeWidth: 2, stroke: 'hsl(var(--card))' }}
+              activeDot={{ r: 5, stroke: '#8b5cf6', strokeWidth: 2, fill: 'hsl(var(--card))' }}
+              filter="url(#sleepGlow)"
+              connectNulls
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </ChartContainer>
+    </div>
   );
 };
 
