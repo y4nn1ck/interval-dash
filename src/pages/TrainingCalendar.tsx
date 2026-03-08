@@ -497,6 +497,9 @@ const TrainingCalendar = () => {
       {/* Compliance Evolution Chart */}
       <ComplianceEvolutionChart currentWeekStart={currentWeekStart} />
 
+      {/* Wellness Charts (Sleep & Resting HR) */}
+      <WellnessChartsSection />
+
       {/* Analysis Dialog */}
       <ActivityAnalysisDialog
         activity={selectedActivity}
