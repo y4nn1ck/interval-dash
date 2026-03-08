@@ -201,6 +201,7 @@ const TrainingCalendar = () => {
   };
 
   const isCurrentWeek = isSameDay(currentWeekStart, startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const isCurrentMonthView = isSameMonth(currentMonth, new Date());
 
   if (authLoading) {
     return (
