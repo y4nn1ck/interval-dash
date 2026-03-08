@@ -74,16 +74,23 @@ const TrainingCalendar = () => {
 
   const { data: events = [] } = useIntervalsEvents(startDateStr, endDateStr);
 
+  // Map activity ID -> paired event for compliance
+  const pairedEventByActivityId = useMemo(() => {
+    const map: Record<string, IntervalsEvent> = {};
+    events.forEach((event) => {
+      if (event.paired_activity_id) {
+        map[event.paired_activity_id] = event;
+      }
+    });
+    return map;
+  }, [events]);
+
   // Group events by day, excluding those already paired with an activity
   const eventsByDay = useMemo(() => {
-    const pairedActivityIds = new Set(
-      events.filter(e => e.paired_activity_id).map(e => e.paired_activity_id)
-    );
     const grouped: Record<string, IntervalsEvent[]> = {};
     events.forEach((event) => {
-      // Only show events that are NOT already paired with an activity
       if (event.paired_activity_id && activities.some(a => a.id === event.paired_activity_id)) {
-        return; // Skip, already shown as completed activity
+        return;
       }
       const eventDate = parseISO(event.start_date_local);
       const dateKey = format(eventDate, 'yyyy-MM-dd');
