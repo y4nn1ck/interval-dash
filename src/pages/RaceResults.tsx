@@ -79,6 +79,7 @@ interface RaceResult {
 export default function RaceResults() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [filterType, setFilterType] = useState<string>("all");
   const [filterDistance, setFilterDistance] = useState<string>("all");
 
