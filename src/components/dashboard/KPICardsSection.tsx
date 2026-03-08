@@ -157,7 +157,6 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
         <MetricCard
           title="Sommeil"
           value={formatSleepDuration(todayMetrics.sleep_secs || 28800)}
-          unit="h"
           icon={Moon}
           color="bg-purple-500"
         />
