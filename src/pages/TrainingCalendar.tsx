@@ -234,7 +234,7 @@ const TrainingCalendar = () => {
         <p className="text-muted-foreground text-lg">Visualisez vos entraînements semaine par semaine</p>
       </div>
 
-      {/* Week Navigation */}
+      {/* Navigation */}
       <Card className="glass-card opacity-0 animate-fade-in-up-delay-1">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
@@ -242,9 +242,18 @@ const TrainingCalendar = () => {
               <div className="p-2 rounded-lg bg-primary/20">
                 <Calendar className="h-5 w-5 text-primary" />
               </div>
-              Semaine du {format(currentWeekStart, 'd MMMM yyyy', { locale: fr })}
+              {viewMode === 'week'
+                ? `Semaine du ${format(currentWeekStart, 'd MMMM yyyy', { locale: fr })}`
+                : format(currentMonth, 'MMMM yyyy', { locale: fr }).replace(/^\w/, c => c.toUpperCase())
+              }
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as 'week' | 'month')}>
+                <TabsList className="h-9">
+                  <TabsTrigger value="week" className="text-xs px-3">Semaine</TabsTrigger>
+                  <TabsTrigger value="month" className="text-xs px-3">Mois</TabsTrigger>
+                </TabsList>
+              </Tabs>
               <Button
                 variant="outline"
                 size="icon"
@@ -258,23 +267,23 @@ const TrainingCalendar = () => {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={handlePreviousWeek}
+                onClick={handlePrevious}
                 className="h-9 w-9"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button
-                variant={isCurrentWeek ? "secondary" : "outline"}
+                variant={(viewMode === 'week' ? isCurrentWeek : isCurrentMonthView) ? "secondary" : "outline"}
                 size="sm"
-                onClick={handleThisWeek}
-                disabled={isCurrentWeek}
+                onClick={handleToday}
+                disabled={viewMode === 'week' ? isCurrentWeek : isCurrentMonthView}
               >
                 Aujourd'hui
               </Button>
               <Button
                 variant="outline"
                 size="icon"
-                onClick={handleNextWeek}
+                onClick={handleNext}
                 className="h-9 w-9"
               >
                 <ChevronRight className="h-4 w-4" />
