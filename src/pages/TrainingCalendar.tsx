@@ -262,7 +262,7 @@ const TrainingCalendar = () => {
                   </span>
                 </div>
               </CardHeader>
-              <CardContent className="px-2 pb-2 flex flex-col">
+              <CardContent className="px-2 pb-2 flex flex-col flex-1">
                 {activitiesLoading ? (
                   <div className="flex items-center justify-center py-4">
                     <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -271,8 +271,8 @@ const TrainingCalendar = () => {
                   <>
                     {/* Planned section with consistent min-height for alignment */}
                     <div
-                      className="space-y-1.5"
-                      style={{ minHeight: maxPlannedEvents > 0 ? `${Math.min(maxPlannedEvents * 48 + 16, 200)}px` : undefined }}
+                      className="space-y-1.5 flex-shrink-0"
+                      style={{ minHeight: maxPlannedEvents > 0 ? `${maxPlannedEvents * 52 + 20}px` : undefined }}
                     >
                       {dayEvents.length > 0 && (
                         <>
@@ -332,9 +332,9 @@ const TrainingCalendar = () => {
                       )}
                     </div>
 
-                    {/* Separator when both sections exist */}
-                    {dayEvents.length > 0 && dayActivities.length > 0 && (
-                      <div className="border-t border-border/30 my-1.5" />
+                    {/* Separator - always present when there are planned events in the week */}
+                    {maxPlannedEvents > 0 && (
+                      <div className={cn("border-t my-1.5", dayEvents.length > 0 || dayActivities.length > 0 ? "border-border/30" : "border-transparent")} />
                     )}
 
                     {/* Completed activities */}
