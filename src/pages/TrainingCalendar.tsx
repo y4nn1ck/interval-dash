@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { IntervalsActivity, IntervalsEvent } from '@/services/intervalsService';
 import ActivityAnalysisDialog from '@/components/training-calendar/ActivityAnalysisDialog';
 import WeeklySummary from '@/components/training-calendar/WeeklySummary';
+import ComplianceIndicator from '@/components/training-calendar/ComplianceIndicator';
 
 const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
 
