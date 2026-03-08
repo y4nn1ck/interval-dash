@@ -19,36 +19,42 @@ export type Database = {
           activity_date: string
           activity_id: string | null
           activity_time_seconds: number | null
+          category_rank: number | null
           created_at: string
           distance: string
           id: string
           name: string
           notes: string | null
           official_time_seconds: number
+          overall_rank: number | null
           race_type: string
         }
         Insert: {
           activity_date?: string
           activity_id?: string | null
           activity_time_seconds?: number | null
+          category_rank?: number | null
           created_at?: string
           distance: string
           id?: string
           name: string
           notes?: string | null
           official_time_seconds: number
+          overall_rank?: number | null
           race_type?: string
         }
         Update: {
           activity_date?: string
           activity_id?: string | null
           activity_time_seconds?: number | null
+          category_rank?: number | null
           created_at?: string
           distance?: string
           id?: string
           name?: string
           notes?: string | null
           official_time_seconds?: number
+          overall_rank?: number | null
           race_type?: string
         }
         Relationships: []

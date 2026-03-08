@@ -1,0 +1,1 @@
+ALTER TABLE public.race_results ADD COLUMN overall_rank integer DEFAULT NULL, ADD COLUMN category_rank integer DEFAULT NULL;
