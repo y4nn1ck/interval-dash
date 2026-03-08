@@ -482,6 +482,8 @@ export default function RaceResults() {
                     <th className="text-right py-2 px-3 font-medium text-muted-foreground">
                       <span className="flex items-center justify-end gap-1"><Clock className="h-3 w-3" /> Séance</span>
                     </th>
+                    <th className="text-right py-2 px-3 font-medium text-muted-foreground">Place</th>
+                    <th className="text-right py-2 px-3 font-medium text-muted-foreground">Cat.</th>
                     <th className="text-right py-2 px-3 font-medium text-muted-foreground">Écart</th>
                     <th className="py-2 px-3"></th>
                   </tr>
