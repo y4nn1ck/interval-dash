@@ -252,34 +252,46 @@ class IntervalsService {
     }
   }
 
-  async getActivities(startDate: string, endDate: string): Promise<IntervalsActivity[]> {
+  async getActivities(startDate: string, endDate: string): Promise<ActivitiesResult> {
     try {
       const athleteId = localStorage.getItem('intervals_athlete_id');
-      if (!athleteId) return [];
+      if (!athleteId) return { activities: [], pendingStravaCount: 0 };
 
       console.log(`Fetching activities from ${startDate} to ${endDate}...`);
       const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/activities?oldest=${startDate}&newest=${endDate}`);
       console.log('Activities received:', data);
       
-      return data.map((activity: any) => ({
-        id: activity.id,
-        start_date_local: activity.start_date_local,
-        name: activity.name || 'Sans nom',
-        type: activity.type || 'Unknown',
-        distance: activity.distance || 0,
-        moving_time: activity.moving_time || 0,
-        total_elevation_gain: activity.total_elevation_gain || 0,
-        calories: activity.calories || 0,
-        icu_rpe: activity.icu_rpe,
-        feel: activity.feel,
-        carbs_ingested: activity.carbs_ingested,
-        icu_training_load: activity.icu_training_load,
-        icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
-        icu_average_watts: activity.icu_average_watts,
-      }));
+      const pendingStravaCount = data.filter((activity: any) => 
+        activity.source === 'STRAVA' || !activity.type
+      ).length;
+
+      const validData = data.filter((activity: any) => 
+        activity.source !== 'STRAVA' && activity.type
+      );
+      console.log('Valid activities:', validData.length, '| Pending STRAVA:', pendingStravaCount);
+      
+      return {
+        activities: validData.map((activity: any) => ({
+          id: activity.id,
+          start_date_local: activity.start_date_local,
+          name: activity.name || 'Sans nom',
+          type: activity.type || 'Unknown',
+          distance: activity.distance || 0,
+          moving_time: activity.moving_time || 0,
+          total_elevation_gain: activity.total_elevation_gain || 0,
+          calories: activity.calories || 0,
+          icu_rpe: activity.icu_rpe,
+          feel: activity.feel,
+          carbs_ingested: activity.carbs_ingested,
+          icu_training_load: activity.icu_training_load,
+          icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
+          icu_average_watts: activity.icu_average_watts,
+        })),
+        pendingStravaCount
+      };
     } catch (error) {
       console.error('Error fetching activities:', error);
-      return [];
+      return { activities: [], pendingStravaCount: 0 };
     }
   }
 
