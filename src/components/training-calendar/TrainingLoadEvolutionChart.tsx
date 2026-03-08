@@ -208,8 +208,17 @@ const TrainingLoadEvolutionChart = () => {
                     dataKey="ctl"
                     fill="url(#ctlFill)"
                     stroke="none"
+                    legendType="none"
+                    tooltipType="none"
                   />
                   <Area
+                    type="basis"
+                    dataKey="atl"
+                    fill="url(#atlFill)"
+                    stroke="none"
+                    legendType="none"
+                    tooltipType="none"
+                  />
                     type="basis"
                     dataKey="atl"
                     fill="url(#atlFill)"
