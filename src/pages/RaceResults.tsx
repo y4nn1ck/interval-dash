@@ -139,6 +139,8 @@ export default function RaceResults() {
       setHasActivityTime(false);
       setActivityHours(""); setActivityMinutes(""); setActivitySeconds("");
     }
+    setOverallRank(r.overall_rank ? String(r.overall_rank) : "");
+    setCategoryRank(r.category_rank ? String(r.category_rank) : "");
     setNotes(r.notes || "");
     setOpen(true);
   };
