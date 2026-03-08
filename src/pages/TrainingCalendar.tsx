@@ -371,10 +371,12 @@ const TrainingCalendar = () => {
       {/* Analysis Dialog */}
       <ActivityAnalysisDialog
         activity={selectedActivity}
+        plannedEvent={selectedActivityEvent}
         isOpen={isDialogOpen}
         onClose={() => {
           setIsDialogOpen(false);
           setSelectedActivity(null);
+          setSelectedActivityEvent(null);
         }}
       />
 
