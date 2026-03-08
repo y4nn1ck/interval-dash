@@ -260,7 +260,7 @@ export default function RaceResults() {
           </DialogTrigger>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
-              <DialogTitle>Nouveau résultat de course</DialogTitle>
+              <DialogTitle>{editingId ? "Modifier le résultat" : "Nouveau résultat de course"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 py-2">
               {/* Race type */}
