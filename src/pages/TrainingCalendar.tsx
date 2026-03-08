@@ -290,8 +290,10 @@ const TrainingCalendar = () => {
                   <>
                     {/* Planned section with consistent min-height for alignment */}
                     <div
+                      ref={setPlannedRef(index)}
                       className="space-y-1.5 flex-shrink-0"
-                      style={{ minHeight: maxPlannedEvents > 0 ? `${maxPlannedEvents * 52 + 20}px` : undefined }}
+                      style={{ minHeight: plannedMinHeight > 0 ? `${plannedMinHeight}px` : undefined }}
+                    >
                     >
                       {dayEvents.length > 0 && (
                         <>
