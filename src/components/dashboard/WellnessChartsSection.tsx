@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import RestingHRChart from './RestingHRChart';
 import SleepChart from './SleepChart';
+import WeightChart from './WeightChart';
 import { useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 
 const WellnessChartsSection = () => {
@@ -13,21 +14,17 @@ const WellnessChartsSection = () => {
       const date = new Date();
       date.setDate(date.getDate() - (6 - i));
       const dateStr = date.toISOString().split('T')[0];
-      
       let restingHR = 0;
-      
       if (weeklyStats && weeklyStats.length > 0) {
         const apiData = weeklyStats.find(stat => stat.date === dateStr);
         if (apiData && apiData.resting_hr !== null && apiData.resting_hr !== undefined) {
           restingHR = apiData.resting_hr;
         }
       }
-      
       if (!restingHR) {
         const fallbackValues = [50, 48, 52, 49, 51, 50, 49];
         restingHR = fallbackValues[i];
       }
-      
       data.push({ date: dateStr, resting_hr: restingHR });
     }
     return data;
@@ -39,22 +36,40 @@ const WellnessChartsSection = () => {
       const date = new Date();
       date.setDate(date.getDate() - (6 - i));
       const dateStr = date.toISOString().split('T')[0];
-      
       let sleepHours = null;
-      
       if (weeklyStats && weeklyStats.length > 0) {
         const apiData = weeklyStats.find(stat => stat.date === dateStr);
         if (apiData && apiData.sleep_secs !== null && apiData.sleep_secs !== undefined) {
           sleepHours = apiData.sleep_secs / 3600;
         }
       }
-      
       if (sleepHours === null) {
         const fallbackValues = [7.5, 8.2, 6.8, 7.9, 8.1, 6.5, 8.5];
         sleepHours = fallbackValues[i];
       }
-      
       data.push({ date: dateStr, sleep_hours: sleepHours });
+    }
+    return data;
+  };
+
+  const generateWeightData = () => {
+    const data = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      const dateStr = date.toISOString().split('T')[0];
+      let weight: number | null = null;
+      if (weeklyStats && weeklyStats.length > 0) {
+        const apiData = weeklyStats.find(stat => stat.date === dateStr);
+        if (apiData && apiData.weight !== null && apiData.weight !== undefined && apiData.weight > 0) {
+          weight = apiData.weight;
+        }
+      }
+      if (weight === null) {
+        const fallbackValues = [72.5, 72.3, 72.6, 72.4, 72.2, 72.5, 72.3];
+        weight = fallbackValues[i];
+      }
+      data.push({ date: dateStr, weight });
     }
     return data;
   };
@@ -82,6 +97,18 @@ const WellnessChartsSection = () => {
         </CardHeader>
         <CardContent className="pt-0">
           <RestingHRChart data={generateRestingHRData()} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-semibold">
+            Poids corporel
+            <span className="text-muted-foreground text-sm font-normal ml-2">(7 jours)</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <WeightChart data={generateWeightData()} />
         </CardContent>
       </Card>
     </div>
