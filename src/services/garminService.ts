@@ -129,7 +129,8 @@ class GarminService {
 
   async isAuthenticated(): Promise<boolean> {
     try {
-      const { data } = await supabase
+      const client = supabase as any;
+      const { data } = await client
         .from('garmin_auth')
         .select('access_token')
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
