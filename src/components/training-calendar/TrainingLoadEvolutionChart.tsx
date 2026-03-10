@@ -40,12 +40,18 @@ const TrainingLoadEvolutionChart = () => {
   const { data: wellnessData = [], isLoading } = useIntervalsWellnessRange(startDate, endDate);
 
   const chartData = useMemo(() => {
-    return wellnessData.map(d => ({
-      date: d.date,
-      ctl: Math.round(d.ctl || 0),
-      atl: Math.round(d.atl || 0),
-      tsb: Math.round((d.ctl || 0) - (d.atl || 0)),
-    }));
+    return wellnessData.map(d => {
+      const ctl = d.ctl || 0;
+      const atl = d.atl || 0;
+      // Modèle "Relative Form": (fitness - fatigue) / fitness * 100
+      const relativeForm = ctl > 0 ? ((ctl - atl) / ctl) * 100 : 0;
+      return {
+        date: d.date,
+        ctl: Math.round(ctl),
+        atl: Math.round(atl),
+        tsb: Math.round(relativeForm),
+      };
+    });
   }, [wellnessData]);
 
   const currentValues = useMemo(() => {
