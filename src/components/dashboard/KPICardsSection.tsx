@@ -21,6 +21,17 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
   const [isCTLDialogOpen, setIsCTLDialogOpen] = useState(false);
   const { data: weeklyStats } = useIntervalsWeeklyStats();
 
+  // Relative Form calculation
+  const relativeForm = ctl > 0 ? ((ctl - atl) / ctl) * 100 : 0;
+  const getRelativeFormZone = (rf: number) => {
+    if (rf > 25) return { label: 'Frais', color: '#3b82f6' };
+    if (rf > 5) return { label: 'Gris', color: '#9ca3af' };
+    if (rf >= -30) return { label: 'Optimal', color: '#22c55e' };
+    if (rf >= -50) return { label: 'Overreach', color: '#f97316' };
+    return { label: 'Danger', color: '#ef4444' };
+  };
+  const formZone = getRelativeFormZone(relativeForm);
+
   // Generate resting HR data for the chart
   const generateRestingHRData = () => {
     if (weeklyStats && weeklyStats.length > 0) {
