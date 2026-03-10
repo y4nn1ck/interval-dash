@@ -157,13 +157,21 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
           color="bg-orange-500"
         />
       </div>
-      <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.25s', animationFillMode: 'forwards' }}>
+      <div className="opacity-0 animate-fade-in-up relative" style={{ animationDelay: '0.25s', animationFillMode: 'forwards' }}>
         <MetricCard
           title="Forme (TSB)"
           value={`${tsb}`}
           icon={TrendUp}
           color="bg-blue-500"
         />
+        <div className="absolute bottom-4 right-4">
+          <Badge
+            className="text-[10px] font-bold border-0 px-2 py-0.5"
+            style={{ backgroundColor: formZone.color, color: '#fff' }}
+          >
+            {formZone.label} ({Math.round(relativeForm)}%)
+          </Badge>
+        </div>
       </div>
       <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
         <MetricCard
