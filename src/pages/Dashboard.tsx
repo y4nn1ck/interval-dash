@@ -69,6 +69,11 @@ const Dashboard = () => {
           formatSleepDuration={formatSleepDuration}
         />
 
+        {/* Ramp Rate */}
+        <div className="mb-8">
+          <RampRateCard />
+        </div>
+
         {/* Upcoming Races */}
         <div className="mb-8">
           <UpcomingRaces />
