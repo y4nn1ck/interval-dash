@@ -7,6 +7,7 @@ import { IntervalsDailyStats } from '@/services/intervalsService';
 import { useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface KPICardsSectionProps {
   todayMetrics: IntervalsDailyStats;
@@ -157,21 +158,52 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
           color="bg-orange-500"
         />
       </div>
-      <div className="opacity-0 animate-fade-in-up relative" style={{ animationDelay: '0.25s', animationFillMode: 'forwards' }}>
-        <MetricCard
-          title="Forme (TSB)"
-          value={`${tsb}`}
-          icon={TrendUp}
-          color="bg-blue-500"
-        />
-        <div className="absolute bottom-4 right-4">
-          <Badge
-            className="text-[10px] font-bold border-0 px-2 py-0.5"
-            style={{ backgroundColor: formZone.color, color: '#fff' }}
-          >
-            {formZone.label} ({Math.round(relativeForm)}%)
-          </Badge>
-        </div>
+      <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.25s', animationFillMode: 'forwards' }}>
+        <Card className="glass-card overflow-hidden transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-primary/30">
+          <CardContent className="p-6 relative z-10">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-4 rounded-2xl border-2 shadow-lg" style={{ backgroundColor: `${formZone.color}20`, borderColor: `${formZone.color}30` }}>
+                <div className="p-2 rounded-xl shadow-inner" style={{ background: `linear-gradient(135deg, ${formZone.color}cc, ${formZone.color})` }}>
+                  <TrendUp className="h-6 w-6 text-white drop-shadow-sm" />
+                </div>
+              </div>
+              <Badge
+                className="text-xs font-bold border-0 px-3 py-1 rounded-full"
+                style={{ backgroundColor: formZone.color, color: '#fff' }}
+              >
+                {formZone.label}
+              </Badge>
+            </div>
+            <div className="space-y-3">
+              <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Forme relative</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold tracking-tight" style={{ color: formZone.color }}>
+                  {Math.round(relativeForm) > 0 ? '+' : ''}{Math.round(relativeForm)}%
+                </span>
+              </div>
+              {/* Mini progress bar showing zone position */}
+              <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden mt-1">
+                {[
+                  { color: '#ef4444', active: relativeForm < -50 },
+                  { color: '#f97316', active: relativeForm >= -50 && relativeForm < -30 },
+                  { color: '#22c55e', active: relativeForm >= -30 && relativeForm < 5 },
+                  { color: '#9ca3af', active: relativeForm >= 5 && relativeForm <= 25 },
+                  { color: '#3b82f6', active: relativeForm > 25 },
+                ].map((zone, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 rounded-full transition-all duration-500"
+                    style={{
+                      backgroundColor: zone.active ? zone.color : `${zone.color}30`,
+                      transform: zone.active ? 'scaleY(1.4)' : 'scaleY(1)',
+                    }}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">CTL {ctl} · ATL {atl}</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
       <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
         <MetricCard
