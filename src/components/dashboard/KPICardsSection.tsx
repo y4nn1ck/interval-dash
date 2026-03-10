@@ -6,6 +6,7 @@ import CTLChart from './CTLChart';
 import { IntervalsDailyStats } from '@/services/intervalsService';
 import { useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 
 interface KPICardsSectionProps {
   todayMetrics: IntervalsDailyStats;
