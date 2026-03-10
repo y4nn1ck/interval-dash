@@ -267,10 +267,12 @@ const TrainingLoadEvolutionChart = () => {
               <span className="text-sm text-muted-foreground">TSB</span>
               <span className={cn(
                 "text-sm font-bold",
-                currentValues.tsb >= 5 ? "text-emerald-500" :
-                currentValues.tsb >= -10 ? "text-blue-500" : "text-red-500"
+                currentValues.tsb > 25 ? "text-blue-500" :
+                currentValues.tsb > 5 ? "text-gray-400" :
+                currentValues.tsb >= -30 ? "text-emerald-500" :
+                currentValues.tsb >= -50 ? "text-orange-500" : "text-red-500"
               )}>
-                {currentValues.tsb > 0 ? '+' : ''}{currentValues.tsb}
+                {currentValues.tsb > 0 ? '+' : ''}{currentValues.tsb}%
               </span>
               <span className="text-xs text-muted-foreground ml-1">({getTsbZoneLabel(currentValues.tsb)})</span>
             </div>
