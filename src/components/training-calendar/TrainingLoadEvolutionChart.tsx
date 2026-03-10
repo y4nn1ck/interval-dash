@@ -94,7 +94,7 @@ const TrainingLoadEvolutionChart = () => {
   const chartConfig = {
     ctl: { label: 'Fitness (CTL)', color: '#10b981' },
     atl: { label: 'Fatigue (ATL)', color: '#f59e0b' },
-    tsb: { label: 'Forme (TSB)', color: '#3b82f6' },
+    tsb: { label: 'Forme relative (%)', color: '#3b82f6' },
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
