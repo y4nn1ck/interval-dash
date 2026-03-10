@@ -259,8 +259,8 @@ const TrainingLoadEvolutionChart = () => {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Forme (TSB)</CardTitle>
-              <p className="text-sm text-muted-foreground mt-0.5">Training Stress Balance — différence entre fitness et fatigue</p>
+              <CardTitle className="text-lg">Forme relative</CardTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">Relative Form — ratio (fitness − fatigue) / fitness</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
