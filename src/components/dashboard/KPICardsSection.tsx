@@ -6,6 +6,7 @@ import CTLChart from './CTLChart';
 import { IntervalsDailyStats } from '@/services/intervalsService';
 import { useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 
 interface KPICardsSectionProps {
   todayMetrics: IntervalsDailyStats;
@@ -19,6 +20,17 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
   const [isRestingHRDialogOpen, setIsRestingHRDialogOpen] = useState(false);
   const [isCTLDialogOpen, setIsCTLDialogOpen] = useState(false);
   const { data: weeklyStats } = useIntervalsWeeklyStats();
+
+  // Relative Form calculation
+  const relativeForm = ctl > 0 ? ((ctl - atl) / ctl) * 100 : 0;
+  const getRelativeFormZone = (rf: number) => {
+    if (rf > 25) return { label: 'Frais', color: '#3b82f6' };
+    if (rf > 5) return { label: 'Gris', color: '#9ca3af' };
+    if (rf >= -30) return { label: 'Optimal', color: '#22c55e' };
+    if (rf >= -50) return { label: 'Overreach', color: '#f97316' };
+    return { label: 'Danger', color: '#ef4444' };
+  };
+  const formZone = getRelativeFormZone(relativeForm);
 
   // Generate resting HR data for the chart
   const generateRestingHRData = () => {
@@ -145,13 +157,21 @@ const KPICardsSection = ({ todayMetrics, ctl, atl, tsb, formatSleepDuration }: K
           color="bg-orange-500"
         />
       </div>
-      <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.25s', animationFillMode: 'forwards' }}>
+      <div className="opacity-0 animate-fade-in-up relative" style={{ animationDelay: '0.25s', animationFillMode: 'forwards' }}>
         <MetricCard
           title="Forme (TSB)"
           value={`${tsb}`}
           icon={TrendUp}
           color="bg-blue-500"
         />
+        <div className="absolute bottom-4 right-4">
+          <Badge
+            className="text-[10px] font-bold border-0 px-2 py-0.5"
+            style={{ backgroundColor: formZone.color, color: '#fff' }}
+          >
+            {formZone.label} ({Math.round(relativeForm)}%)
+          </Badge>
+        </div>
       </div>
       <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
         <MetricCard
