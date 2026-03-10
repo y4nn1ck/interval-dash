@@ -114,7 +114,7 @@ const TrainingLoadEvolutionChart = () => {
           <div key={entry.dataKey} className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-muted-foreground">{chartConfig[entry.dataKey as keyof typeof chartConfig]?.label}:</span>
-            <span className="font-semibold text-foreground">{entry.value}</span>
+            <span className="font-semibold text-foreground">{entry.value}{entry.dataKey === 'tsb' ? '%' : ''}</span>
           </div>
         ))}
       </div>
