@@ -3,6 +3,7 @@ import SEO from '@/components/SEO';
 import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import KPICardsSection from '@/components/dashboard/KPICardsSection';
+import RampRateCard from '@/components/dashboard/RampRateCard';
 import WorkoutsSection from '@/components/dashboard/WorkoutsSection';
 import UpcomingRaces from '@/components/dashboard/UpcomingRaces';
 import { useIntervalsAuth, useIntervalsDailyStats } from '@/hooks/useIntervalsData';
@@ -67,6 +68,11 @@ const Dashboard = () => {
           tsb={tsb}
           formatSleepDuration={formatSleepDuration}
         />
+
+        {/* Ramp Rate */}
+        <div className="mb-8">
+          <RampRateCard />
+        </div>
 
         {/* Upcoming Races */}
         <div className="mb-8">
