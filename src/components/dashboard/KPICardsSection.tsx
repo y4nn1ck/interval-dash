@@ -7,6 +7,7 @@ import { IntervalsDailyStats } from '@/services/intervalsService';
 import { useIntervalsWeeklyStats } from '@/hooks/useIntervalsData';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface KPICardsSectionProps {
   todayMetrics: IntervalsDailyStats;
