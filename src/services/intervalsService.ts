@@ -368,16 +368,16 @@ class IntervalsService {
 
       return data.map((item: any) => ({
         date: item.id,
-        training_load: item.ctl || 0,
+        training_load: item.ctl || item.icu_fitness || 0,
         hrv_rmssd: item.hrvRmssd || item.hrv || 0,
         resting_hr: item.restingHR || 0,
         weight: item.weight || 0,
         sleep_secs: item.sleepSecs || 0,
         steps: item.steps || 0,
         calories: item.calories || 0,
-        ctl: item.ctl || 0,
-        atl: item.atl || 0,
-        tsb: item.ctl != null && item.atl != null ? item.ctl - item.atl : 0,
+        ctl: item.ctl || item.icu_fitness || 0,
+        atl: item.atl || item.icu_fatigue || 0,
+        tsb: 0, // calculated in component as relative form
         hydration: item.hydration || null
       }));
     } catch (error) {

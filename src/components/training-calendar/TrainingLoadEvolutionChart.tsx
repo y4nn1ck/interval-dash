@@ -22,12 +22,12 @@ const PERIODS = [
 ] as const;
 
 const TSB_ZONES = [
-  { min: 25, max: 100, label: 'Transition', color: 'hsl(45, 80%, 50%)', opacity: 0.12 },
-  { min: 15, max: 25, label: 'Frais', color: 'hsl(210, 70%, 55%)', opacity: 0.12 },
-  { min: 5, max: 15, label: 'Zone grise', color: 'hsl(220, 10%, 60%)', opacity: 0.10 },
-  { min: -10, max: 5, label: 'Optimal', color: 'hsl(142, 71%, 45%)', opacity: 0.15 },
-  { min: -30, max: -10, label: 'Risque', color: 'hsl(0, 72%, 51%)', opacity: 0.10 },
-  { min: -100, max: -30, label: 'Surmenage', color: 'hsl(0, 72%, 51%)', opacity: 0.15 },
+  { min: 25, max: 100, label: 'Frais', color: '#3b82f6', opacity: 0.15 },
+  { min: 5, max: 25, label: 'Zone grise', color: '#9ca3af', opacity: 0.10 },
+  { min: -10, max: 5, label: 'Optimal', color: '#22c55e', opacity: 0.15 },
+  { min: -30, max: -10, label: 'Optimal', color: '#22c55e', opacity: 0.15 },
+  { min: -50, max: -30, label: 'Overreach', color: '#f97316', opacity: 0.12 },
+  { min: -100, max: -50, label: 'Danger', color: '#ef4444', opacity: 0.15 },
 ];
 
 const TrainingLoadEvolutionChart = () => {
@@ -40,12 +40,18 @@ const TrainingLoadEvolutionChart = () => {
   const { data: wellnessData = [], isLoading } = useIntervalsWellnessRange(startDate, endDate);
 
   const chartData = useMemo(() => {
-    return wellnessData.map(d => ({
-      date: d.date,
-      ctl: Math.round(d.ctl || 0),
-      atl: Math.round(d.atl || 0),
-      tsb: Math.round((d.ctl || 0) - (d.atl || 0)),
-    }));
+    return wellnessData.map(d => {
+      const ctl = d.ctl || 0;
+      const atl = d.atl || 0;
+      // Modèle "Relative Form": (fitness - fatigue) / fitness * 100
+      const relativeForm = ctl > 0 ? ((ctl - atl) / ctl) * 100 : 0;
+      return {
+        date: d.date,
+        ctl: Math.round(ctl),
+        atl: Math.round(atl),
+        tsb: Math.round(relativeForm),
+      };
+    });
   }, [wellnessData]);
 
   const currentValues = useMemo(() => {
@@ -88,7 +94,7 @@ const TrainingLoadEvolutionChart = () => {
   const chartConfig = {
     ctl: { label: 'Fitness (CTL)', color: '#10b981' },
     atl: { label: 'Fatigue (ATL)', color: '#f59e0b' },
-    tsb: { label: 'Forme (TSB)', color: '#3b82f6' },
+    tsb: { label: 'Forme relative (%)', color: '#3b82f6' },
   };
 
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -108,7 +114,7 @@ const TrainingLoadEvolutionChart = () => {
           <div key={entry.dataKey} className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
             <span className="text-muted-foreground">{chartConfig[entry.dataKey as keyof typeof chartConfig]?.label}:</span>
-            <span className="font-semibold text-foreground">{entry.value}</span>
+            <span className="font-semibold text-foreground">{entry.value}{entry.dataKey === 'tsb' ? '%' : ''}</span>
           </div>
         ))}
       </div>
@@ -253,27 +259,35 @@ const TrainingLoadEvolutionChart = () => {
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Forme (TSB)</CardTitle>
-              <p className="text-sm text-muted-foreground mt-0.5">Training Stress Balance — différence entre fitness et fatigue</p>
+              <CardTitle className="text-lg">Forme relative</CardTitle>
+              <p className="text-sm text-muted-foreground mt-0.5">Relative Form — ratio (fitness − fatigue) / fitness</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
               <span className="text-sm text-muted-foreground">TSB</span>
               <span className={cn(
                 "text-sm font-bold",
-                currentValues.tsb >= 5 ? "text-emerald-500" :
-                currentValues.tsb >= -10 ? "text-blue-500" : "text-red-500"
+                currentValues.tsb > 25 ? "text-blue-500" :
+                currentValues.tsb > 5 ? "text-gray-400" :
+                currentValues.tsb >= -30 ? "text-emerald-500" :
+                currentValues.tsb >= -50 ? "text-orange-500" : "text-red-500"
               )}>
-                {currentValues.tsb > 0 ? '+' : ''}{currentValues.tsb}
+                {currentValues.tsb > 0 ? '+' : ''}{currentValues.tsb}%
               </span>
               <span className="text-xs text-muted-foreground ml-1">({getTsbZoneLabel(currentValues.tsb)})</span>
             </div>
           </div>
           {/* Zone legend */}
           <div className="flex flex-wrap items-center gap-3 mt-2 pl-1">
-            {TSB_ZONES.filter(z => z.min >= -30).map(zone => (
+            {[
+              { label: 'Frais (>+25%)', color: '#3b82f6' },
+              { label: 'Gris (+5% à +25%)', color: '#9ca3af' },
+              { label: 'Optimal (-10% à -30%)', color: '#22c55e' },
+              { label: 'Overreach (-30% à -50%)', color: '#f97316' },
+              { label: 'Danger (<-50%)', color: '#ef4444' },
+            ].map(zone => (
               <div key={zone.label} className="flex items-center gap-1.5">
-                <span className="w-3 h-2 rounded-sm" style={{ backgroundColor: zone.color, opacity: zone.opacity * 4 }} />
+                <span className="w-3 h-2 rounded-sm" style={{ backgroundColor: zone.color, opacity: 0.7 }} />
                 <span className="text-[11px] text-muted-foreground">{zone.label}</span>
               </div>
             ))}
