@@ -279,9 +279,15 @@ const TrainingLoadEvolutionChart = () => {
           </div>
           {/* Zone legend */}
           <div className="flex flex-wrap items-center gap-3 mt-2 pl-1">
-            {TSB_ZONES.filter(z => z.min >= -30).map(zone => (
+            {[
+              { label: 'Frais (>+25%)', color: '#3b82f6' },
+              { label: 'Gris (+5% à +25%)', color: '#9ca3af' },
+              { label: 'Optimal (-10% à -30%)', color: '#22c55e' },
+              { label: 'Overreach (-30% à -50%)', color: '#f97316' },
+              { label: 'Danger (<-50%)', color: '#ef4444' },
+            ].map(zone => (
               <div key={zone.label} className="flex items-center gap-1.5">
-                <span className="w-3 h-2 rounded-sm" style={{ backgroundColor: zone.color, opacity: zone.opacity * 4 }} />
+                <span className="w-3 h-2 rounded-sm" style={{ backgroundColor: zone.color, opacity: 0.7 }} />
                 <span className="text-[11px] text-muted-foreground">{zone.label}</span>
               </div>
             ))}
