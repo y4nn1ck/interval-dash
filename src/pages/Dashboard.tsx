@@ -4,6 +4,7 @@ import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import KPICardsSection from '@/components/dashboard/KPICardsSection';
 import RampRateCard from '@/components/dashboard/RampRateCard';
+import AerobicDecouplingCard from '@/components/dashboard/AerobicDecouplingCard';
 import WorkoutsSection from '@/components/dashboard/WorkoutsSection';
 import UpcomingRaces from '@/components/dashboard/UpcomingRaces';
 import { useIntervalsAuth, useIntervalsDailyStats } from '@/hooks/useIntervalsData';
@@ -72,6 +73,11 @@ const Dashboard = () => {
         {/* Ramp Rate */}
         <div className="mb-8">
           <RampRateCard />
+        </div>
+
+        {/* Découplage Aérobie */}
+        <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.35s', animationFillMode: 'forwards' }}>
+          <AerobicDecouplingCard />
         </div>
 
         {/* Upcoming Races */}
