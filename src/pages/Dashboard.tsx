@@ -75,6 +75,11 @@ const Dashboard = () => {
           <RampRateCard />
         </div>
 
+        {/* Découplage Aérobie */}
+        <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.35s', animationFillMode: 'forwards' }}>
+          <AerobicDecouplingCard />
+        </div>
+
         {/* Upcoming Races */}
         <div className="mb-8">
           <UpcomingRaces />
