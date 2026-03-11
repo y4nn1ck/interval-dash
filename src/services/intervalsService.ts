@@ -386,8 +386,65 @@ class IntervalsService {
     }
   }
 
+  async getActivityStreams(activityId: string): Promise<{ watts: number[]; heartrate: number[] } | null> {
+    try {
+      const data = await this.makeAuthenticatedRequest(`/activity/${activityId}/streams?types=watts,heartrate`);
+      return {
+        watts: data?.watts?.data || [],
+        heartrate: data?.heartrate?.data || [],
+      };
+    } catch (error) {
+      console.error('Error fetching activity streams:', error);
+      return null;
+    }
+  }
+
+  async getLongActivities(count: number = 10): Promise<IntervalsActivity[]> {
+    try {
+      const athleteId = localStorage.getItem('intervals_athlete_id');
+      if (!athleteId) return [];
+
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - 180);
+
+      const startStr = startDate.toISOString().split('T')[0];
+      const endStr = endDate.toISOString().split('T')[0];
+
+      const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/activities?oldest=${startStr}&newest=${endStr}`);
+
+      const longActivities = data
+        .filter((a: any) => {
+          const type = (a.type || '').toLowerCase();
+          const isRelevant = type === 'ride' || type === 'run' || type === 'cycling' || type === 'running' || type === 'virtualride';
+          const isLong = (a.moving_time || 0) > 3600;
+          const hasPower = (a.icu_average_watts || a.icu_weighted_avg_watts || 0) > 0;
+          return isRelevant && isLong && hasPower;
+        })
+        .sort((a: any, b: any) => new Date(b.start_date_local).getTime() - new Date(a.start_date_local).getTime())
+        .slice(0, count)
+        .map((activity: any) => ({
+          id: activity.id,
+          start_date_local: activity.start_date_local,
+          name: activity.name || 'Sans nom',
+          type: activity.type || 'Unknown',
+          distance: activity.distance || 0,
+          moving_time: activity.moving_time || 0,
+          total_elevation_gain: activity.total_elevation_gain || 0,
+          calories: activity.calories || 0,
+          icu_average_watts: activity.icu_average_watts,
+          icu_weighted_avg_watts: activity.icu_weighted_avg_watts,
+          average_heartrate: activity.average_heartrate,
+        }));
+
+      return longActivities;
+    } catch (error) {
+      console.error('Error fetching long activities:', error);
+      return [];
+    }
+  }
+
   async syncData(): Promise<void> {
-    // For now, this is a no-op since we're fetching data directly
     console.log('Data sync completed');
   }
 }
