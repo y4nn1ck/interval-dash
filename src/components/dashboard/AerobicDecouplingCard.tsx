@@ -44,13 +44,14 @@ const AerobicDecouplingCard = () => {
             const streams = await intervalsService.getActivityStreams(activity.id);
             if (!streams || streams.watts.length === 0 || streams.heartrate.length === 0) continue;
 
-            // Filter out zero values for clean calculation
-            // Streams are 1 sample/sec — skip first 10 min (600s) of warmup
             const warmupSamples = 600;
-            const paired = streams.watts.map((w, i) => ({
+            const wattsAfterWarmup = streams.watts.slice(warmupSamples);
+            const hrAfterWarmup = streams.heartrate.slice(warmupSamples);
+
+            const paired = wattsAfterWarmup.map((w, i) => ({
               watts: w,
-              hr: streams.heartrate[i] || 0,
-            })).filter(p => p.watts > 0 && p.hr > 0).slice(warmupSamples);
+              hr: hrAfterWarmup[i] || 0,
+            })).filter(p => p.watts > 0 && p.hr > 0);
 
             if (paired.length < 20) continue;
 

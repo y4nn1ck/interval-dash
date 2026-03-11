@@ -389,9 +389,20 @@ class IntervalsService {
   async getActivityStreams(activityId: string): Promise<{ watts: number[]; heartrate: number[] } | null> {
     try {
       const data = await this.makeAuthenticatedRequest(`/activity/${activityId}/streams?types=watts,heartrate`);
+
+      if (Array.isArray(data)) {
+        const wattsStream = data.find((stream: any) => stream?.type === 'watts');
+        const heartrateStream = data.find((stream: any) => stream?.type === 'heartrate');
+
+        return {
+          watts: Array.isArray(wattsStream?.data) ? wattsStream.data : [],
+          heartrate: Array.isArray(heartrateStream?.data) ? heartrateStream.data : [],
+        };
+      }
+
       return {
-        watts: data?.watts?.data || [],
-        heartrate: data?.heartrate?.data || [],
+        watts: Array.isArray(data?.watts?.data) ? data.watts.data : [],
+        heartrate: Array.isArray(data?.heartrate?.data) ? data.heartrate.data : [],
       };
     } catch (error) {
       console.error('Error fetching activity streams:', error);
