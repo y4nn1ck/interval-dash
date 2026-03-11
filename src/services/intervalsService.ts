@@ -406,20 +406,26 @@ class IntervalsService {
 
       const endDate = new Date();
       const startDate = new Date();
-      startDate.setDate(endDate.getDate() - 180);
+      startDate.setDate(endDate.getDate() - 90);
 
       const startStr = startDate.toISOString().split('T')[0];
       const endStr = endDate.toISOString().split('T')[0];
 
+      console.log(`[Decoupling] Fetching activities from ${startStr} to ${endStr}`);
       const data = await this.makeAuthenticatedRequest(`/athlete/${athleteId}/activities?oldest=${startStr}&newest=${endStr}`);
+      console.log(`[Decoupling] Total activities fetched: ${data.length}`);
+
+      // Log all activity types to help debug
+      const types = [...new Set(data.map((a: any) => a.type))];
+      console.log('[Decoupling] Activity types found:', types);
 
       const longActivities = data
         .filter((a: any) => {
           const type = (a.type || '').toLowerCase();
-          const isRelevant = type === 'ride' || type === 'run' || type === 'cycling' || type === 'running' || type === 'virtualride';
+          const isRelevant = type.includes('ride') || type.includes('run') || type.includes('cycling') || type.includes('bike');
           const isLong = (a.moving_time || 0) > 3600;
-          const hasPower = (a.icu_average_watts || a.icu_weighted_avg_watts || 0) > 0;
-          return isRelevant && isLong && hasPower;
+          console.log(`[Decoupling] ${a.name} | type=${a.type} | moving_time=${a.moving_time} | watts=${a.icu_average_watts} | relevant=${isRelevant} | long=${isLong}`);
+          return isRelevant && isLong;
         })
         .sort((a: any, b: any) => new Date(b.start_date_local).getTime() - new Date(a.start_date_local).getTime())
         .slice(0, count)
@@ -437,6 +443,7 @@ class IntervalsService {
           average_heartrate: activity.average_heartrate,
         }));
 
+      console.log(`[Decoupling] Long activities found: ${longActivities.length}`);
       return longActivities;
     } catch (error) {
       console.error('Error fetching long activities:', error);
