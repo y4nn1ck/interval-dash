@@ -4,6 +4,7 @@ import IntervalsAuth from '@/components/dashboard/IntervalsAuth';
 import DashboardHeader from '@/components/dashboard/DashboardHeader';
 import KPICardsSection from '@/components/dashboard/KPICardsSection';
 import RampRateCard from '@/components/dashboard/RampRateCard';
+import AerobicDecouplingCard from '@/components/dashboard/AerobicDecouplingCard';
 import WorkoutsSection from '@/components/dashboard/WorkoutsSection';
 import UpcomingRaces from '@/components/dashboard/UpcomingRaces';
 import { useIntervalsAuth, useIntervalsDailyStats } from '@/hooks/useIntervalsData';
