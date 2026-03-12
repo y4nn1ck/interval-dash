@@ -108,6 +108,12 @@ class IntervalsService {
     localStorage.setItem('intervals_athlete_name', athleteData.name || 'Unknown');
   }
 
+  disconnect(): void {
+    localStorage.removeItem('intervals_api_key');
+    localStorage.removeItem('intervals_athlete_id');
+    localStorage.removeItem('intervals_athlete_name');
+  }
+
   private async makeAuthenticatedRequest(endpoint: string) {
     const apiKey = localStorage.getItem('intervals_api_key');
     if (!apiKey) {
