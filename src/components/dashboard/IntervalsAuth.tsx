@@ -4,13 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Activity, RefreshCw, CheckCircle, Key, User } from 'lucide-react';
+import { Activity, RefreshCw, CheckCircle, Key, User, LogOut } from 'lucide-react';
 import { useIntervalsAuth } from '@/hooks/useIntervalsData';
 
 const IntervalsAuth = () => {
   const [apiKey, setApiKey] = useState('');
   const [athleteId, setAthleteId] = useState('');
-  const { isAuthenticated, isLoading, saveApiKey, syncData, isSaving, isSyncing } = useIntervalsAuth();
+  const { isAuthenticated, isLoading, saveApiKey, syncData, disconnect, isSaving, isSyncing } = useIntervalsAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
