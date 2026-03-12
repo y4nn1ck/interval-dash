@@ -56,11 +56,9 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto">
         <DashboardHeader athleteName={athleteName} athleteId={athleteId} />
 
-        {!isAuthenticated && (
-          <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
-            <IntervalsAuth />
-          </div>
-        )}
+        <div className="mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
+          <IntervalsAuth />
+        </div>
 
         <KPICardsSection
           todayMetrics={todayMetrics}
