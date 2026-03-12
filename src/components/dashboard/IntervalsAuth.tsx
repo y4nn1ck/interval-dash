@@ -117,19 +117,29 @@ const IntervalsAuth = () => {
           <User className="h-4 w-4" />
           <span>Athlete ID: {localStorage.getItem('intervals_athlete_id')}</span>
         </div>
-        <Button 
-          onClick={() => syncData()}
-          variant="outline"
-          className="w-full"
-          disabled={isSyncing}
-        >
-          {isSyncing ? (
-            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4 mr-2" />
-          )}
-          Sync Data Now
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => syncData()}
+            variant="outline"
+            className="flex-1"
+            disabled={isSyncing}
+          >
+            {isSyncing ? (
+              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Synchroniser
+          </Button>
+          <Button 
+            onClick={disconnect}
+            variant="destructive"
+            size="default"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Déconnecter
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

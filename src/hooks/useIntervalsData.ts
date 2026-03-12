@@ -50,11 +50,21 @@ export const useIntervalsAuth = () => {
     },
   });
 
+  const disconnect = () => {
+    intervalsService.disconnect();
+    queryClient.clear();
+    toast({
+      title: "Déconnecté",
+      description: "Compte Intervals.icu déconnecté.",
+    });
+  };
+
   return {
     isAuthenticated,
     isLoading,
     saveApiKey: saveApiKeyMutation.mutate,
     syncData: syncDataMutation.mutate,
+    disconnect,
     isSaving: saveApiKeyMutation.isPending,
     isSyncing: syncDataMutation.isPending,
   };
